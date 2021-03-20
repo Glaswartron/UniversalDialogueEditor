@@ -122,7 +122,7 @@ MonoBehaviour:
   m_MinSize: {x: 578, y: 492}
   m_MaxSize: {x: 14001, y: 14042}
   vertical: 0
-  controlID: 106
+  controlID: 79
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -402,7 +402,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 24fbffff
+      m_ExpandedIDs: 44fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -463,9 +463,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 1521.4127, y: 832.0844, z: -3563.604}
+    m_Target: {x: 730.4536, y: 690.10474, z: -3622.942}
     speed: 2
-    m_Value: {x: 1470.4974, y: 821.2911, z: -3558.3384}
+    m_Value: {x: 730.4536, y: 690.10474, z: -3622.942}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -516,9 +516,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 1222.7734
+    m_Target: 584.0292
     speed: 2
-    m_Value: 1170.1182
+    m_Value: 584.0292
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -680,7 +680,7 @@ MonoBehaviour:
   m_LastFolders:
   - Assets
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: F:\Projekte\Universal Dialog Editor
+  m_LastProjectPath: F:\Projekte\UniversalDialogEditor\Universal Dialog Editor
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
