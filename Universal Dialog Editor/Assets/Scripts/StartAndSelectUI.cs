@@ -16,6 +16,7 @@ public class StartAndSelectUI : MonoBehaviour
     public Button submitButton;
     public Button newButton;
     public Button loadButton;
+    public Button deleteButton;
     public GameObject dialogsScrollViewContent;
     public ToggleGroup dialogsScrollViewToggleGroup;
     public TMP_Dropdown dialogPartPresetDropdown;
@@ -30,6 +31,7 @@ public class StartAndSelectUI : MonoBehaviour
     public GameObject newDialogInputField;
 
     private RectTransform loadButtonRectTransform;
+    private RectTransform deleteButtonRectTransform;
 
     private List<string> dialogFilePaths;
     private List<ExtendedToggle> dialogSelectables;
@@ -42,6 +44,7 @@ public class StartAndSelectUI : MonoBehaviour
     void Start()
     {
         loadButtonRectTransform = loadButton.GetComponent<RectTransform>();
+        deleteButtonRectTransform = deleteButton.GetComponent<RectTransform>();
 
         dialogFilePaths = new List<string>();
         dialogSelectables = new List<ExtendedToggle>();
@@ -105,15 +108,16 @@ public class StartAndSelectUI : MonoBehaviour
                     loadButton.interactable = true;
                     selectedDialogIndex = index;
                 }
-                // Deselected => Deactivate loadButton
-                else loadButton.interactable = false;
+                // Deselected => Deactivate loadButton and deleteButton
+                else loadButton.interactable = false; deleteButton.interactable = false;
             }
             );
 
         // Set toggle/selectable text up to "deselect itself" correctly
         toggle.group = dialogsScrollViewToggleGroup;
         toggle.deselectOnUnrelatedClick = true;
-        toggle.relatedUIElements = new RectTransform[] { loadButtonRectTransform };
+        toggle.relatedUIElements = new RectTransform[] { loadButtonRectTransform,
+                                                         deleteButtonRectTransform };
         
         return toggleGO;
     }
