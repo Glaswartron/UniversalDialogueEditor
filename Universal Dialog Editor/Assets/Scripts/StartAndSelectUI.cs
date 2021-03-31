@@ -7,6 +7,7 @@ using SimpleFileBrowser;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System;
+using UnityEngine.EventSystems;
 
 public class StartAndSelectUI : MonoBehaviour
 {
@@ -53,6 +54,8 @@ public class StartAndSelectUI : MonoBehaviour
         submitButton.onClick.AddListener(LoadFolder);
 
         newButton.onClick.AddListener(CreateNewDialog);
+
+        deleteButton.onClick.AddListener(DeleteDialog);
     }
 
     private void LoadFolder()
@@ -104,21 +107,30 @@ public class StartAndSelectUI : MonoBehaviour
             {
                 if (value)
                 {
-                    // Selected => Activate loadButton + store index
+                    // Selected => Activate loadButton, deleteButton + store index
                     loadButton.interactable = true;
+                    deleteButton.interactable = true;
                     selectedDialogIndex = index;
                 }
                 // Deselected => Deactivate loadButton and deleteButton
-                else loadButton.interactable = false; deleteButton.interactable = false;
+                else { loadButton.interactable = false; deleteButton.interactable = false; }
             }
             );
+
+        // Load on submit / when Enter key is pressed
+        toggle.onSubmit.AddListener(
+            () =>
+            {
+                // TODO: Load
+            }
+        );
 
         // Set toggle/selectable text up to "deselect itself" correctly
         toggle.group = dialogsScrollViewToggleGroup;
         toggle.deselectOnUnrelatedClick = true;
         toggle.relatedUIElements = new RectTransform[] { loadButtonRectTransform,
                                                          deleteButtonRectTransform };
-        
+
         return toggleGO;
     }
 
@@ -140,30 +152,58 @@ public class StartAndSelectUI : MonoBehaviour
         inputField.Select();
 
         inputField.onDeselect.AddListener(
-                (input) =>
-                {
-                    bool success = CreateNewDialogFile(input);
+            (input) =>
+            {
+                CreateDialogFileAndSelectable(input, inputField);
+            }
+        );
 
-                    if (!success)
-                    {
-                        Destroy(inputField.gameObject);
-                        return;
-                    }
+        inputField.onSubmit.AddListener(
+            (input) =>
+            {
+                CreateDialogFileAndSelectable(input, inputField);
+            }
+        );
+    }
 
-                    GameObject dst = InstantiateDialogSelectableText(input);
+    private void CreateDialogFileAndSelectable(string input, TMP_InputField inputField)
+    {
+        bool success = CreateNewDialogFile(input);
 
-                    dialogSelectables.Add(dst.GetComponent<ExtendedToggle>());
+        if (!success)
+        {
+            Destroy(inputField.gameObject);
+            return;
+        }
 
-                    Destroy(inputField.gameObject);
-                }
-            );
+        GameObject dst = InstantiateDialogSelectableText(input);
+
+        dialogSelectables.Add(dst.GetComponent<ExtendedToggle>());
+
+        Destroy(inputField.gameObject);
+    }
+
+    private void DeleteDialog()
+    {
+        bool success = DeleteDialogFile(dialogFilePaths[selectedDialogIndex]);
+
+        if (!success)
+            ErrorMessage.instance.ShowErrorMessage
+                ("Something went wrong. The dialog was not deleted. Try deleting it " +
+                "directly from the file browser/folder");
+
+        Destroy(dialogSelectables[selectedDialogIndex].gameObject);
+
+        loadButton.interactable = false;
+        deleteButton.interactable = false;
     }
 
     private bool CreateNewDialogFile(string nameOrID)
     {
         string folderPath = pathInputField.text;
 
-        if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath)) {
+        if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+        {
             ErrorMessage.instance.ShowErrorMessage
                 ("The folder path you entered is either blank or not valid. " +
                  "Try to use the file chooser to get a valid path.");
@@ -193,9 +233,7 @@ public class StartAndSelectUI : MonoBehaviour
                     "writing permission for the folder you selected. " +
                     "Try changing it to a different folder");
 
-#if UNITY_EDITOR
                 Debug.LogError(e.StackTrace);
-#endif
 
                 return false;
             }
@@ -216,6 +254,24 @@ public class StartAndSelectUI : MonoBehaviour
         return true;
     }
 
+    private bool DeleteDialogFile(string path)
+    {
+        if (path == null || string.IsNullOrWhiteSpace(path) || !path.EndsWith(".udsdialog"))
+            return false;
+
+
+        try
+        {
+            File.Delete(path);
+            return !File.Exists(path);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.StackTrace);
+            return false;
+        }
+    }
+
     private void OpenFileBrowser()
     {
         FileBrowser.ShowLoadDialog(path => pathInputField.text = path[0], null, true);
@@ -233,5 +289,5 @@ public class StartAndSelectUI : MonoBehaviour
         folderLoaded = false; // !
     }
 
-    
+
 }

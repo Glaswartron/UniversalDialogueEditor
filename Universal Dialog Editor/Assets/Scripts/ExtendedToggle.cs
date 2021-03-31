@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class ExtendedToggle : UnityEngine.UI.Toggle
 {
     public bool deselectOnUnrelatedClick;
     public RectTransform[] relatedUIElements;
+
+    public UnityEvent onSubmit;
 
     private RectTransform toggleGroup;
 
@@ -45,5 +49,12 @@ public class ExtendedToggle : UnityEngine.UI.Toggle
                 }
             }
         }
+    }
+
+    public override void OnSubmit(BaseEventData eventData)
+    {
+        base.OnSubmit(eventData);
+
+        onSubmit.Invoke();
     }
 }
