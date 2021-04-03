@@ -66,6 +66,113 @@ public class FileHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// Gets the paths to all dialogs (.udsdialog) in the given directory
+    /// </summary>
+    /// <param name="dirPath">The path to the directory</param>
+    /// <returns>A string array containing the file paths of all .udsdialog files
+    /// in the given directory or an empty array if the folder is empty
+    /// or something went wrong</returns>
+    public static string[] GetAllDialogPathsFromDir(string dirPath)
+    {
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return new string[0];
+
+        // Load folder content (get files as string[] of their paths)
+        if (Directory.Exists(dirPath))
+            try {
+
+                return Directory.GetFiles(dirPath, "*.udsdialog");
+
+            } catch (Exception e)
+            {
+                ErrorMessage.instance.ShowErrorMessage
+                    ("An error occured while loading dialogs from a directory.");
+
+                Debug.Log(e.StackTrace);
+
+                return new string[0];
+            }
+        else
+        {
+            ErrorMessage.instance.ShowErrorMessage
+                ("The directory path is invalid.");
+            return new string[0];
+        }
+    }
+
+    /// <summary>
+    /// Serializes the given dialog into a new .udsdialog 
+    /// file in the given folder path. 
+    /// The name/path to the file follows the following rule:
+    /// .../.../nameOrID.udsdialog
+    /// </summary>
+    /// <param name="dialog">The dialog to be saved</param>
+    /// <param name="folderPath">The path to the folder where the dialog shall be saved</param>
+    /// <returns></returns>
+    public static string CreateNewDialogFile(Dialog dialog, string folderPath)
+    {
+        string path = BuildDialogFilePath(dialog.dialogID, folderPath);
+
+        if (!File.Exists(path))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Create);
+
+            try
+            {
+                formatter.Serialize(stream, dialog);
+            }
+            catch (Exception e)
+            {
+                ErrorMessage.instance.ShowErrorMessage
+                    ("Something went wrong while creating the file. Please " +
+                    "check if the dialog name/id you entered contains any " +
+                    "invalid characters. Also check if you/the editor has " +
+                    "writing permission for the folder you selected. " +
+                    "Try changing it to a different folder");
+
+                Debug.LogError(e.StackTrace);
+
+                return null;
+            }
+            finally
+            {
+                stream.Flush();
+                stream.Close();
+            }
+        }
+        else
+        {
+            ErrorMessage.instance.ShowErrorMessage
+                ("A dialog with this id/name (path!) already exists in this folder!");
+
+            return null;
+        }
+
+        return path;
+    }
+
+    /// <summary>
+    /// Deletes the file at the given file path.
+    /// Basically a wrapper for File.Delete(path)
+    /// </summary>
+    /// <param name="path">The path to the file that shall be deleted</param>
+    /// <returns>Successful?</returns>
+    public static bool DeleteDialogFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+            return !File.Exists(path);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.StackTrace);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Saves the current Dialog to the path from the save input field.
     /// Calls EditorManager.ConstructDialog() and handles all kinds of 
     /// errors and exceptions internally. The name of the file will be

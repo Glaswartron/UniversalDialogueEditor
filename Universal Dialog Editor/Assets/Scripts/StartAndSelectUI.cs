@@ -67,23 +67,22 @@ public class StartAndSelectUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(path))
             return;
 
-        // Load folder content (get files as string[] of their paths)
-        string[] files = Directory.GetFiles(path);
+        string[] files = FileHandler.GetAllDialogPathsFromDir(path);
 
-        // Make a toggle/selectable text for every...
+        /* Make a toggle/selectable text for every dialog.
+         * Note that there is no deserialization here, all
+         * dialogs are only stored as paths and only the
+         * selected one will be deserialized */
         foreach (string file in files)
         {
-            if (file.EndsWith(".udsdialog")) // ... dialog
-            {
-                dialogFilePaths.Add(file);
+            dialogFilePaths.Add(file);
 
-                // Dialogs are always saved in the format '.../.../nameOrID.udsdialog'
-                string dialogName = file.Substring(file.LastIndexOf("\\") + 1,
-                                                   file.IndexOf(".udsdialog") - file.LastIndexOf("\\") - 1);
+            // Dialogs are always saved in the format '.../.../nameOrID.udsdialog'
+            string dialogName = file.Substring(file.LastIndexOf("\\") + 1,
+                                               file.IndexOf(".udsdialog") - file.LastIndexOf("\\") - 1);
 
-                // That's where the magic happens
-                InstantiateDialogSelectableText(dialogName);
-            }
+            // That's where the magic happens
+            InstantiateDialogSelectableText(dialogName);
         }
 
         folderLoaded = true; // !
@@ -172,6 +171,7 @@ public class StartAndSelectUI : MonoBehaviour
 
         if (!success)
         {
+            // Error message already handled in CreateNewDialogFile and deeper
             Destroy(inputField.gameObject);
             return;
         }
@@ -210,48 +210,17 @@ public class StartAndSelectUI : MonoBehaviour
             return false;
         }
 
-        string path = FileHandler.BuildDialogFilePath(nameOrID, folderPath);
+        // Create a new dialog!!!
+        Dialog dialog = new Dialog(nameOrID);
 
-        if (!File.Exists(path))
-        {
-            // Create a new dialog!
-            Dialog dialog = new Dialog(nameOrID);
+        string newFilePath = FileHandler.CreateNewDialogFile(dialog, folderPath);
 
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Create);
-
-            try
-            {
-                formatter.Serialize(stream, dialog);
-            }
-            catch (Exception e)
-            {
-                ErrorMessage.instance.ShowErrorMessage
-                    ("Something went wrong while creating the file. Please " +
-                    "check if the dialog name/id you entered contains any " +
-                    "invalid characters. Also check if you/the editor has " +
-                    "writing permission for the folder you selected. " +
-                    "Try changing it to a different folder");
-
-                Debug.LogError(e.StackTrace);
-
-                return false;
-            }
-            finally
-            {
-                stream.Flush();
-                stream.Close();
-            }
-        }
-        else
-        {
-            ErrorMessage.instance.ShowErrorMessage
-                ("A dialog with this id/name (/path) already exists in this folder!");
-
-            return false;
-        }
-
-        return true;
+        if (!string.IsNullOrEmpty(newFilePath))
+            dialogFilePaths.Add(newFilePath); // !
+        else return false; // Error message already handled by FileHandler
+        
+        // Final Validation
+        return File.Exists(newFilePath);
     }
 
     private bool DeleteDialogFile(string path)
@@ -259,17 +228,7 @@ public class StartAndSelectUI : MonoBehaviour
         if (path == null || string.IsNullOrWhiteSpace(path) || !path.EndsWith(".udsdialog"))
             return false;
 
-
-        try
-        {
-            File.Delete(path);
-            return !File.Exists(path);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.StackTrace);
-            return false;
-        }
+        return FileHandler.DeleteDialogFile(path);
     }
 
     private void OpenFileBrowser()
