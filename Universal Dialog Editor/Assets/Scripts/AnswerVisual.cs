@@ -4,16 +4,16 @@ using UnityEngine.EventSystems;
 public class AnswerVisual : MonoBehaviour
 {
     public int index;
+
     public SpriteRenderer indicator;
     public Sprite dialogEndIndicator;
-    public Sprite openShopIndicator;
 
     public DialogPartVisual parentDialogPart;
 
     /// <summary>
-    /// The answer this visual incapsulates. Very important!
+    /// The answer this visual encapsulates. Very important!
     /// </summary>
-    public DialogOld.Answer answer;
+    public Dialog.DialogPart.Answer answer;
 
     [Header("Colors")]
     public Color normalColor;
@@ -29,9 +29,9 @@ public class AnswerVisual : MonoBehaviour
             connectedDP = value;
 
             if (value != null)
-                answer.nextPartID = value.dialogPart.id;
+                answer.nextDialogPartID = value.dialogPart.id;
             else
-                answer.nextPartID = string.Empty;
+                answer.nextDialogPartID = string.Empty;
         }
 
         get { return connectedDP; }
@@ -76,18 +76,13 @@ public class AnswerVisual : MonoBehaviour
                                                  (Vector2)ConnectedDP.transform.position});
 
         if (ConnectedDP != null)
-            answer.nextPartID = ConnectedDP.dialogPart.id;
+            answer.nextDialogPartID = ConnectedDP.dialogPart.id;
 
         if (connection != null && ConnectedDP == null)
             Destroy(connection.gameObject);
 
         // Order important
-        if (answer.opensShop)
-        {
-            indicator.transform.localScale = new Vector3(3.75f, 3.75f, 1);
-            indicator.sprite = openShopIndicator;
-            
-        } else if (string.IsNullOrWhiteSpace(answer.nextPartID))
+        if (string.IsNullOrWhiteSpace(answer.nextDialogPartID))
         {
             indicator.transform.localScale = new Vector3(0.075f, 0.075f, 1);
             indicator.sprite = dialogEndIndicator;
@@ -139,16 +134,15 @@ public class AnswerVisual : MonoBehaviour
     {
         if (dp == parentDialogPart)
         {
-            ErrorMessage.instance.ShowErrorMessage("Du kannst eine Antwort nicht mit ihrem" +
-                " eigenen Dialog Part verbinden... Obwohl das lustig wäre. Vielleicht kommt" +
-                " das irgendwann...");
+            ErrorMessage.instance.ShowErrorMessage("It's currently not possible to " +
+                "connect an answer to its own Dialog Part.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(dp.dialogPart.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("Der Dialog Part braucht eine ID, " +
-                "damit zu ihn verbinden kannst!");
+            ErrorMessage.instance.ShowErrorMessage("The Dialog Part needs an ID in " +
+                "order to be connected");
             return;
         }
 
@@ -182,7 +176,7 @@ public class AnswerVisual : MonoBehaviour
             Destroy(connection.gameObject);
 
         ConnectedDP = null;
-        answer = new DialogOld.Answer();
+        answer = new Dialog.DialogPart.Answer("-1");
     }
 
     private void OnDestroy()

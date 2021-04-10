@@ -54,6 +54,7 @@ public class StartAndSelectUI : MonoBehaviour
         submitButton.onClick.AddListener(LoadFolder);
 
         newButton.onClick.AddListener(CreateNewDialog);
+        loadButton.onClick.AddListener(LoadSelectedDialog);
 
         deleteButton.onClick.AddListener(DeleteDialog);
     }
@@ -118,11 +119,8 @@ public class StartAndSelectUI : MonoBehaviour
 
         // Load on submit / when Enter key is pressed
         toggle.onSubmit.AddListener(
-            () =>
-            {
-                // TODO: Load
-            }
-        );
+            () => LoadSelectedDialog()
+        ); 
 
         // Set toggle/selectable text up to "deselect itself" correctly
         toggle.group = dialogsScrollViewToggleGroup;
@@ -163,6 +161,16 @@ public class StartAndSelectUI : MonoBehaviour
                 CreateDialogFileAndSelectable(input, inputField);
             }
         );
+    }
+
+    private void LoadSelectedDialog()
+    {
+        Dialog dialog = FileHandler.LoadDialogFile(dialogFilePaths[selectedDialogIndex]);
+
+        if (dialog == null)
+            return; // Error message handled by FileHandler.LoadDialogFile
+
+        EditorManager.instance.LoadDialog(dialog); // Also switches the UI
     }
 
     private void CreateDialogFileAndSelectable(string input, TMP_InputField inputField)

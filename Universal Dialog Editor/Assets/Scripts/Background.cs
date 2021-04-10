@@ -6,6 +6,6 @@ public class Background : MonoBehaviour
     {
         EditorManager.instance.SelectedDialogPartVisual = null;
         EditorManager.instance.SelectedAnswerVisual = null;
-        EditorManager.instance.DeactivateAllActionMenus();
+        ContextMenuManager.instance.DeactivateAllContextMenus();
     }
 }

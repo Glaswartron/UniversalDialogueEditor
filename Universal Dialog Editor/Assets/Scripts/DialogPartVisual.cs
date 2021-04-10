@@ -6,19 +6,32 @@ using UnityEngine.EventSystems;
 public class DialogPartVisual : MonoBehaviour
 {
     /// <summary>
-    /// The Dialog Part this visual incapsulates. Very important!
+    /// The Dialog Part this visual encapsulates. Very important!
     /// </summary>
-    public DialogOld.DialogPart dialogPart;
+    public Dialog.DialogPart dialogPart;
 
-    [Header("GameObjects and UI")]
+    [HideInInspector]
+    public AnswerVisual[] answers;
+
+    [Header("Prefabs and UI")]
     public TextMeshPro idText;
-    public GameObject[] answers;
-    public GameObject particleSys;
-    private RectTransform editorPanel;
+    public GameObject answerPrefab;
 
     [Header("Colors")]
     public Color normalColor;
     public Color selectedColor;
+
+    public int Size
+    {
+        set
+        {
+            size = value;
+            transform.localScale = new Vector3(value, value, transform.localScale.z);
+        }
+
+        get { return size;  }
+    }
+    private int size = 1;
 
     private SpriteRenderer spriteRenderer;
     private Camera mainCam;
@@ -30,15 +43,17 @@ public class DialogPartVisual : MonoBehaviour
             connectedDP = value;
 
             if (value != null)
-                dialogPart.nextPartID = value.dialogPart.id;
+                dialogPart.nextDialogPartID = value.dialogPart.id;
             else
-                dialogPart.nextPartID = string.Empty;
+                dialogPart.nextDialogPartID = string.Empty;
         }
 
         get { return connectedDP; }
     }
     private DialogPartVisual connectedDP;
-    public LineRenderer dpConnection;
+    
+    public Connection dpConnection;
+    private LineRenderer connectionLineRenderer;
 
     /// <summary>
     /// Whether or not this visual is currently selected (by the user)
@@ -64,9 +79,6 @@ public class DialogPartVisual : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         mainCam = Camera.main;
         spriteRenderer.color = normalColor;
-        editorPanel = EditorManager.instance.editorPanel;
-        //dialogPart = new Dialog.DialogPart();
-        //dialogPart.answers = new Dialog.Answer[0];
     }
 
     // Update is called once per frame
@@ -78,11 +90,11 @@ public class DialogPartVisual : MonoBehaviour
         if (ConnectedDP == null && dpConnection != null)
             Destroy(dpConnection.gameObject);
         else if (dpConnection != null) // Connections
-            dpConnection.SetPositions(new Vector3[] {(Vector2)transform.position,
+            connectionLineRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)connectedDP.transform.position});
 
         if (ConnectedDP != null)
-            dialogPart.nextPartID = connectedDP.dialogPart.id;
+            dialogPart.nextDialogPartID = connectedDP.dialogPart.id;
     }
 
     public void OnMouseDrag()
@@ -92,17 +104,18 @@ public class DialogPartVisual : MonoBehaviour
         {
             var mousePos = (Vector2)mainCam.ScreenToWorldPoint(Input.mousePosition);
             float sqrDisVisualToMouse = Vector2.SqrMagnitude((Vector2)transform.position - mousePos);
-            /* Makes that the visual doesn't jump/move right when clicked (1),
-             * that it is impossible to drag it out of the screen (2) and
-             * harder to drag it under the UI. (3) */
-            if (sqrDisVisualToMouse > Mathf.Pow(0.3f, 2) // (1)
+            /* Makes sure that the visual doesn't jump/move right when clicked (1),
+             * that it is impossible to drag it out of the screen (2) and to drag
+             * it under the UI. (3) */
+            if (sqrDisVisualToMouse > Mathf.Pow(0.3f, 2) // 1
                 && mainCam.pixelRect.Contains(Input.mousePosition) // 2
-                && !editorPanel.rect.Contains(Input.mousePosition) // 3
+                && EditorManager.instance
+                   .graphEditorBounds.rect.Contains(Input.mousePosition) // 3
                 && !EventSystem.current.IsPointerOverGameObject()) // 3
             {
                 transform.position = mousePos;
-                dialogPart.nodeX = mousePos.x;
-                dialogPart.nodeY = mousePos.y;
+                dialogPart.visualX = (int) mousePos.x; 
+                dialogPart.visualY = (int) mousePos.y;
             }
         }
     }
@@ -135,46 +148,17 @@ public class DialogPartVisual : MonoBehaviour
     /// </summary>
     public void AddAnswer()
     {
-        if (dialogPart.answers.Length == 3) // Maximum: 3 answers
-            return;
-
         if (connectedDP != null)
         {
-            ErrorMessage.instance.ShowErrorMessage("Du kannst nur Antworten hinzufügen, " +
-                "wenn der Dialog Part keine direkte Verbindung zu einem anderen hat!");
+            ErrorMessage.instance.ShowErrorMessage("Answers can only be added " +
+                "to a DialogPart if it has no direct connection to another dialog " +
+                "part");
             return;
-        }
-
-        foreach (GameObject a in answers)
-        {
-            // Activate one more answer visual
-            if (!a.activeSelf)
-            {
-                a.SetActive(true);
-                break;
-            }
         }
 
         // Add the answer to the Dialog Part
-        var answersList = new List<DialogOld.Answer>(dialogPart.answers);
-        answersList.Add(new DialogOld.Answer());
-        dialogPart.answers = answersList.ToArray();
-    }
-
-    /// <summary>
-    /// Deletes the "newest" answer. Use with caution!
-    /// </summary>
-    public void DeleteAnswer()
-    {
-        if (dialogPart.answers.Length == 0)
-            return;
-
-        // Deactivate the "newest" answer visual
-        answers[dialogPart.answers.Length - 1].SetActive(false);
-
-        // Remove the answer from the Dialog Part
-        var answersList = new List<DialogOld.Answer>(dialogPart.answers);
-        answersList.RemoveAt(answersList.Count - 1);
+        var answersList = new List<Dialog.DialogPart.Answer>(dialogPart.answers);
+        answersList.Add(new Dialog.DialogPart.Answer(answersList.Count.ToString()));
         dialogPart.answers = answersList.ToArray();
     }
 
@@ -183,19 +167,21 @@ public class DialogPartVisual : MonoBehaviour
     /// sets all necessary references accordingly. Also
     /// shows the connection to the user using a line renderer.
     /// </summary>
+    /// <param name="dp">The other DialogPart(Visual) which this one
+    /// shall be connected to</param>
     public void SetConnection(DialogPartVisual dp)
     {
         if (string.IsNullOrWhiteSpace(dp.dialogPart.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("Der Dialog Part braucht eine ID, " +
-                "damit zu ihn verbinden kannst!");
+            ErrorMessage.instance.ShowErrorMessage("The Dialog Part needs an ID in " +
+                "order to be connected");
             return;
         }
 
         if (dp == this)
         {
-            ErrorMessage.instance.ShowErrorMessage("Willst du den Spielern das wirklich antun? " +
-                "Du kannst einen Dialog Part nicht mit sich selbst verbinden!");
+            ErrorMessage.instance.ShowErrorMessage("Connecting a Dialog Part to itself is " +
+                "(currently) not possible. Sorry!");
             return;
         }
 
@@ -217,7 +203,8 @@ public class DialogPartVisual : MonoBehaviour
         conn.two = dp;
 
         ConnectedDP = dp;
-        dpConnection = lineRenderer;
+        dpConnection = lineRenderer.GetComponent<Connection>();
+        connectionLineRenderer = lineRenderer;
     }
 
     private void OnDestroy()

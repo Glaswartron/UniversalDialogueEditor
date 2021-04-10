@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public class Dialog
@@ -19,8 +20,15 @@ public class Dialog
     {
         public Answer[] answers;
 
-        public DialogPart(string dialogPartID)
-            : base(dialogPartID) { }
+        internal int visualX, visualY;
+
+        public DialogPart(string dialogPartID, Vector2 visualPos)
+            : base(dialogPartID) 
+        { 
+            answers = new Answer[0];
+            this.visualX = (int) visualPos.x;
+            this.visualY = (int) visualPos.y;
+        }
 
         [Serializable]
         public class Answer : DialogComponent

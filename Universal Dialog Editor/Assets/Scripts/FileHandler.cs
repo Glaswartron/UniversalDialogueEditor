@@ -14,13 +14,13 @@ public class FileHandler : MonoBehaviour
     {
 #if UNITY_EDITOR
         // Generate test dialog
-        if (!File.Exists("F:/Uni/TestDialog.udsdialog"))
+        if (!File.Exists("F:/Testground/TestDialog.udsdialog"))
         {
             Dialog dialog = new Dialog("testDialog");
 
-            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID");
-            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2");
-            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3");
+            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(112,141));
+            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(335, 141));
+            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(145, 11));
 
             diaPart2.answers = new Dialog.DialogPart.Answer[]
             {
@@ -35,7 +35,7 @@ public class FileHandler : MonoBehaviour
             dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
 
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream("F:/Uni/TestDialog.udsdialog", FileMode.Create);
+            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog", FileMode.Create);
 
             try
             {
@@ -43,26 +43,15 @@ public class FileHandler : MonoBehaviour
             }
             catch (Exception e)
             {
-                Debug.Log(e.StackTrace);
+                Debug.LogError(e.Message);
             } 
             finally
             {
+                stream.Flush();
                 stream.Close();
             }
         }
 #endif
-    }
-
-    public static string BuildDialogFilePath(string nameOrID, string folderPath)
-    {
-        string path = folderPath;
-
-        path += "\\" + nameOrID;
-
-        if (!nameOrID.EndsWith(".udsdialog"))
-            path += ".udsdialog";
-
-        return path;
     }
 
     /// <summary>
@@ -88,7 +77,7 @@ public class FileHandler : MonoBehaviour
                 ErrorMessage.instance.ShowErrorMessage
                     ("An error occured while loading dialogs from a directory.");
 
-                Debug.Log(e.StackTrace);
+                Debug.LogError(e.Message);
 
                 return new string[0];
             }
@@ -131,7 +120,7 @@ public class FileHandler : MonoBehaviour
                     "writing permission for the folder you selected. " +
                     "Try changing it to a different folder");
 
-                Debug.LogError(e.StackTrace);
+                Debug.LogError(e.Message);
 
                 return null;
             }
@@ -148,8 +137,55 @@ public class FileHandler : MonoBehaviour
 
             return null;
         }
-
+       
         return path;
+    }
+
+    /// <summary>
+    /// Loads/Deserializes a dialog from the .udsdialog 
+    /// bytes-file at the given path. Returns null if
+    /// something went wrong.
+    /// </summary>
+    /// <param name="path">The path to the dialog file</param>
+    /// <returns>The deserialized Dialog as a dialog object - null if
+    /// something went wrong</returns>
+    public static Dialog LoadDialogFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) // Shouldn't happen
+        {
+            Debug.LogError("The path passed into FileHandler.LoadDialogFile " +
+                "was either null or white space");
+            return null;
+        }
+
+        if (File.Exists(path))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Open);
+
+            try
+            {
+                Dialog dialog = formatter.Deserialize(stream) as Dialog;
+                return dialog;
+            }
+            catch (Exception e) 
+            {
+                ErrorMessage.instance.ShowErrorMessage("An error occured while loading " +
+                    "the dialog.");
+                Debug.LogError("Path: " + path + " -- " + e.Message);
+                return null;
+            }
+            finally
+            {
+                stream.Close();
+            }
+        }
+        else
+        {
+            ErrorMessage.instance.ShowErrorMessage("File not found");
+            Debug.LogError(path + " doesn't exist?");
+            return null;
+        }
     }
 
     /// <summary>
@@ -167,9 +203,21 @@ public class FileHandler : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError(e.StackTrace);
+            Debug.LogError(e.Message);
             return false;
         }
+    }
+
+    public static string BuildDialogFilePath(string nameOrID, string folderPath)
+    {
+        string path = folderPath;
+
+        path += "\\" + nameOrID;
+
+        if (!nameOrID.EndsWith(".udsdialog"))
+            path += ".udsdialog";
+
+        return path;
     }
 
     /// <summary>
@@ -178,7 +226,7 @@ public class FileHandler : MonoBehaviour
     /// errors and exceptions internally. The name of the file will be
     /// the dialogID + ".bytes"
     /// </summary>
-    public void SaveDialog()
+    /*public void SaveDialog()
     {
         bool successfulBuild = EditorManager.instance.ConstructDialog();
 
@@ -311,5 +359,5 @@ public class FileHandler : MonoBehaviour
             EditorManager.instance.ShowSaveDialog();
         else
             SaveDialog();
-    }
+    }*/
 }

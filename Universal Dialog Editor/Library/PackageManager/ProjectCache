@@ -5,15 +5,15 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637511559073847040
-    m_Hash: 2361594804
+      ticks: 637536729760706783
+    m_Hash: 3222840984
   m_LockFileStatus:
     m_FilePath: F:/Projekte/UniversalDialogEditor/Universal Dialog Editor/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637518786120681309
+      ticks: 637536730940837003
     m_Hash: 2096156713
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
@@ -269,7 +269,7 @@ m_PackageAssets:
       entitlements:
         isAllowed: 1
       isAssetStorePackage: 0
-      datePublishedTicks: 0
+      datePublishedTicks: 637429759280000000
       documentationUrl: 
       hasRepository: 1
       repository:

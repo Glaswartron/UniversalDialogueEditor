@@ -11,14 +11,23 @@ public class EditorManager : MonoBehaviour
     // Singleton
     public static EditorManager instance;
 
-    public DialogOld dialog;
+    public Dialog dialog;
 
     // All Dialog Part visuals on Screen (each of them stores an actual Dialog.DialogPart)
     public List<DialogPartVisual> dialogPartVisuals;
 
-    [Header("Prefabs")]
-    public GameObject dialogPartVisual;
-    public GameObject arrow;
+    public GameObject ActiveUI
+    {
+        set
+        {
+            activeUI.SetActive(false);
+            activeUI = value;
+            activeUI.SetActive(true);
+        }
+
+        get { return activeUI;  }
+    }
+    private GameObject activeUI;
 
     [Header("Main UI")]
     public RectTransform editorPanel;
@@ -30,19 +39,14 @@ public class EditorManager : MonoBehaviour
     public GameObject areYouSureDialogSave;
     public GameObject localisationManager;
 
-    [Header("Right Click Menus")]
-    public GameObject createRightClickMenu;
-    public GameObject dialogPartRightClickMenu;
-    public GameObject answerRightClickMenu;
-    public GameObject connectionRightClickMenu;
+    [Header("Prefabs")]
+    public GameObject dialogPartVisual;
+    public GameObject arrow;
 
-    [Header("File UI")]
-    public TMP_InputField savePathInputField;
-    public TMP_InputField loadPathInputField;
-
-    [Header("Dialog Edit UI")]
-    public TMP_InputField dialogIDInputField;
-    public Toggle revealGraduallyToggle;
+    [Header("Support UI")]
+    public RectTransform graphEditorBounds;
+    [HideInInspector]
+    public Camera mainCam;
 
     [Space(7)]
     // true => Editing Dialog Part; false => Editing answer!
@@ -52,7 +56,7 @@ public class EditorManager : MonoBehaviour
 
     //public DialogInfoInputField[] inputFields;
 
-    private bool actionMenuOpen;
+    private bool contextMenuOpen;
 
     /// <summary>
     /// The currently selected Dialog Part (visual)
@@ -112,9 +116,7 @@ public class EditorManager : MonoBehaviour
     }
     private AnswerVisual selectedAnswerVisual = null;
 
-    private GameObject clickedConnection;
-
-    private Camera mainCam;
+    public GameObject selectedConnection;
 
     // Start is called before the first frame update
     void Start()
@@ -145,51 +147,16 @@ public class EditorManager : MonoBehaviour
                 inConnectMode = false;
             }
 
-            DeactivateAllActionMenus();
+            //DeactivateAllContextMenus();
         }
 
-        // Open the right click menu or close it if it is already open
+        /* Right mouse button deselect everything 
+         * (and opens a context menu --> ContextMenuManager) */
         if (Input.GetMouseButtonDown(1))
         {
-            // No menu when mouse is over editor panel (left)
-            if (editorPanel.rect.Contains(Input.mousePosition))
-                return;
-
-            // Deselect everything
             inConnectMode = false;
             SelectedDialogPartVisual = null;
             SelectedAnswerVisual = null;
-
-            // Raycast to see what the user clicked at
-            RaycastHit2D hit;
-            if (hit = Physics2D.GetRayIntersection(mainCam.ScreenPointToRay(Input.mousePosition)))
-            {
-                if (hit.collider.CompareTag("DialogPart"))
-                {
-                    // Select dialog part
-                    var diaPart = hit.collider.GetComponent<DialogPartVisual>();
-                    SelectedDialogPartVisual = diaPart;
-                    diaPart.Selected = true; // --> DialogPart
-                    OpenDialogPartActionMenu();
-                }
-                else if (hit.collider.CompareTag("Answer"))
-                {
-                    // Select answer
-                    var answer = hit.collider.GetComponent<AnswerVisual>();
-                    SelectedAnswerVisual = answer;
-                    answer.Selected = true;
-                    OpenAnswerActionMenu();
-                }
-                else if (hit.collider.CompareTag("Connection"))
-                {
-                    clickedConnection = hit.collider.transform.parent.gameObject;
-                    OpenConnectionActionMenu();
-                }
-                else
-                    return;
-            }
-            else
-                OpenCreateDPActionMenu();
         }
 
         // Delete key deletes currenty selected Dialog Part
@@ -218,27 +185,27 @@ public class EditorManager : MonoBehaviour
         if (!ValidateDialog())
             return false;
 
-        dialog = new DialogOld
+        /*dialog = new DialogOld
         {
             id = dialogIDInputField.text,
             revealTextGradually = revealGraduallyToggle.isOn,
 
             dialogParts = new DialogOld.DialogPart[dialogPartVisuals.Count]
-        };
+        };*/
 
         var dialogParts = dialogPartVisuals.ConvertAll(dpv => dpv.dialogPart);
 
-        DialogOld.DialogPart first = dialogParts.Find(dp => dp.id.Equals("start"));
+        //DialogOld.DialogPart first = dialogParts.Find(dp => dp.id.Equals("start"));
 
-        if (first == null)
+        /*if (first == null)
         {
             ErrorMessage.instance.ShowErrorMessage("Kein Dialog Part hat die ID 'start'!" +
                 " Jeder Dialog braucht einen Anfang, der durch die ID 'start' gekennzeichnet " +
                 "sein muss!");
             return false;
-        }
+        }*/
 
-        dialog.dialogParts[0] = first;
+        //dialog.dialogParts[0] = first;
 
         for (int i = 0; i < dialogParts.Count; i++)
         {
@@ -247,13 +214,13 @@ public class EditorManager : MonoBehaviour
             if (dialog.dialogParts[i] != null || dp.id.Equals("start"))
                 continue;
 
-            dialog.dialogParts[i] = dialogParts[i];
+            //dialog.dialogParts[i] = dialogParts[i];
         }
 
-        if (dialog.revealTextGradually)
+        /*if (dialog.revealTextGradually)
             AddRichTextTagDelimiters();
         else
-            DeleteRichTextTagDelimiters();
+            DeleteRichTextTagDelimiters();*/
 
         return true;
     }
@@ -276,12 +243,12 @@ public class EditorManager : MonoBehaviour
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(dialogIDInputField.text))
+        /*if (string.IsNullOrWhiteSpace(dialogIDInputField.text))
         {
             ErrorMessage.instance.ShowErrorMessage("Der Dialog braucht noch eine ID! Achte" +
                 " auch darauf, dass sie einzigartig ist und nicht schon in CoT vorkommt!");
             return false;
-        }
+        }*/
 
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
@@ -336,7 +303,7 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     private void OnLoadSelectSuccess(string[] paths)
     {
-        loadPathInputField.text = paths[0];
+        //loadPathInputField.text = paths[0];
     }
 
     /// <summary>
@@ -345,7 +312,7 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     private void OnSaveSelectSuccess(string[] paths)
     {
-        savePathInputField.text = paths[0];
+        //savePathInputField.text = paths[0];
     }
 
     /// <summary>
@@ -354,50 +321,50 @@ public class EditorManager : MonoBehaviour
     /// and allows the user to edit the dialog.
     /// </summary>
     /// <param name="dia">The dialog to load.</param>
-    public void LoadDialog(DialogOld dia)
+    public void LoadDialog(Dialog dialog)
     {
         ClearEverything();
 
-        dialog = dia;
-        dialogIDInputField.text = dia.id;
-        revealGraduallyToggle.isOn = dia.revealTextGradually;
-        HashSet<AnswerVisual> answers = new HashSet<AnswerVisual>();
+        this.dialog = dialog;
 
-        foreach (DialogOld.DialogPart diaPart in dia.dialogParts)
+        List<AnswerVisual> answers = new List<AnswerVisual>();
+
+        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
         {
             GameObject visualGO = Instantiate(dialogPartVisual,
-                new Vector2(diaPart.nodeX, diaPart.nodeY), Quaternion.identity);
+                new Vector2(diaPart.visualX, diaPart.visualY), Quaternion.identity);
+
             DialogPartVisual visual = visualGO.GetComponent<DialogPartVisual>();
             dialogPartVisuals.Add(visual);
 
             visual.dialogPart = diaPart;
-            visual.idText.SetText(diaPart.id);
+
             for (int i = 0; i < diaPart.answers.Length; i++)
             {
-                visual.answers[i].SetActive(true);
-                var answerV = visual.answers[i].GetComponent<AnswerVisual>();
-                answerV.answer = diaPart.answers[i];
-                answers.Add(answerV);
+                visual.answers[i].gameObject.SetActive(true);
+                var answerVisual = visual.answers[i].GetComponent<AnswerVisual>();
+                answerVisual.answer = diaPart.answers[i];
+                answers.Add(answerVisual);
             }
         }
 
         foreach (AnswerVisual aVisual in answers)
         {
-            if (!string.IsNullOrWhiteSpace(aVisual.answer.nextPartID))
+            if (!string.IsNullOrWhiteSpace(aVisual.answer.nextDialogPartID))
             {
                 aVisual.SetConnection(
                     Array.Find(dialogPartVisuals.ToArray(),
-                    dpv => dpv.dialogPart.id.Equals(aVisual.answer.nextPartID)));
+                    dpv => dpv.dialogPart.id.Equals(aVisual.answer.nextDialogPartID)));
             }
         }
 
         foreach (DialogPartVisual dpVisual in dialogPartVisuals)
         {
-            if (!string.IsNullOrWhiteSpace(dpVisual.dialogPart.nextPartID))
+            if (!string.IsNullOrWhiteSpace(dpVisual.dialogPart.nextDialogPartID))
             {
                 dpVisual.SetConnection(
                     Array.Find(dialogPartVisuals.ToArray(),
-                    dpv => dpv.dialogPart.id.Equals(dpVisual.dialogPart.nextPartID)));
+                    dpv => dpv.dialogPart.id.Equals(dpVisual.dialogPart.nextDialogPartID)));
             }
         }
     }
@@ -422,8 +389,8 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     public void ClearEverything()
     {
-        areYouSureDialogLoad.SetActive(false);
-        areYouSureDialogSave.SetActive(false);
+        /*areYouSureDialogLoad.SetActive(false);
+        areYouSureDialogSave.SetActive(false);*/
 
         foreach (DialogPartVisual dpv in dialogPartVisuals)
             Destroy(dpv.gameObject);
@@ -436,91 +403,8 @@ public class EditorManager : MonoBehaviour
 
         SelectedDialogPartVisual = null;
         SelectedAnswerVisual = null;
-        clickedConnection = null;
+        selectedConnection = null;
     }
-
-    #region Action Menus
-    private void OpenCreateDPActionMenu()
-    {
-        if (actionMenuOpen)
-        {
-            DeactivateAllActionMenus();
-            return;
-        }
-
-        actionMenuOpen = true;
-
-        // Works great without conversion to world space! :)
-        createRightClickMenu.transform.position = Input.mousePosition
-                                                + new Vector3(110, -30);
-
-        createRightClickMenu.gameObject.SetActive(!createRightClickMenu.activeSelf);
-    }
-
-    private void OpenDialogPartActionMenu()
-    {
-        if (actionMenuOpen)
-        {
-            DeactivateAllActionMenus();
-            return;
-        }
-
-        actionMenuOpen = true;
-
-        // Works great without conversion to world space! :)
-        dialogPartRightClickMenu.transform.position = Input.mousePosition
-                                                  + new Vector3(110, -30);
-
-        dialogPartRightClickMenu.gameObject.SetActive(!dialogPartRightClickMenu.activeSelf);
-    }
-
-
-    private void OpenAnswerActionMenu()
-    {
-        if (actionMenuOpen)
-        {
-            DeactivateAllActionMenus();
-            return;
-        }
-
-        actionMenuOpen = true;
-
-        // Works great without conversion to world space! :)
-        answerRightClickMenu.transform.position = Input.mousePosition
-                                                  + new Vector3(110, -30);
-
-        answerRightClickMenu.gameObject.SetActive(!answerRightClickMenu.activeSelf);
-    }
-
-    private void OpenConnectionActionMenu()
-    {
-        if (actionMenuOpen)
-        {
-            DeactivateAllActionMenus();
-            return;
-        }
-
-        actionMenuOpen = true;
-
-        // Works great without conversion to world space! :)
-        connectionRightClickMenu.transform.position = Input.mousePosition
-                                                  + new Vector3(110, -30);
-
-        connectionRightClickMenu.gameObject.SetActive(!connectionRightClickMenu.activeSelf);
-    }
-
-    /// <summary>
-    /// Deactivates all "right-click menues" there are
-    /// </summary>
-    public void DeactivateAllActionMenus()
-    {
-        createRightClickMenu.SetActive(false);
-        dialogPartRightClickMenu.SetActive(false);
-        answerRightClickMenu.SetActive(false);
-        connectionRightClickMenu.SetActive(false);
-        actionMenuOpen = false;
-    }
-    #endregion
 
     /// <summary>
     /// Creates a new Dialog Part visual at the mouse pos, adds it to the
@@ -531,8 +415,6 @@ public class EditorManager : MonoBehaviour
         Vector2 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         GameObject dpGO = Instantiate(dialogPartVisual, mousePos, Quaternion.identity);
         DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
-
-        DeactivateAllActionMenus();
 
         dialogPartVisuals.Add(dpVisual);
     }
@@ -549,10 +431,10 @@ public class EditorManager : MonoBehaviour
         GameObject dpGO = Instantiate(dialogPartVisual, pos, Quaternion.identity);
 
         DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
-        dpVisual.dialogPart = new DialogOld.DialogPart();
+        //dpVisual.dialogPart = new DialogOld.DialogPart();
 
         // Do se magic
-        dpVisual.dialogPart.id = SelectedDialogPartVisual.dialogPart.id;
+        /*dpVisual.dialogPart.id = SelectedDialogPartVisual.dialogPart.id;
         dpVisual.dialogPart.nextPartID = SelectedDialogPartVisual.dialogPart.nextPartID;
         dpVisual.dialogPart.name = SelectedDialogPartVisual.dialogPart.name;
         dpVisual.dialogPart.nameDE = SelectedDialogPartVisual.dialogPart.nameDE;
@@ -563,7 +445,7 @@ public class EditorManager : MonoBehaviour
         dpVisual.dialogPart.gvValue = SelectedDialogPartVisual.dialogPart.gvValue;
         dpVisual.dialogPart.itemID = SelectedDialogPartVisual.dialogPart.itemID;
         dpVisual.dialogPart.itemAmount = SelectedDialogPartVisual.dialogPart.itemAmount;
-        dpVisual.dialogPart.cutsceneToStartID = SelectedDialogPartVisual.dialogPart.cutsceneToStartID;
+        dpVisual.dialogPart.cutsceneToStartID = SelectedDialogPartVisual.dialogPart.cutsceneToStartID;*/
 
         dialogPartVisuals.Add(dpVisual);
     }
@@ -599,7 +481,7 @@ public class EditorManager : MonoBehaviour
     public void SwitchToConnectMode()
     {
         inConnectMode = true;
-        DeactivateAllActionMenus();
+        ContextMenuManager.instance.DeactivateAllContextMenus();
     }
 
     /// <summary>
@@ -612,18 +494,15 @@ public class EditorManager : MonoBehaviour
 
         dialogPartVisuals.Remove(SelectedDialogPartVisual);
 
-        Instantiate(SelectedDialogPartVisual.particleSys,
-            SelectedDialogPartVisual.transform.position, Quaternion.identity);
-
         Destroy(SelectedDialogPartVisual.gameObject);
         SelectedDialogPartVisual = null;
-        DeactivateAllActionMenus();
+        ContextMenuManager.instance.DeactivateAllContextMenus();
     }
 
     public void DestroyConnection()
     {
-        Destroy(clickedConnection.gameObject);
-        DeactivateAllActionMenus();
+        Destroy(selectedConnection.gameObject);
+        ContextMenuManager.instance.DeactivateAllContextMenus();
     }
 
     public void AddAnswerToSelectedPart()
@@ -633,7 +512,7 @@ public class EditorManager : MonoBehaviour
 
     public void RemoveAnswerFromSelectedPart()
     {
-        selectedDialogPartVisual.DeleteAnswer();
+        //selectedDialogPartVisual.DeleteAnswer();
     }
 
     private void DeselectPreviouslySelectedVisual()
@@ -657,9 +536,9 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     private void AddRichTextTagDelimiters()
     {
-        foreach (DialogOld.DialogPart diaPart in dialog.dialogParts)
+        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
         {
-            if (diaPart.text.Contains("<color") && !diaPart.text.Contains("|<color"))
+            /*if (diaPart.text.Contains("<color") && !diaPart.text.Contains("|<color"))
                 diaPart.text = diaPart.text.Replace("<color", "|<color");
 
             if (diaPart.text.Contains("</color>") && !diaPart.text.Contains("</color>|"))
@@ -669,7 +548,7 @@ public class EditorManager : MonoBehaviour
                 diaPart.textDE = diaPart.textDE.Replace("<color", "|<color");
 
             if (diaPart.textDE.Contains("</color>") && !diaPart.textDE.Contains("</color>|"))
-                diaPart.textDE = diaPart.textDE.Replace("</color>", "</color>|");
+                diaPart.textDE = diaPart.textDE.Replace("</color>", "</color>|");*/
         }
     }
 
@@ -679,9 +558,9 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     private void DeleteRichTextTagDelimiters()
     {
-        foreach (DialogOld.DialogPart diaPart in dialog.dialogParts)
+        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
         {
-            if (diaPart.text.Contains("|<color"))
+            /*if (diaPart.text.Contains("|<color"))
                 diaPart.text = diaPart.text.Replace("|<color", "<color");
 
             if (diaPart.text.Contains("</color>|"))
@@ -691,7 +570,7 @@ public class EditorManager : MonoBehaviour
                 diaPart.textDE = diaPart.textDE.Replace("|<color", "<color");
 
             if (diaPart.textDE.Contains("</color>|"))
-                diaPart.textDE = diaPart.textDE.Replace("</color>|", "</color>");
+                diaPart.textDE = diaPart.textDE.Replace("</color>|", "</color>");*/
         }
     }
 }
