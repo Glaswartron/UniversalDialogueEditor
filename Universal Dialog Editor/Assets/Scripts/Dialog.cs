@@ -13,6 +13,8 @@ public class Dialog
     public Dialog(string id)
     {
         dialogID = id;
+        dialogParts = new DialogPart[0];
+        startDialogPart = "";
     }
 
     [Serializable]
@@ -33,8 +35,13 @@ public class Dialog
         [Serializable]
         public class Answer : DialogComponent
         {
-            public Answer(string answerIndex)
-                : base(answerIndex) { }
+            int index;
+
+            public Answer(string answerID, int answerIndex)
+                : base(answerID) 
+            { 
+                index = answerIndex; 
+            }
         }
     }
 

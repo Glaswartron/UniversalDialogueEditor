@@ -2711,14 +2711,14 @@ MonoBehaviour:
   localisationManager: {fileID: 583772019}
   dialogPartVisual: {fileID: 8252622723369243653, guid: e49f2f2291618ae4bb49073279fc5350,
     type: 3}
+  answerVisual: {fileID: 8049454694504549614, guid: 709dd5dfc1d85464c8d401a39878ad80,
+    type: 3}
   arrow: {fileID: 69795706408405099, guid: f5c3521f5d27c6145aee91e6323ebfd1, type: 3}
-  editorContextMenu: {fileID: 0}
-  dialogPartContextMenu: {fileID: 0}
-  answerContextMenu: {fileID: 0}
-  connectionContextMenu: {fileID: 0}
-  graphEditorBounds: {fileID: 0}
+  graphEditorBounds: {fileID: 1929355095}
+  mainCam: {fileID: 0}
   editingDialogPart: 0
   inConnectMode: 0
+  selectedConnection: {fileID: 0}
 --- !u!4 &196227450
 Transform:
   m_ObjectHideFlags: 0
@@ -14320,9 +14320,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 6
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &701170022
 GameObject:
   m_ObjectHideFlags: 0
@@ -17070,9 +17067,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 9
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &802513149
 GameObject:
   m_ObjectHideFlags: 0
@@ -19321,9 +19315,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 6
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &897396633
 GameObject:
   m_ObjectHideFlags: 0
@@ -26319,9 +26310,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 4
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1160632195
 GameObject:
   m_ObjectHideFlags: 0
@@ -26944,9 +26932,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 1
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1170109865
 GameObject:
   m_ObjectHideFlags: 0
@@ -27969,7 +27954,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1204170677}
   m_OnClick:
     m_PersistentCalls:
@@ -28198,6 +28183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7c3ff9e446894c4caaf4fd9a648ca9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  contextMenuOpen: 0
   editorContextMenu: {fileID: 919142821}
   createDialogPartButton: {fileID: 1346066226}
   answerContextMenu: {fileID: 788185884}
@@ -29341,9 +29327,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 0
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!114 &1272387794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30670,9 +30653,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 1
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1310503550
 GameObject:
   m_ObjectHideFlags: 0
@@ -34121,9 +34101,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 9
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1416186989
 GameObject:
   m_ObjectHideFlags: 0
@@ -36759,9 +36736,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 2
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1540626765
 GameObject:
   m_ObjectHideFlags: 0
@@ -36965,9 +36939,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 8
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!114 &1546795673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45843,9 +45814,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 5
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &1929355094
 GameObject:
   m_ObjectHideFlags: 0
@@ -45857,7 +45825,7 @@ GameObject:
   - component: {fileID: 1929355095}
   - component: {fileID: 1929355097}
   - component: {fileID: 1929355096}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: GraphEditorBounds
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45897,7 +45865,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -49597,9 +49565,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 7
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!114 &2071803088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51313,9 +51278,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b06c06cd5f6d3b4db425a2c60d60d3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputType: 5
-  inputField: {fileID: 0}
-  toggle: {fileID: 0}
 --- !u!1 &2122416652
 GameObject:
   m_ObjectHideFlags: 0

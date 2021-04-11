@@ -12,11 +12,6 @@ public class ContextMenuManager : MonoBehaviour
     public GameObject editorContextMenu;
     public Button createDialogPartButton;
 
-    [Header("Answer Context Menu")]
-    public GameObject answerContextMenu;
-    public Button connectAnswerButton;
-    public Button deleteAnswerButton;
-
     [Header("Dialog Part Context Menu")]
     public GameObject dialogPartContextMenu;
     public Button addAnswerButton;
@@ -25,9 +20,16 @@ public class ContextMenuManager : MonoBehaviour
     public Button deleteDialogPartButton;
     public Slider sizeSlider;
 
+    [Header("Answer Context Menu")]
+    public GameObject answerContextMenu;
+    public Button connectAnswerButton;
+    public Button deleteAnswerButton;
+
     [Header("Connection Context Menu")]
     public GameObject connectionContextMenu;
     public Button deleteConnectionButton;
+
+    private RectTransform[] contextMenuRectTransforms;
 
     private EditorManager editorManager;
 
@@ -40,23 +42,40 @@ public class ContextMenuManager : MonoBehaviour
     void Start()
     {
         createDialogPartButton.onClick.AddListener
-            (() => { editorManager.CreateDialogPart(); });
+            (() => { editorManager.CreateDialogPart(); editorContextMenu.SetActive(false); });
+
+        contextMenuRectTransforms = new RectTransform[] {
+            editorContextMenu.GetComponent<RectTransform>(),
+            dialogPartContextMenu.GetComponent<RectTransform>(),
+            answerContextMenu.GetComponent<RectTransform>(),
+            connectionContextMenu.GetComponent<RectTransform>() };
     }
 
     // Update is called once per frame
     void Update()
     {
         // Shorter :D (Can't be in Start because of Execution Order)
-        if (editorManager == null) 
-            editorManager = EditorManager.instance; 
+        if (editorManager == null)
+            editorManager = EditorManager.instance;
 
         // No context menues in some UIs
         if (editorManager.ActiveUI == editorManager.startAndSelectUI)
             return;
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (!MouseOverContextMenu())
+                DeactivateAllContextMenus();
+        }
+
         // Open the right click menu or close it if it is already open
         if (Input.GetMouseButtonDown(1))
         {
+            if (MouseOverContextMenu())
+                return;
+
+            DeactivateAllContextMenus();
+
             // No menu when mouse is over UI/editor panel
             if (editorManager.editorPanel.rect.Contains(Input.mousePosition))
                 return;
@@ -86,7 +105,7 @@ public class ContextMenuManager : MonoBehaviour
                 }
                 else if (hit.collider.CompareTag("Connection"))
                 {
-                    editorManager.selectedConnection 
+                    editorManager.selectedConnection
                         = hit.collider.transform.parent.gameObject;
 
                     OpenContextMenu(connectionContextMenu);
@@ -122,5 +141,16 @@ public class ContextMenuManager : MonoBehaviour
         answerContextMenu.SetActive(false);
         connectionContextMenu.SetActive(false);
         contextMenuOpen = false;
+    }
+
+    private bool MouseOverContextMenu()
+    {
+        foreach (RectTransform rt in contextMenuRectTransforms)
+        {
+            if (Utility.GetWorldRect(rt).Contains(Input.mousePosition))
+                return true;
+        }
+
+        return false;
     }
 }

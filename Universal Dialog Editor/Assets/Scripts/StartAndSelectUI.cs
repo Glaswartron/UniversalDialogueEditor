@@ -87,6 +87,8 @@ public class StartAndSelectUI : MonoBehaviour
         }
 
         folderLoaded = true; // !
+
+        newButton.interactable = true;
     }
 
     private GameObject InstantiateDialogSelectableText(string text)

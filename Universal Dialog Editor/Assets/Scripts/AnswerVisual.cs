@@ -68,6 +68,8 @@ public class AnswerVisual : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /* Continuously update the dialog parts answer 
+         * to apply the stuff changed in the editor */
         parentDialogPart.dialogPart.answers[index] = answer;
 
         // Connection
@@ -176,7 +178,7 @@ public class AnswerVisual : MonoBehaviour
             Destroy(connection.gameObject);
 
         ConnectedDP = null;
-        answer = new Dialog.DialogPart.Answer("-1");
+        answer = new Dialog.DialogPart.Answer("", -1);
     }
 
     private void OnDestroy()

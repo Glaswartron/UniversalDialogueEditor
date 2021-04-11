@@ -109,9 +109,8 @@ public class DialogPartVisual : MonoBehaviour
              * it under the UI. (3) */
             if (sqrDisVisualToMouse > Mathf.Pow(0.3f, 2) // 1
                 && mainCam.pixelRect.Contains(Input.mousePosition) // 2
-                && EditorManager.instance
-                   .graphEditorBounds.rect.Contains(Input.mousePosition) // 3
-                && !EventSystem.current.IsPointerOverGameObject()) // 3
+                && Utility.GetWorldRect(EditorManager.instance
+                   .graphEditorBounds).Contains(Input.mousePosition)) // 3
             {
                 transform.position = mousePos;
                 dialogPart.visualX = (int) mousePos.x; 
@@ -158,7 +157,7 @@ public class DialogPartVisual : MonoBehaviour
 
         // Add the answer to the Dialog Part
         var answersList = new List<Dialog.DialogPart.Answer>(dialogPart.answers);
-        answersList.Add(new Dialog.DialogPart.Answer(answersList.Count.ToString()));
+        answersList.Add(new Dialog.DialogPart.Answer("", answersList.Count));
         dialogPart.answers = answersList.ToArray();
     }
 

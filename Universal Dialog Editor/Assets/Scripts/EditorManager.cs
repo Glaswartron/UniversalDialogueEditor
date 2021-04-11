@@ -41,6 +41,7 @@ public class EditorManager : MonoBehaviour
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
+    public GameObject answerVisual;
     public GameObject arrow;
 
     [Header("Support UI")]
@@ -73,15 +74,10 @@ public class EditorManager : MonoBehaviour
 
             editingDialogPart = true;
 
-            // UI: Show Dialog Part editor
-            answerUI.SetActive(false);
-            startAndSelectUI.SetActive(false);
-            dialogUI.SetActive(false);
-            dialogPartUI.SetActive(false); // OnEnable has to be triggered
-            dialogPartUI.SetActive(value != null);
-
-            if (value == null)
-                dialogUI.SetActive(true);
+            if (value == null && ActiveUI != startAndSelectUI)
+                ActiveUI = dialogUI;
+            else if (value != null)
+                ActiveUI = dialogPartUI;
         }
 
         get { return selectedDialogPartVisual; }
@@ -102,14 +98,10 @@ public class EditorManager : MonoBehaviour
 
             editingDialogPart = false;
 
-            // UI: Show answer editor
-            dialogPartUI.SetActive(false);
-            startAndSelectUI.SetActive(false);
-            answerUI.SetActive(false); // OnEnable has to be triggered
-            answerUI.SetActive(value != null);
-
-            if (value == null)
-                dialogUI.SetActive(true);
+            if (value == null && ActiveUI != startAndSelectUI)
+                ActiveUI = dialogUI;
+            else if (value != null)
+                ActiveUI = answerUI;
         }
 
         get { return selectedAnswerVisual; }
@@ -132,6 +124,7 @@ public class EditorManager : MonoBehaviour
         // Init
         mainCam = Camera.main;
         dialogPartVisuals = new List<DialogPartVisual>();
+        activeUI = startAndSelectUI;
     }
 
     private void Update()
@@ -320,7 +313,7 @@ public class EditorManager : MonoBehaviour
     /// Shows the dialog in the editor, assigns all necessary references
     /// and allows the user to edit the dialog.
     /// </summary>
-    /// <param name="dia">The dialog to load.</param>
+    /// <param name="dia">The dialog to load</param>
     public void LoadDialog(Dialog dialog)
     {
         ClearEverything();
@@ -329,8 +322,10 @@ public class EditorManager : MonoBehaviour
 
         List<AnswerVisual> answers = new List<AnswerVisual>();
 
+        // Go over all Dialog Parts in the dialog and...
         foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
         {
+            // ... instantiate a corresponding visual in the editor
             GameObject visualGO = Instantiate(dialogPartVisual,
                 new Vector2(diaPart.visualX, diaPart.visualY), Quaternion.identity);
 
@@ -339,15 +334,22 @@ public class EditorManager : MonoBehaviour
 
             visual.dialogPart = diaPart;
 
+            // Add all the answers (for each Dialog Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
             {
-                visual.answers[i].gameObject.SetActive(true);
-                var answerVisual = visual.answers[i].GetComponent<AnswerVisual>();
-                answerVisual.answer = diaPart.answers[i];
-                answers.Add(answerVisual);
+                GameObject answerVisualGO = Instantiate(answerVisual, visualGO.transform.position + Vector3.down * 0.69f, Quaternion.identity);
+                var answerVis = answerVisualGO.GetComponent<AnswerVisual>();
+                answerVisualGO.transform.parent = visualGO.transform;
+                answerVis.parentDialogPart = visual;
+                answerVis.answer = diaPart.answers[i];
+                answerVis.index = i;
+                answers.Add(answerVis);
             }
+
+            visual.answers = answers.ToArray(); // !
         }
 
+        // Add connections to all answers (that have connections)
         foreach (AnswerVisual aVisual in answers)
         {
             if (!string.IsNullOrWhiteSpace(aVisual.answer.nextDialogPartID))
@@ -358,6 +360,7 @@ public class EditorManager : MonoBehaviour
             }
         }
 
+        // Add connections to all Dialog Parts (that have connections)
         foreach (DialogPartVisual dpVisual in dialogPartVisuals)
         {
             if (!string.IsNullOrWhiteSpace(dpVisual.dialogPart.nextDialogPartID))
@@ -367,6 +370,9 @@ public class EditorManager : MonoBehaviour
                     dpv => dpv.dialogPart.id.Equals(dpVisual.dialogPart.nextDialogPartID)));
             }
         }
+
+        // Go from StartAndSelectUI to DialogUI
+        ActiveUI = dialogUI;
     }
 
     /// <summary>
@@ -407,8 +413,8 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Creates a new Dialog Part visual at the mouse pos, adds it to the
-    /// dialogPartVisuals list and deactivates the right click action menu
+    /// Creates a new Dialog Part visual at the mouse pos and 
+    /// adds it to the dialogPartVisuals list
     /// </summary>
     public void CreateDialogPart()
     {

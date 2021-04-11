@@ -18,14 +18,14 @@ public class FileHandler : MonoBehaviour
         {
             Dialog dialog = new Dialog("testDialog");
 
-            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(112,141));
-            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(335, 141));
-            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(145, 11));
+            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0,0));
+            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1));
+            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(1, 0));
 
             diaPart2.answers = new Dialog.DialogPart.Answer[]
             {
-                new Dialog.DialogPart.Answer("0"),
-                new Dialog.DialogPart.Answer("1")
+                new Dialog.DialogPart.Answer("Yes", 0),
+                new Dialog.DialogPart.Answer("No", 1)
             };
 
             dialog.startDialogPart = "TestID";
