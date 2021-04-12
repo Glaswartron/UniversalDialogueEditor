@@ -12,6 +12,7 @@ public class EditorManager : MonoBehaviour
     public static EditorManager instance;
 
     public Dialog dialog;
+    public Dialog dialogBackup;
 
     // All Dialog Part visuals on Screen (each of them stores an actual Dialog.DialogPart)
     public List<DialogPartVisual> dialogPartVisuals;
@@ -109,6 +110,9 @@ public class EditorManager : MonoBehaviour
     private AnswerVisual selectedAnswerVisual = null;
 
     public GameObject selectedConnection;
+
+    public int noOfAnswers;
+    public int noOfConnections;
 
     // Start is called before the first frame update
     void Start()
@@ -319,6 +323,7 @@ public class EditorManager : MonoBehaviour
         ClearEverything();
 
         this.dialog = dialog;
+        //this.dialogBackup = dialog.Clone(); // Backup for potential fallback/discard
 
         List<AnswerVisual> answers = new List<AnswerVisual>();
 
@@ -344,6 +349,8 @@ public class EditorManager : MonoBehaviour
                 answerVis.answer = diaPart.answers[i];
                 answerVis.index = i;
                 answers.Add(answerVis);
+
+                noOfAnswers++; // Count how many answers there are in total
             }
 
             visual.answers = answers.ToArray(); // !
@@ -357,6 +364,8 @@ public class EditorManager : MonoBehaviour
                 aVisual.SetConnection(
                     Array.Find(dialogPartVisuals.ToArray(),
                     dpv => dpv.dialogPart.id.Equals(aVisual.answer.nextDialogPartID)));
+
+                noOfConnections++; // Count how many connections there are in total
             }
         }
 
@@ -368,6 +377,8 @@ public class EditorManager : MonoBehaviour
                 dpVisual.SetConnection(
                     Array.Find(dialogPartVisuals.ToArray(),
                     dpv => dpv.dialogPart.id.Equals(dpVisual.dialogPart.nextDialogPartID)));
+
+                noOfConnections++; // Count how many connections there are in total
             }
         }
 
@@ -391,12 +402,13 @@ public class EditorManager : MonoBehaviour
     }*/
 
     /// <summary>
-    /// Clears everything. Use with caution!
+    /// Clears everything and returns to StartAndSelectUI.
+    /// Discards any unsaved data.
+    /// Use with caution!
     /// </summary>
     public void ClearEverything()
     {
-        /*areYouSureDialogLoad.SetActive(false);
-        areYouSureDialogSave.SetActive(false);*/
+        ContextMenuManager.instance.DeactivateAllContextMenus();
 
         foreach (DialogPartVisual dpv in dialogPartVisuals)
             Destroy(dpv.gameObject);
@@ -410,6 +422,11 @@ public class EditorManager : MonoBehaviour
         SelectedDialogPartVisual = null;
         SelectedAnswerVisual = null;
         selectedConnection = null;
+
+        noOfAnswers = 0;
+        noOfConnections = 0;
+
+        ActiveUI = startAndSelectUI;
     }
 
     /// <summary>
@@ -463,6 +480,8 @@ public class EditorManager : MonoBehaviour
     {
         SelectedAnswerVisual.SetConnection(dp);
 
+        noOfConnections++;
+
         inConnectMode = false;
     }
 
@@ -480,6 +499,8 @@ public class EditorManager : MonoBehaviour
         }
 
         SelectedDialogPartVisual.SetConnection(dp);
+
+        noOfConnections++;
 
         inConnectMode = false;
     }
@@ -508,16 +529,22 @@ public class EditorManager : MonoBehaviour
     public void DestroyConnection()
     {
         Destroy(selectedConnection.gameObject);
+        noOfConnections--;
+
         ContextMenuManager.instance.DeactivateAllContextMenus();
     }
 
     public void AddAnswerToSelectedPart()
     {
-        selectedDialogPartVisual.AddAnswer();
+        bool success = selectedDialogPartVisual.AddAnswer();
+
+        if (success) 
+            noOfAnswers++;
     }
 
     public void RemoveAnswerFromSelectedPart()
     {
+        //noOfAnswers--;
         //selectedDialogPartVisual.DeleteAnswer();
     }
 

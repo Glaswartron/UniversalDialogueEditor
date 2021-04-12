@@ -59,6 +59,12 @@ public class StartAndSelectUI : MonoBehaviour
         deleteButton.onClick.AddListener(DeleteDialog);
     }
 
+    private void OnDisable()
+    {
+        // Deselect selected Dialog when UI is disabled
+        dialogSelectables[selectedDialogIndex].isOn = false;
+    }
+
     private void LoadFolder()
     {
         ClearScrollView();
@@ -177,7 +183,11 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void CreateDialogFileAndSelectable(string input, TMP_InputField inputField)
     {
-        bool success = CreateNewDialogFile(input);
+        bool success;
+        if (string.IsNullOrWhiteSpace(input))
+            success = false;
+        else
+            success = CreateNewDialogFile(input);;
 
         if (!success)
         {

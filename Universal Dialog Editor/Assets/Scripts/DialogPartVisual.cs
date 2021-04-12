@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -145,20 +146,23 @@ public class DialogPartVisual : MonoBehaviour
     /// <summary>
     /// Adds a new blank answer to the DialogPart(Visual)
     /// </summary>
-    public void AddAnswer()
+    /// <returns>Successful?</returns>
+    public bool AddAnswer()
     {
         if (connectedDP != null)
         {
             ErrorMessage.instance.ShowErrorMessage("Answers can only be added " +
                 "to a DialogPart if it has no direct connection to another dialog " +
                 "part");
-            return;
+            return false;
         }
 
         // Add the answer to the Dialog Part
         var answersList = new List<Dialog.DialogPart.Answer>(dialogPart.answers);
         answersList.Add(new Dialog.DialogPart.Answer("", answersList.Count));
         dialogPart.answers = answersList.ToArray();
+
+        return true;
     }
 
     /// <summary>
@@ -211,6 +215,12 @@ public class DialogPartVisual : MonoBehaviour
         if (dpConnection != null)
             Destroy(dpConnection?.gameObject);
 
-        System.Array.ForEach(answers, a => Destroy(a.gameObject));
+        try
+        {
+            System.Array.ForEach(answers, a => Destroy(a.gameObject));
+        } catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+        }
     }
 }

@@ -100,7 +100,7 @@ public class FileHandler : MonoBehaviour
     /// <returns></returns>
     public static string CreateNewDialogFile(Dialog dialog, string folderPath)
     {
-        string path = BuildDialogFilePath(dialog.dialogID, folderPath);
+        string path = BuildDialogFilePath(dialog.id, folderPath);
 
         if (!File.Exists(path))
         {
@@ -208,6 +208,13 @@ public class FileHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Builds and returns the (hypothetical) path to a
+    /// dialog with ID nameOrID in directory folderPath
+    /// </summary>
+    /// <param name="nameOrID">The ID of the dialog</param>
+    /// <param name="folderPath">The path where its file should go</param>
+    /// <returns>A fitting save/load path for the dialog (ending in .udsdialog)</returns>
     public static string BuildDialogFilePath(string nameOrID, string folderPath)
     {
         string path = folderPath;
