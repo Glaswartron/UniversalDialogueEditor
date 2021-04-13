@@ -8,6 +8,11 @@ public class UDSException : Exception
             "DialogComponent.HasProperty() before querying the property";
 
     internal static readonly string msg2
+          = "DialogComponent {0} does not contain " +
+            "a property with key '{1}'. Consider checking " +
+            "DialogComponent.HasProperty() before querying the property";
+
+    internal static readonly string msg3
               = "Property with key {0} of DialogComponent {1} exists but can not " +
                 "be converted to {2}. Consider checking its data type.";
 

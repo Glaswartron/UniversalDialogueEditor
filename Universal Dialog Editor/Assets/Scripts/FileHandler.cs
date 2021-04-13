@@ -32,6 +32,9 @@ public class FileHandler : MonoBehaviour
             diaPart1.nextDialogPartID = "Tester2";
             diaPart2.answers[0].nextDialogPartID = "TestPart3";
 
+            diaPart1.SetProperty("tollerSchluessel", "Hier koennte ihre Werbung");
+            diaPart2.SetProperty("jetztAuchMitZahlenLol", 42);
+
             dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
 
             BinaryFormatter formatter = new BinaryFormatter();

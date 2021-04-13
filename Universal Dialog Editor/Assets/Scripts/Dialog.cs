@@ -1,27 +1,23 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [Serializable]
-public class Dialog : DialogComponent
+public sealed class Dialog : DialogComponent
 {
     public DialogPart[] dialogParts;
     public string startDialogPart;
-
+    
     public Dialog(string dialogID)
         : base(dialogID)
     {
         dialogParts = new DialogPart[0];
-        startDialogPart = "";
-    }
-
-    internal Dialog Clone()
-    {
-        return (Dialog)MemberwiseClone();
+        startDialogPart = ""; 
     }
 
     [Serializable]
-    public class DialogPart : DialogComponent
+    public sealed class DialogPart : DialogComponent
     {
         public Answer[] answers;
 
@@ -33,12 +29,15 @@ public class Dialog : DialogComponent
             : base(dialogPartID) 
         { 
             answers = new Answer[0];
-            this.visualX = (int) visualPos.x;
-            this.visualY = (int) visualPos.y;
+            visualX = (int) visualPos.x;
+            visualY = (int) visualPos.y;
+
+            SetProperty("Text", "");
+            SetProperty("Text speed", 1);
         }
 
         [Serializable]
-        public class Answer : DialogComponent
+        public sealed class Answer : DialogComponent
         {
             int index;
 
@@ -47,7 +46,9 @@ public class Dialog : DialogComponent
             public Answer(string answerID, int answerIndex)
                 : base(answerID) 
             { 
-                index = answerIndex; 
+                index = answerIndex;
+
+                SetProperty("Text", "");
             }
         }
     }
@@ -86,7 +87,47 @@ public class DialogComponent
             return value;
         }
         else
-            throw new UDSException(string.Format(UDSException.msg1, id, "int", key));
+            throw new UDSException
+                (string.Format(UDSException.msg1, id, typeof(T).ToString(), key));
+    }
+
+    public (object value, Type type) GetProperty(string key)
+    {
+        (object value, Type type) value;
+        if (properties.TryGetValue(key, out value))
+        {
+            return value;
+        }
+        else
+            throw new UDSException(string.Format(UDSException.msg1, id, key));
+    }
+
+    public string[] GetPropertyKeys()
+    {
+        return properties.Keys.ToArray();
+    }
+
+    internal bool SetProperty<T>(string key, T value)
+    {
+        bool alreadyThere = HasProperty(key, typeof(T));
+
+        properties[key] = (value, typeof(T));
+
+        return alreadyThere;
+    }
+
+    internal bool SetProperty(string key, object value, Type type)
+    {
+        bool alreadyThere = HasProperty(key, type);
+
+        properties[key] = (value, type);
+
+        return alreadyThere;
+    }
+
+    internal bool DeleteProperty(string key)
+    {
+        return properties.Remove(key);
     }
 
     /*public string GetStringProperty(string key)
@@ -156,7 +197,7 @@ public class DialogComponent
         }
         else
             throw new UDSException(string.Format(UDSException.msg1, id, "bool", key));
-    }*/
+    }
 
     internal void SetStringProperty(string key, string value)
     {
@@ -176,5 +217,5 @@ public class DialogComponent
     internal void SetBoolProperty(string key, bool value)
     {
         properties[key] = (value.ToString(), typeof(bool));
-    }
+    } */
 }
