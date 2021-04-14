@@ -28,9 +28,8 @@ public class DialogUI : MonoBehaviour
         dialog = EditorManager.instance.dialog;
 
         idInputUI.dialogComponent = dialog;
-        propertiesUI.dialogComponent = dialog;
 
-        propertiesUI.Init(dialog);
+        propertiesUI.Init(dialog); // Super important stuff
     }
 
     // Start is called before the first frame update

@@ -107,8 +107,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190335
-  m_fontColor: {r: 1, g: 0, b: 0, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -129,7 +129,7 @@ MonoBehaviour:
   m_fontSizeBase: 3
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 1
+  m_fontSizeMin: 0.5
   m_fontSizeMax: 2
   m_fontStyle: 0
   m_HorizontalAlignment: 2
@@ -161,7 +161,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 1
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0.14752984, y: 0.082479, z: 0.67462134, w: 0.06480488}
+  m_margin: {x: 0.1164971, y: 0.055873062, z: 0.6413719, w: 0.011593015}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -197,7 +197,7 @@ Transform:
   m_GameObject: {fileID: 8049454694504549614}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.62099993, y: -0.35799998, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.65, y: 0.65, z: 1}
   m_Children:
   - {fileID: 1974401999192415500}
   - {fileID: 2048279715194646984}
@@ -273,6 +273,14 @@ MonoBehaviour:
   parentDialogPart: {fileID: 0}
   answer:
     id: 
+    dialogPart:
+      id: 
+      answers: []
+      dialog:
+        id: 
+        dialogParts: []
+        startDialogPart: 
+      nextDialogPartID: 
     nextDialogPartID: 
   normalColor: {r: 0.10980393, g: 0.7254902, b: 1, a: 1}
   selectedColor: {r: 0.10980393, g: 0.44705883, b: 1, a: 1}

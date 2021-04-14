@@ -17,7 +17,6 @@ public class DialogPartUI : MonoBehaviour
         dialogPart = EditorManager.instance.SelectedDialogPartVisual.dialogPart;
 
         idInputUI.dialogComponent = dialogPart;
-        propertiesUI.dialogComponent = dialogPart;
 
         propertiesUI.Init(dialogPart); // Super important stuff
     }

@@ -8,8 +8,8 @@ public sealed class Dialog : DialogComponent
 {
     public DialogPart[] dialogParts;
     public string startDialogPart;
-    
-    public Dialog(string dialogID)
+
+    internal Dialog(string dialogID)
         : base(dialogID)
     {
         dialogParts = new DialogPart[0];
@@ -20,17 +20,21 @@ public sealed class Dialog : DialogComponent
     public sealed class DialogPart : DialogComponent
     {
         public Answer[] answers;
+        [SerializeReference] 
+        public Dialog dialog;
 
         public string nextDialogPartID;
 
         internal int visualX, visualY;
 
-        public DialogPart(string dialogPartID, Vector2 visualPos)
+        internal DialogPart(string dialogPartID, Vector2 visualPos, Dialog dialog)
             : base(dialogPartID) 
         { 
             answers = new Answer[0];
             visualX = (int) visualPos.x;
             visualY = (int) visualPos.y;
+
+            this.dialog = dialog;
 
             SetProperty("Text", "");
             SetProperty("Text speed", 1);
@@ -40,13 +44,16 @@ public sealed class Dialog : DialogComponent
         public sealed class Answer : DialogComponent
         {
             int index;
+            [SerializeReference]
+            public DialogPart dialogPart;
 
             public string nextDialogPartID;
 
-            public Answer(string answerID, int answerIndex)
+            internal Answer(string answerID, int answerIndex, DialogPart dialogPart)
                 : base(answerID) 
             { 
                 index = answerIndex;
+                this.dialogPart = dialogPart;
 
                 SetProperty("Text", "");
             }

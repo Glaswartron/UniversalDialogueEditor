@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
@@ -7,7 +6,7 @@ using UnityEngine.UI;
 
 public class PropertiesUI : MonoBehaviour
 {
-    public DialogComponent dialogComponent;
+    private DialogComponent dialogComponent;
 
     [Header("Main UI")]
     public Transform scrollViewContent;
@@ -36,7 +35,8 @@ public class PropertiesUI : MonoBehaviour
 
         this.dialogComponent = dialogComponent;
 
-        // Instantiate a fitting list/scroll view element for all properties
+        /* Instantiate a fitting list/scroll view element for all properties
+         * and add listeners to the various UI elements within it */
         foreach (string key in dialogComponent.GetPropertyKeys())
         {
             (object value, Type type) value = dialogComponent.GetProperty(key);
@@ -66,8 +66,8 @@ public class PropertiesUI : MonoBehaviour
                     // Converts value.value to a string based on value.type
                     TypeDescriptor.GetConverter(value.type).ConvertToString(value.value)
                 );
-           
-            //DialogComponent local = dialogComponent;
+
+            // ID Input Field
             listElement.idInputField.onValueChanged.AddListener(
                 (input) =>
                 {
@@ -83,6 +83,7 @@ public class PropertiesUI : MonoBehaviour
             // Either the stringIntFloatInputField or the boolToggle is there
             if (listElement.stringIntFloatInputField != null)
             {
+                // Input Field
                 listElement.stringIntFloatInputField.onValueChanged.AddListener(
                     (input) =>
                     {
@@ -113,6 +114,7 @@ public class PropertiesUI : MonoBehaviour
             } 
             else
             {
+                // Toggle
                 listElement.boolToggle.onValueChanged.AddListener(
                     (state) =>
                     {
@@ -123,6 +125,20 @@ public class PropertiesUI : MonoBehaviour
                     }
                 );
             }
+
+            // Delete Button
+            listElement.deleteButton.onClick.AddListener(
+                () =>
+                {
+                    DialogComponent localDC = dialogComponent;
+                    string localKey = key;
+
+                    localDC.DeleteProperty(localKey); // !
+
+                    listElements.Remove(listElement.gameObject);
+                    Destroy(listElement.gameObject);
+                }
+            );
         }
     }
 

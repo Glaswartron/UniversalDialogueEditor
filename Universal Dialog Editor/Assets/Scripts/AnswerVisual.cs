@@ -108,7 +108,7 @@ public class AnswerVisual : MonoBehaviour
             float angle = Mathf.Atan2(circleToMouse.y, circleToMouse.x);
 
             transform.position = (Vector2)parentDialogPart.transform.position
-                                 + new Vector2(Mathf.Cos(angle) * 0.69f, Mathf.Sin(angle) * 0.69f);
+                                 + new Vector2(Mathf.Cos(angle) * 0.75f, Mathf.Sin(angle) * 0.75f);
 
         }
     }
@@ -169,16 +169,6 @@ public class AnswerVisual : MonoBehaviour
         connection = lineRenderer;
 
         //answer.nextPartID = dp.dialogPart.id;
-    }
-
-    private void OnDisable()
-    {
-        // Reset
-        if (connection != null)
-            Destroy(connection.gameObject);
-
-        ConnectedDP = null;
-        answer = new Dialog.DialogPart.Answer("", -1);
     }
 
     private void OnDestroy()

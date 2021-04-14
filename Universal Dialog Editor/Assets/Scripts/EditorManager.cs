@@ -342,7 +342,18 @@ public class EditorManager : MonoBehaviour
             // Add all the answers (for each Dialog Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
             {
-                GameObject answerVisualGO = Instantiate(answerVisual, visualGO.transform.position + Vector3.down * 0.69f, Quaternion.identity);
+                // Mathzzz
+                float angle = (i + 1) * ((2 * Mathf.PI) / diaPart.answers.Length);
+
+                Vector2 middle = visualGO.transform.position;
+                Vector2 position = new Vector2(middle.x + Mathf.Cos(angle) * 0.75f,
+                                               middle.y + Mathf.Sin(angle) * 0.75f);
+                // ---
+
+                GameObject answerVisualGO = Instantiate
+                    (answerVisual, position, Quaternion.identity);
+                
+                // Setup the Answer Visual
                 var answerVis = answerVisualGO.GetComponent<AnswerVisual>();
                 answerVisualGO.transform.parent = visualGO.transform;
                 answerVis.parentDialogPart = visual;

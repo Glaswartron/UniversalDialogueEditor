@@ -144,7 +144,7 @@ public class DialogPartVisual : MonoBehaviour
     }
 
     /// <summary>
-    /// Adds a new blank answer to the DialogPart(Visual)
+    /// Adds a new blank answer to the Dialog Part (Visual)
     /// </summary>
     /// <returns>Successful?</returns>
     public bool AddAnswer()
@@ -159,7 +159,7 @@ public class DialogPartVisual : MonoBehaviour
 
         // Add the answer to the Dialog Part
         var answersList = new List<Dialog.DialogPart.Answer>(dialogPart.answers);
-        answersList.Add(new Dialog.DialogPart.Answer("", answersList.Count));
+        answersList.Add(new Dialog.DialogPart.Answer("", answersList.Count, dialogPart));
         dialogPart.answers = answersList.ToArray();
 
         return true;

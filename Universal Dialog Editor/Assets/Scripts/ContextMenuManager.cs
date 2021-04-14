@@ -44,6 +44,8 @@ public class ContextMenuManager : MonoBehaviour
         createDialogPartButton.onClick.AddListener
             (() => { editorManager.CreateDialogPart(); editorContextMenu.SetActive(false); });
 
+
+
         contextMenuRectTransforms = new RectTransform[] {
             editorContextMenu.GetComponent<RectTransform>(),
             dialogPartContextMenu.GetComponent<RectTransform>(),
