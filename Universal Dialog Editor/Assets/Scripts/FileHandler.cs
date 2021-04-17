@@ -18,7 +18,7 @@ public class FileHandler : MonoBehaviour
         {
             Dialog dialog = new Dialog("testDialog");
 
-            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0,0), dialog);
+            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0, 0), dialog);
             Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1), dialog);
             Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(1, 0), dialog);
 
@@ -28,7 +28,7 @@ public class FileHandler : MonoBehaviour
                 new Dialog.DialogPart.Answer("No", 1, diaPart2)
             };
 
-            dialog.startDialogPart = "TestID";
+            dialog.startDialogPartID = "TestID";
             diaPart1.nextDialogPartID = "Tester2";
             diaPart2.answers[0].nextDialogPartID = "TestPart3";
 
@@ -47,7 +47,7 @@ public class FileHandler : MonoBehaviour
             catch (Exception e)
             {
                 Debug.LogError(e.Message);
-            } 
+            }
             finally
             {
                 stream.Flush();
@@ -71,11 +71,13 @@ public class FileHandler : MonoBehaviour
 
         // Load folder content (get files as string[] of their paths)
         if (Directory.Exists(dirPath))
-            try {
+            try
+            {
 
                 return Directory.GetFiles(dirPath, "*.udsdialog");
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage
                     ("An error occured while loading dialogs from a directory.");
@@ -100,7 +102,7 @@ public class FileHandler : MonoBehaviour
     /// </summary>
     /// <param name="dialog">The dialog to be saved</param>
     /// <param name="folderPath">The path to the folder where the dialog shall be saved</param>
-    /// <returns></returns>
+    /// <returns>The path to the newly created file - null if something went wrong</returns>
     public static string CreateNewDialogFile(Dialog dialog, string folderPath)
     {
         string path = BuildDialogFilePath(dialog.id, folderPath);
@@ -140,7 +142,7 @@ public class FileHandler : MonoBehaviour
 
             return null;
         }
-       
+
         return path;
     }
 
@@ -171,7 +173,7 @@ public class FileHandler : MonoBehaviour
                 Dialog dialog = formatter.Deserialize(stream) as Dialog;
                 return dialog;
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage("An error occured while loading " +
                     "the dialog.");
@@ -189,6 +191,58 @@ public class FileHandler : MonoBehaviour
             Debug.LogError(path + " doesn't exist?");
             return null;
         }
+    }
+
+
+    /// <summary>
+    /// Serializes the given dialog into an existing/its .udsdialog 
+    /// file at the given path, thus overriding the old file and saving
+    /// the dialog.
+    /// The name/path to the file must follow the following rule:
+    /// .../.../nameOrID.udsdialog
+    /// </summary>
+    /// <param name="dialog">The dialog to be saved</param>
+    /// <param name="folderPath">The path to the .udsdialog file which shall be overridden</param>
+    /// <returns>Successful?</returns>
+    public static bool SaveDialog(Dialog dialog, string path)
+    {
+        //string path = BuildDialogFilePath(dialog.id, folderPath);
+
+        if (!File.Exists(path))
+        {
+            // Shouldn't happen - use FileHandler.CreateNewDialogFile instead
+            Debug.LogWarning("FileHandler.SaveDialogFile was called with path " +
+                path + " although there is not yet an existing dialog file in that location");
+
+        }
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        FileStream stream = new FileStream(path, FileMode.Create);
+
+        try
+        {
+            formatter.Serialize(stream, dialog);
+        }
+        catch (Exception e)
+        {
+            ErrorMessage.instance.ShowErrorMessage
+                ("Something went wrong while saving the file. Please " +
+                "check if the dialog name/id you entered contains any " +
+                "invalid characters. Also check if you/the editor has " +
+                "writing permission for the folder you selected. " +
+                "Try changing it to a different folder");
+
+            Debug.LogError(e.Message);
+
+            return false;
+        }
+        finally
+        {
+            stream.Flush();
+            stream.Close();
+        }
+
+        return true;
     }
 
     /// <summary>

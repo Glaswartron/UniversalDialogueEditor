@@ -35,6 +35,18 @@ public class DialogUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        saveButton.onClick.AddListener(
+            () => Save()
+        );
+
+        saveAndExitButton.onClick.AddListener(
+            () =>
+            {
+                Save();
+                EditorManager.instance.ClearEverything();
+            }
+        );
+
         discardAndExitButton.onClick.AddListener(
             () => EditorManager.instance.ClearEverything() // Lol
         );
@@ -47,10 +59,20 @@ public class DialogUI : MonoBehaviour
             EditorManager.instance.dialogPartVisuals.Count,
             EditorManager.instance.noOfAnswers,
             EditorManager.instance.noOfConnections,
-            dialog.startDialogPart);
+            dialog.startDialogPartID);
 
         // Update if info differs
         if (!newInfo.Equals(infoText.text))
             infoText.SetText(newInfo);
+    }
+
+    private void Save()
+    {
+        bool success =
+                    FileHandler.SaveDialog(dialog, EditorManager.instance.pathToDialog);
+
+        if (success)
+            ErrorMessage.instance.ShowErrorMessage("Saved", true);
+        // Error message for else case handled by FileHandler.SaveDialog
     }
 }

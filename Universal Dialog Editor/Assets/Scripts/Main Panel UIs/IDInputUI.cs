@@ -4,12 +4,19 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class IDInputUI : MonoBehaviour
+public class IDInputUI : MonoBehaviour, ISubUI
 {
     public DialogComponent dialogComponent;
 
     public TMP_InputField dialogIDInputField;
     public Button editNameButton;
+
+    public void Init(DialogComponent dialogComponent)
+    {
+        this.dialogComponent = dialogComponent;
+
+        dialogIDInputField.SetTextWithoutNotify(dialogComponent.id);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -30,12 +37,6 @@ public class IDInputUI : MonoBehaviour
         dialogIDInputField.onSubmit.AddListener(
             (input) => SubmitIDInput(input)
         );
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     private void SubmitIDInput(string input)

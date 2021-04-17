@@ -4,7 +4,7 @@ using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PropertiesUI : MonoBehaviour
+public class PropertiesUI : MonoBehaviour, ISubUI
 {
     private DialogComponent dialogComponent;
 

@@ -14,6 +14,7 @@ public class ContextMenuManager : MonoBehaviour
 
     [Header("Dialog Part Context Menu")]
     public GameObject dialogPartContextMenu;
+    public DialogPartVisual dialogPartVisual;
     public Button addAnswerButton;
     public Button connectDialogPartButton;
     public Button setAsStartButton;
@@ -22,6 +23,7 @@ public class ContextMenuManager : MonoBehaviour
 
     [Header("Answer Context Menu")]
     public GameObject answerContextMenu;
+    public AnswerVisual answerVisual;
     public Button connectAnswerButton;
     public Button deleteAnswerButton;
 
@@ -41,10 +43,20 @@ public class ContextMenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        createDialogPartButton.onClick.AddListener
-            (() => { editorManager.CreateDialogPart(); editorContextMenu.SetActive(false); });
+        createDialogPartButton.onClick.AddListener(
+            () => 
+            { 
+              editorManager.CreateDialogPart(); 
+              editorContextMenu.SetActive(false); 
+            }
+        );
 
-
+        setAsStartButton.onClick.AddListener(
+            () =>
+            {
+                EditorManager.instance.StartDialogPartVisual = dialogPartVisual;
+            }
+        );
 
         contextMenuRectTransforms = new RectTransform[] {
             editorContextMenu.GetComponent<RectTransform>(),

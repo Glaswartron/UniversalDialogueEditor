@@ -14,6 +14,8 @@ public class EditorManager : MonoBehaviour
     public Dialog dialog;
     public Dialog dialogBackup;
 
+    public string pathToDialog;
+
     // All Dialog Part visuals on Screen (each of them stores an actual Dialog.DialogPart)
     public List<DialogPartVisual> dialogPartVisuals;
 
@@ -108,6 +110,23 @@ public class EditorManager : MonoBehaviour
         get { return selectedAnswerVisual; }
     }
     private AnswerVisual selectedAnswerVisual = null;
+
+    public DialogPartVisual StartDialogPartVisual
+    {
+        set
+        {
+            // Previous one not start anymore
+            if (startDialogPartVisual != null)
+                startDialogPartVisual.IsStart = false; 
+
+            value.IsStart = true;
+
+            startDialogPartVisual = value;
+        }
+
+        get { return startDialogPartVisual; }
+    }
+    private DialogPartVisual startDialogPartVisual;
 
     public GameObject selectedConnection;
 
@@ -318,11 +337,13 @@ public class EditorManager : MonoBehaviour
     /// and allows the user to edit the dialog.
     /// </summary>
     /// <param name="dia">The dialog to load</param>
-    public void LoadDialog(Dialog dialog)
+    /// <param name="path">The path to the .udsdialog file where the dialog is stored</param>
+    public void LoadDialog(Dialog dialog, string path)
     {
         ClearEverything();
 
         this.dialog = dialog;
+        this.pathToDialog = path;
         //this.dialogBackup = dialog.Clone(); // Backup for potential fallback/discard
 
         List<AnswerVisual> answers = new List<AnswerVisual>();
@@ -338,6 +359,9 @@ public class EditorManager : MonoBehaviour
             dialogPartVisuals.Add(visual);
 
             visual.dialogPart = diaPart;
+
+            if (diaPart.id.Equals(dialog.startDialogPartID))
+                StartDialogPartVisual = visual;
 
             // Add all the answers (for each Dialog Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
@@ -430,14 +454,15 @@ public class EditorManager : MonoBehaviour
 
         dialog = null;
 
+        // Important that this happens before set is called on the properties (below)
+        ActiveUI = startAndSelectUI; 
+
         SelectedDialogPartVisual = null;
         SelectedAnswerVisual = null;
         selectedConnection = null;
 
         noOfAnswers = 0;
         noOfConnections = 0;
-
-        ActiveUI = startAndSelectUI;
     }
 
     /// <summary>

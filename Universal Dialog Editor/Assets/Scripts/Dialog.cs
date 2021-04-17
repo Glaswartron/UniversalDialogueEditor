@@ -7,13 +7,13 @@ using System.Linq;
 public sealed class Dialog : DialogComponent
 {
     public DialogPart[] dialogParts;
-    public string startDialogPart;
+    public string startDialogPartID;
 
     internal Dialog(string dialogID)
         : base(dialogID)
     {
         dialogParts = new DialogPart[0];
-        startDialogPart = ""; 
+        startDialogPartID = ""; 
     }
 
     [Serializable]

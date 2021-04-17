@@ -173,12 +173,14 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void LoadSelectedDialog()
     {
-        Dialog dialog = FileHandler.LoadDialogFile(dialogFilePaths[selectedDialogIndex]);
+        string path = dialogFilePaths[selectedDialogIndex];
+
+        Dialog dialog = FileHandler.LoadDialogFile(path);
 
         if (dialog == null)
             return; // Error message handled by FileHandler.LoadDialogFile
 
-        EditorManager.instance.LoadDialog(dialog); // Also switches the UI
+        EditorManager.instance.LoadDialog(dialog, path); // Also switches the UI
     }
 
     private void CreateDialogFileAndSelectable(string input, TMP_InputField inputField)

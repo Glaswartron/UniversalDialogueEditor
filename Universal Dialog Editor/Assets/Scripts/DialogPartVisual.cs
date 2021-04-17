@@ -21,6 +21,8 @@ public class DialogPartVisual : MonoBehaviour
     [Header("Colors")]
     public Color normalColor;
     public Color selectedColor;
+    public Color startColor;
+    public Color startSelectedColor;
 
     public int Size
     {
@@ -72,6 +74,20 @@ public class DialogPartVisual : MonoBehaviour
         get { return selected; }
     }
     private bool selected;
+
+    public bool IsStart
+    {
+        set
+        {
+            isStart = value;
+
+            spriteRenderer.color = 
+                value 
+                ? (Selected ? startSelectedColor : startColor) 
+                : (Selected ? selectedColor : normalColor);
+        }
+    }
+    private bool isStart;
 
     // Start is called before the first frame update
     void Start()
