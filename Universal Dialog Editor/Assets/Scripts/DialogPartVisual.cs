@@ -16,7 +16,6 @@ public class DialogPartVisual : MonoBehaviour
 
     [Header("Prefabs and UI")]
     public TextMeshPro idText;
-    public GameObject answerPrefab;
 
     [Header("Colors")]
     public Color normalColor;
@@ -80,6 +79,9 @@ public class DialogPartVisual : MonoBehaviour
         set
         {
             isStart = value;
+
+            if (spriteRenderer == null)
+                spriteRenderer = GetComponent<SpriteRenderer>();
 
             spriteRenderer.color = 
                 value 
