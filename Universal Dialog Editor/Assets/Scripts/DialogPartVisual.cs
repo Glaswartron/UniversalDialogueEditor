@@ -67,7 +67,7 @@ public class DialogPartVisual : MonoBehaviour
             selected = value;
 
             // Changes color if selected
-            spriteRenderer.color = value ? selectedColor : normalColor;
+            spriteRenderer.color = GetColor();
         }
 
         get { return selected; }
@@ -83,11 +83,10 @@ public class DialogPartVisual : MonoBehaviour
             if (spriteRenderer == null)
                 spriteRenderer = GetComponent<SpriteRenderer>();
 
-            spriteRenderer.color = 
-                value 
-                ? (Selected ? startSelectedColor : startColor) 
-                : (Selected ? selectedColor : normalColor);
+            spriteRenderer.color = GetColor();
         }
+
+        get { return isStart;  }
     }
     private bool isStart;
 
@@ -97,7 +96,6 @@ public class DialogPartVisual : MonoBehaviour
         // Init
         spriteRenderer = GetComponent<SpriteRenderer>();
         mainCam = Camera.main;
-        spriteRenderer.color = normalColor;
     }
 
     // Update is called once per frame
@@ -239,6 +237,20 @@ public class DialogPartVisual : MonoBehaviour
         } catch (Exception e)
         {
             Debug.LogWarning(e.Message);
+        }
+    }
+
+    private Color GetColor()
+    {
+        if (Selected)
+        {
+            if (isStart) return startSelectedColor;
+            else return selectedColor;
+        }
+        else
+        {
+            if (isStart) return startColor;
+            else return normalColor;
         }
     }
 }
