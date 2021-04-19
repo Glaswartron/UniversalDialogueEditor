@@ -36,19 +36,36 @@ public class DialogUI : MonoBehaviour
     void Start()
     {
         saveButton.onClick.AddListener(
-            () => Save()
+            () => AreYouSureDialog.instance.Open(
+                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog",
+                "Yes",
+                "No",
+                onYes: () => Save(),
+                onNo: () => { }
+            )
         );
 
         saveAndExitButton.onClick.AddListener(
-            () =>
-            {
-                Save();
-                EditorManager.instance.ClearEverything();
-            }
+            () => AreYouSureDialog.instance.Open(
+                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog",
+                "Yes",
+                "No",
+                onYes: () => {
+                    Save();
+                    EditorManager.instance.ClearEverything();
+                },
+                onNo: () => { }
+            )
         );
 
         discardAndExitButton.onClick.AddListener(
-            () => EditorManager.instance.ClearEverything() // Lol
+            () => AreYouSureDialog.instance.Open(
+                "Are you sure that you want to discard all unsaved changes and exit the dialog?",
+                "Yes",
+                "No",
+                onYes: () => EditorManager.instance.ClearEverything(),
+                onNo: () => { }
+            )
         );
     }
 
@@ -69,7 +86,8 @@ public class DialogUI : MonoBehaviour
     private void Save()
     {
         bool success =
-                    FileHandler.SaveDialog(dialog, EditorManager.instance.pathToDialog);
+                    FileHandler.SaveDialog(EditorManager.instance.ConstructDialog(),
+                                           EditorManager.instance.pathToDialog);
 
         if (success)
             ErrorMessage.instance.ShowErrorMessage("Saved", true);

@@ -8,7 +8,10 @@ public class DialogPartVisual : MonoBehaviour
 {
     /// <summary>
     /// The Dialog Part this visual encapsulates. Very important!
+    /// HideInInspector extremely important because Dialog.DialogPart 
+    /// has recursive references which break the Editor
     /// </summary>
+    [HideInInspector] 
     public Dialog.DialogPart dialogPart;
 
     [HideInInspector]

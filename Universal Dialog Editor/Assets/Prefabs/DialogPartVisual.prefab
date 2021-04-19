@@ -105,7 +105,6 @@ MonoBehaviour:
     nextDialogPartID: 
   answers: []
   idText: {fileID: 8252622724407111819}
-  answerPrefab: {fileID: 0}
   normalColor: {r: 0, g: 0.59607846, b: 1, a: 1}
   selectedColor: {r: 0, g: 0.3930181, b: 0.6603774, a: 1}
   startColor: {r: 1, g: 0.6034083, b: 0, a: 1}
@@ -142,7 +141,7 @@ GameObject:
   - component: {fileID: 8252622724407111816}
   - component: {fileID: 8252622724407111812}
   - component: {fileID: 8252622724407111819}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: IDText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -165,8 +164,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.225, y: 0.012}
-  m_SizeDelta: {x: 1.165, y: 0.519}
+  m_AnchoredPosition: {x: -0.0045, y: 0.012}
+  m_SizeDelta: {x: 0.8458, y: 0.519}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &8252622724407111812
 MeshRenderer:
@@ -278,7 +277,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_enableExtraPadding: 0
+  m_enableExtraPadding: 1
   checkPaddingRequired: 0
   m_isRichText: 1
   m_parseCtrlCharacters: 1
@@ -292,7 +291,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 1
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -0.06182146, y: 0, z: 0.37976027, w: 0}
+  m_margin: {x: -0.003111571, y: 0, z: 0.0018154979, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

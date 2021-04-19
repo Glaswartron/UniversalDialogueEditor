@@ -12,7 +12,10 @@ public class AnswerVisual : MonoBehaviour
 
     /// <summary>
     /// The answer this visual encapsulates. Very important!
+    /// HideInInspector extremely important because Dialog.DialogPart.Answer 
+    /// has recursive references which break the Editor
     /// </summary>
+    [HideInInspector]
     public Dialog.DialogPart.Answer answer;
 
     [Header("Colors")]

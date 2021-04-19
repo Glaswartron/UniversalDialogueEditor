@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 [Serializable]
-public sealed class Dialog : DialogComponent
+public sealed class Dialog : DialogComponent, ICloneable
 {
     public DialogPart[] dialogParts;
     public string startDialogPartID;
@@ -14,6 +14,27 @@ public sealed class Dialog : DialogComponent
     {
         dialogParts = new DialogPart[0];
         startDialogPartID = ""; 
+    }
+
+    public object Clone()
+    {
+        Dialog copy = new Dialog(this.id);
+
+        foreach (string key in this.GetPropertyKeys())
+        {
+            (object value, Type type) val = this.GetProperty(key);
+
+            copy.SetProperty(key, val.value, val.type);
+        }
+
+        List<DialogPart> diaParts = new List<DialogPart>();
+        foreach (DialogPart dp in this.dialogParts)
+            diaParts.Add(dp.Copy(copy));
+        copy.dialogParts = diaParts.ToArray();
+
+        copy.startDialogPartID = this.startDialogPartID;
+
+        return copy;
     }
 
     [Serializable]
@@ -40,6 +61,28 @@ public sealed class Dialog : DialogComponent
             SetProperty("Text speed", 1);
         }
 
+        internal DialogPart Copy(Dialog dialog)
+        {
+            DialogPart copy = new DialogPart
+                (this.id, new Vector2(this.visualX, this.visualY), dialog);
+
+            foreach (string key in this.GetPropertyKeys())
+            {
+                (object value, Type type) val = this.GetProperty(key);
+
+                copy.SetProperty(key, val.value, val.type);
+            }
+
+            List<Answer> ans = new List<Answer>();
+            foreach (Answer a in this.answers)
+                ans.Add(a.Copy(this));
+            copy.answers = ans.ToArray();
+
+            copy.nextDialogPartID = this.nextDialogPartID;
+
+            return copy;
+        }
+
         [Serializable]
         public sealed class Answer : DialogComponent
         {
@@ -57,6 +100,22 @@ public sealed class Dialog : DialogComponent
 
                 SetProperty("Text", "");
             }
+
+            internal Answer Copy(DialogPart dialogPart)
+            {
+                Answer copy = new Answer(this.id, this.index, dialogPart);
+
+                foreach (string key in this.GetPropertyKeys())
+                {
+                    (object value, Type type) val = this.GetProperty(key);
+
+                    copy.SetProperty(key, val.value, val.type);
+                }
+
+                copy.nextDialogPartID = this.nextDialogPartID;
+
+                return copy;
+            }
         }
     }
 }
@@ -66,6 +125,7 @@ public class DialogComponent
 {
     public string id;
 
+    [SerializeField]
     private readonly Dictionary<string, (object value, Type type)> properties;
 
     public DialogComponent(string dialogComponentID)

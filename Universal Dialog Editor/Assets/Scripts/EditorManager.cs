@@ -2,19 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using SimpleFileBrowser;
 
 public class EditorManager : MonoBehaviour
 {
     // Singleton
     public static EditorManager instance;
 
-    public Dialog dialog;
-    public Dialog dialogBackup;
+    /// <summary>
+    /// The Dialog which is currently loaded and being edited.
+    /// HideInInspector extremely important because Dialog 
+    /// has recursive references which break the Editor
+    /// </summary>
+    [HideInInspector]
+    public Dialog dialog; // This dialog is actually being edited
+    public Dialog dialogBackup; // This dialog is loaded once and stays the same
 
+    [HideInInspector]
     public string pathToDialog;
 
     // All Dialog Part visuals on Screen (each of them stores an actual Dialog.DialogPart)
+    [HideInInspector]
     public List<DialogPartVisual> dialogPartVisuals;
 
     public GameObject ActiveUI
@@ -36,8 +43,6 @@ public class EditorManager : MonoBehaviour
     public GameObject dialogUI;
     public GameObject dialogPartUI;
     public GameObject answerUI;
-    public GameObject areYouSureDialogLoad;
-    public GameObject areYouSureDialogSave;
     public GameObject localisationManager;
 
     [Header("Prefabs")]
@@ -189,144 +194,115 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Builds a Dialog object from the Dialog Parts and other information
-    /// and assigns it to the dialog reference.
+    /// Updates the currently open Dialog (EditorManager.instance.dialog)
+    /// based on the Dialog Parts, Answers, ... created in the editor and
+    /// returns the Dialog object so it can be saved, etc.
+    /// Conducts internal validation and shows various Error Messages if
+    /// something is wrong with the dialog. (See EditorManager.ValidateDialog())
+    /// Note that EditorManager.instance.dialogBackup exists and is not
+    /// changed by this method
     /// </summary>
-    /// <returns>Whether or not the dialog was successfully created. If not,
-    /// the dialog reference is still null.</returns>
-    public bool ConstructDialog()
+    /// <returns>An updated version of the currently open dialog which 
+    /// includes for example all Dialog Parts and Answers visible on screen.
+    /// Null if something went wrong (= if the Dialog is not valid)</returns>
+    public Dialog ConstructDialog()
     {
         if (!ValidateDialog())
-            return false;
+            return null;
 
-        /*dialog = new DialogOld
-        {
-            id = dialogIDInputField.text,
-            revealTextGradually = revealGraduallyToggle.isOn,
+        var dialogParts = dialogPartVisuals.ConvertAll(dpv => dpv.dialogPart).ToArray();
 
-            dialogParts = new DialogOld.DialogPart[dialogPartVisuals.Count]
-        };*/
+        dialog.dialogParts = dialogParts;
 
-        var dialogParts = dialogPartVisuals.ConvertAll(dpv => dpv.dialogPart);
-
-        //DialogOld.DialogPart first = dialogParts.Find(dp => dp.id.Equals("start"));
-
-        /*if (first == null)
-        {
-            ErrorMessage.instance.ShowErrorMessage("Kein Dialog Part hat die ID 'start'!" +
-                " Jeder Dialog braucht einen Anfang, der durch die ID 'start' gekennzeichnet " +
-                "sein muss!");
-            return false;
-        }*/
-
-        //dialog.dialogParts[0] = first;
-
-        for (int i = 0; i < dialogParts.Count; i++)
-        {
-            var dp = dialogParts[i];
-
-            if (dialog.dialogParts[i] != null || dp.id.Equals("start"))
-                continue;
-
-            //dialog.dialogParts[i] = dialogParts[i];
-        }
-
+        // TODO: Rich Text
         /*if (dialog.revealTextGradually)
             AddRichTextTagDelimiters();
         else
             DeleteRichTextTagDelimiters();*/
 
-        return true;
+        return dialog;
     }
 
     /// <summary>
     /// Checks, if the Dialog is valid and "finished" and if all criteria are met.
     /// These are:
-    /// - At least one dialog part is there
-    /// - The dialogID is not empty
-    /// - All DialogParts have an ID
-    /// - All DialogPartIDs are unique
+    /// - At least one dialog part is there (1)
+    /// - The Dialog ID is not empty (2)
+    /// - All Dialog Parts have an ID (3)
+    /// - All Dialog Part IDs are unique (4)
+    /// - All Answers have an ID (5)
+    /// - All Answer IDs are unique (6)
     /// Displays an error message if at least one criterion is not met!
     /// </summary>
     /// <returns>Whether or not the dialog is valid</returns>
     public bool ValidateDialog()
     {
+        // 1
         if (dialogPartVisuals.Count == 0)
         {
-            ErrorMessage.instance.ShowErrorMessage("Bitte mach zuerst irgendwas :D");
+            ErrorMessage.instance.ShowErrorMessage
+                ("A dialog has to include at least one Dialog Part");
             return false;
         }
 
-        /*if (string.IsNullOrWhiteSpace(dialogIDInputField.text))
+        // 2
+        if (string.IsNullOrWhiteSpace(dialog.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("Der Dialog braucht noch eine ID! Achte" +
-                " auch darauf, dass sie einzigartig ist und nicht schon in CoT vorkommt!");
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialog does not have an ID");
             return false;
-        }*/
+        }
 
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
         {
+            // 3
             if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
             {
-                ErrorMessage.instance.ShowErrorMessage("Ein Dialog Part hat noch keine ID!");
+                ErrorMessage.instance.ShowErrorMessage("Failed. There is a Dialog Part without an ID");
                 return false;
             }
+
+            // 4
             if (diapartIDs.Contains(diapart.dialogPart.id))
             {
-                ErrorMessage.instance.ShowErrorMessage("Eine Dialog Part ID kommt doppelt vor!");
+                ErrorMessage.instance.ShowErrorMessage(
+                    string.Format(
+                        "Failed. All IDs have to be unique. Dialog Part ID {0} appears twice",
+                        diapart.dialogPart.id));
+
                 return false;
             }
             diapartIDs.Add(diapart.dialogPart.id);
+
+            HashSet<string> answerIDs = new HashSet<string>();
+            foreach (AnswerVisual answer in diapart.answers)
+            {
+                // 5
+                if (string.IsNullOrWhiteSpace(answer.answer.id))
+                {
+                    ErrorMessage.instance.ShowErrorMessage(
+                        "Failed. There is an Answer without an ID in Dialog Part " 
+                        + diapart.dialogPart.id);
+
+                    return false;
+                }
+
+                // 6
+                if (answerIDs.Contains(answer.answer.id))
+                {
+                    ErrorMessage.instance.ShowErrorMessage(
+                        string.Format(
+                            "Failed. All IDs have to be unique. Answer ID {0} appears twice within Dialog Part " 
+                            + diapart.dialogPart.id,
+                            answer.answer.id));
+
+                    return false;
+                }
+                diapartIDs.Add(diapart.dialogPart.id);
+            }
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Shows the file browser UI from which the user can select a file (path)
-    /// </summary>
-    public void ShowLoadFileBrowser()
-    {
-        FileBrowser.ShowLoadDialog(OnLoadSelectSuccess, null);
-    }
-
-    /// <summary>
-    /// Shows the file browser UI from which the user can select a folder (path)
-    /// </summary>
-    public void ShowSaveFileBrowser()
-    {
-        FileBrowser.ShowSaveDialog(OnSaveSelectSuccess, null, true);
-    }
-
-    /// <summary>
-    /// Shows the "Are you sure" dialog for loading
-    /// </summary>
-    public void ShowLoadDialog()
-        => areYouSureDialogLoad.SetActive(true);
-
-    /// <summary>
-    /// Shows the "Are you sure" dialog for saving
-    /// </summary>
-    public void ShowSaveDialog()
-        => areYouSureDialogSave.SetActive(true);
-
-    /// <summary>
-    /// Called by the file browser once a path has been selected.
-    /// Do not use otherwise!
-    /// </summary>
-    private void OnLoadSelectSuccess(string[] paths)
-    {
-        //loadPathInputField.text = paths[0];
-    }
-
-    /// <summary>
-    /// Called by the file browser once a path has been selected.
-    /// Do not use otherwise!
-    /// </summary>
-    private void OnSaveSelectSuccess(string[] paths)
-    {
-        //savePathInputField.text = paths[0];
     }
 
     /// <summary>
@@ -342,7 +318,7 @@ public class EditorManager : MonoBehaviour
 
         this.dialog = dialog;
         this.pathToDialog = path;
-        //this.dialogBackup = dialog.Clone(); // Backup for potential fallback/discard
+        this.dialogBackup = (Dialog) dialog.Clone(); // Backup for potential fallback/discard
 
         List<AnswerVisual> answers = new List<AnswerVisual>();
 
@@ -420,21 +396,6 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Goes over all input fields and checkboxes and updates them
-    /// based on the currently selected visual.
-    /// </summary>
-    /*public void UpdateInputFields()
-    {
-        foreach (DialogInfoInputField inF in inputFields)
-        {
-            if (inF.gameObject.activeSelf)
-            {
-                inF.ShowInfo();
-            }
-        }
-    }*/
-
-    /// <summary>
     /// Clears everything and returns to StartAndSelectUI.
     /// Discards any unsaved data.
     /// Use with caution!
@@ -451,6 +412,7 @@ public class EditorManager : MonoBehaviour
         inConnectMode = false;
 
         dialog = null;
+        pathToDialog = null;
 
         // Important that this happens before set is called on the properties (below)
         ActiveUI = startAndSelectUI; 

@@ -106,6 +106,8 @@ public class ContextMenuManager : MonoBehaviour
                     editorManager.SelectedDialogPartVisual = diaPart;
                     diaPart.Selected = true; // See DialogPartVisual.Selected
 
+                    dialogPartVisual = diaPart;
+
                     OpenContextMenu(dialogPartContextMenu);
                 }
                 else if (hit.collider.CompareTag("Answer"))
@@ -114,6 +116,8 @@ public class ContextMenuManager : MonoBehaviour
                     var answer = hit.collider.GetComponent<AnswerVisual>();
                     editorManager.SelectedAnswerVisual = answer;
                     answer.Selected = true; // See AnswerVisual.Selected
+
+                    answerVisual = answer;
 
                     OpenContextMenu(answerContextMenu);
                 }
