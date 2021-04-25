@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class AnswerVisual : MonoBehaviour
+public class AnswerVisual : MonoBehaviour, IContextMenu
 {
     public int index;
 
@@ -130,9 +130,24 @@ public class AnswerVisual : MonoBehaviour
         EditorManager.instance.SelectedAnswerVisual = Selected ? this : null;           
     }
 
-    public void FillContextMenu(ContextMenuManager menuManager)
+    public void ShowContextMenu(ContextMenuManager menuManager)
     {
+        EditorManager.instance.SelectedAnswerVisual = this;
 
+        // TODO
+        ContextMenuManager.instance.AddButton(
+            "Connect",
+            () => { Debug.LogWarning("TODO"); }
+        );
+
+        ContextMenuManager.instance.AddButton(
+            "Delete",
+            () => 
+            {
+                parentDialogPart.DeleteAnswer(this);
+                Destroy(gameObject);
+            } 
+        );
     }
 
     /// <summary>

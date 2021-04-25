@@ -133,6 +133,8 @@ public class EditorManager : MonoBehaviour
             value.IsStart = true;
 
             startDialogPartVisual = value;
+
+            dialog.startDialogPartID = value.dialogPart.id;
         }
 
         get { return startDialogPartVisual; }
@@ -328,7 +330,7 @@ public class EditorManager : MonoBehaviour
         this.pathToDialog = path;
         this.dialogBackup = (Dialog) dialog.Clone(); // Backup for potential fallback/discard
 
-        List<AnswerVisual> answers = new List<AnswerVisual>();
+        List<AnswerVisual> allAnswers = new List<AnswerVisual>();
 
         // Go over all Dialog Parts in the dialog and...
         foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
@@ -344,6 +346,8 @@ public class EditorManager : MonoBehaviour
 
             if (diaPart.id.Equals(dialog.startDialogPartID))
                 StartDialogPartVisual = visual;
+
+            List<AnswerVisual> answers = new List<AnswerVisual>();
 
             // Add all the answers (for each Dialog Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
@@ -370,11 +374,13 @@ public class EditorManager : MonoBehaviour
                 noOfAnswers++; // Count how many answers there are in total
             }
 
-            visual.answers = answers.ToArray(); // !
+            allAnswers.AddRange(answers);
+
+            visual.answers = answers; // !
         }
 
         // Add connections to all answers (that have connections)
-        foreach (AnswerVisual aVisual in answers)
+        foreach (AnswerVisual aVisual in allAnswers)
         {
             if (!string.IsNullOrWhiteSpace(aVisual.answer.nextDialogPartID))
             {
@@ -444,6 +450,8 @@ public class EditorManager : MonoBehaviour
         DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
 
         dialogPartVisuals.Add(dpVisual);
+
+        dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position, dialog);
     }
 
     /// <summary>
@@ -512,7 +520,6 @@ public class EditorManager : MonoBehaviour
     public void SwitchToConnectMode()
     {
         inConnectMode = true;
-        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     /// <summary>
@@ -527,15 +534,12 @@ public class EditorManager : MonoBehaviour
 
         Destroy(SelectedDialogPartVisual.gameObject);
         SelectedDialogPartVisual = null;
-        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     public void DestroyConnection()
     {
         Destroy(selectedConnection.gameObject);
         noOfConnections--;
-
-        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     public void AddAnswerToSelectedPart()

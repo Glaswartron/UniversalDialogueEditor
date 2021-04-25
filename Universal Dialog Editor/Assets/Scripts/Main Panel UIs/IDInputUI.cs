@@ -45,9 +45,16 @@ public class IDInputUI : MonoBehaviour, ISubUI
 
     private void SubmitIDInput(string input)
     {
-        if (!string.IsNullOrWhiteSpace(input))
+        if (!string.IsNullOrWhiteSpace(input)) 
+        {
+            // Update startDialogPartID if needed
+            if (dialogComponent.GetType() == typeof(Dialog.DialogPart))
+                if (dialogComponent.id == EditorManager.instance.dialog.startDialogPartID)
+                    EditorManager.instance.dialog.startDialogPartID = input;
+
             dialogComponent.id = input;
-        else
+        }
+        else // Invalid input
             dialogIDInputField.SetTextWithoutNotify
             (dialogComponent.id);
 

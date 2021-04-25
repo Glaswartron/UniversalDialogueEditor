@@ -16,7 +16,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     public Dialog.DialogPart dialogPart;
 
     [HideInInspector]
-    public AnswerVisual[] answers;
+    public List<AnswerVisual> answers;
 
     [Header("Prefabs and UI")]
     public TextMeshPro idText;
@@ -168,8 +168,18 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         EditorManager.instance.SelectedDialogPartVisual = this;
 
         ContextMenuManager.instance.AddButton(
+            "Add answer",
+            () => { AddAnswer(); }
+        );
+
+        ContextMenuManager.instance.AddButton(
             "Set as start",
             () => { EditorManager.instance.StartDialogPartVisual = this; }
+        );
+
+        ContextMenuManager.instance.AddButton(
+            "Delete",
+            EditorManager.instance.DestroyDialogPart // Destroys currently selected(!) DP
         );
     }
 
@@ -187,12 +197,27 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
             return false;
         }
 
-        // Add the answer to the Dialog Part
-        var answersList = new List<Dialog.DialogPart.Answer>(dialogPart.answers);
-        answersList.Add(new Dialog.DialogPart.Answer("", answersList.Count, dialogPart));
-        dialogPart.answers = answersList.ToArray();
+        GameObject answerGO = Instantiate(EditorManager.instance.answerVisual, transform);
+        AnswerVisual answerVis = answerGO.GetComponent<AnswerVisual>();
+
+        answers.Add(answerVis);
+
+        answerVis.answer = new Dialog.DialogPart.Answer("", answers.Count - 1, dialogPart);
+
+        answerVis.parentDialogPart = this;
+
+        // Update the answer array on the Dialog Part
+        dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
 
         return true;
+    }
+
+    public void DeleteAnswer(AnswerVisual answer)
+    {
+        answers.Remove(answer);
+
+        // Update the answer array on the Dialog Part
+        dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
     }
 
     /// <summary>
@@ -247,7 +272,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         try
         {
-            System.Array.ForEach(answers, a => Destroy(a.gameObject));
+            answers.ForEach(a => Destroy(a.gameObject));
         } catch (Exception e)
         {
             Debug.LogWarning(e.Message);

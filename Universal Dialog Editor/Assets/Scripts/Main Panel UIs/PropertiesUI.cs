@@ -37,6 +37,13 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         );
     }
 
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+            if (!IsMouseOverAddPropertyDropdown())
+                addPropertyDropdown.gameObject.SetActive(false);
+    }
+
     /// <summary>
     /// Sets up the PropertiesUI and populates the
     /// connected ScrollView based on the properties 
@@ -114,12 +121,19 @@ public class PropertiesUI : MonoBehaviour, ISubUI
 
     public void InitAddPropertyDropdown()
     {
+        // Important since the Dropdown is being reused
+        addPropertyDropdown.stringPropertyButton.onClick.RemoveAllListeners();
+        addPropertyDropdown.intPropertyButton.onClick.RemoveAllListeners();
+        addPropertyDropdown.boolPropertyButton.onClick.RemoveAllListeners();
+        addPropertyDropdown.floatPropertyButton.onClick.RemoveAllListeners();
+
         addPropertyDropdown.stringPropertyButton.onClick.AddListener(
             () =>
             {
                 GameObject newListElement = Instantiate(stringProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
                 InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(string));
+                addPropertyDropdown.gameObject.SetActive(false);
             }
         );
 
@@ -129,6 +143,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 GameObject newListElement = Instantiate(intProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
                 InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(int));
+                addPropertyDropdown.gameObject.SetActive(false);
             }
         );
 
@@ -138,6 +153,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 GameObject newListElement = Instantiate(boolProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
                 InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(bool));
+                addPropertyDropdown.gameObject.SetActive(false);
             }
         );
 
@@ -147,6 +163,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 GameObject newListElement = Instantiate(floatProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
                 InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(float));
+                addPropertyDropdown.gameObject.SetActive(false);
             }
         );
     }
@@ -162,5 +179,11 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         }
 
         listElements.Clear();
+    }
+
+    private bool IsMouseOverAddPropertyDropdown()
+    {
+        return addPropertyDropdown.gameObject.activeSelf
+            && Utility.IsMouseOverUI(addPropertyDropdown.GetComponent<RectTransform>());
     }
 }

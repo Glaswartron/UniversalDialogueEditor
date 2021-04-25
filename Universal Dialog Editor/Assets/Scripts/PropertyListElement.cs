@@ -29,28 +29,36 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         this.dialogComponent = dialogComponent;
 
         // ID Input Field
-        idInputField.onValueChanged.AddListener(
+        idInputField.onEndEdit.AddListener(
             (input) =>
             {
-                // Invalid input
-                if (string.IsNullOrWhiteSpace(input))
+                // Invalid input or ID already taken
+                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input))
                 {
+                    // Go back to previous id
                     idInputField.SetTextWithoutNotify(id);
-                    return;
-                }
+                    idInputField.caretPosition = id.Length - 1;
 
-                // ID already taken
-                if (dialogComponent.HasProperty(input))
-                {
-                    idInputField.SetTextWithoutNotify(id);
+                    ErrorMessage.instance.ShowErrorMessage
+                        ("This ID is either invalid (empty) or already taken by another property");
+
                     return;
                 }
 
                 DialogComponent localDC = dialogComponent;
 
-                var oldProperty = localDC.GetProperty(id);
-                localDC.UpdateProperty
-                    (id, input, oldProperty.value, oldProperty.type);
+                // Standard case: Property exists but ID is being changed
+                if (localDC.HasProperty(id)) 
+                {
+                    var oldProperty = localDC.GetProperty(id);
+                    localDC.UpdateProperty
+                        (id, input, oldProperty.value, type);
+                }
+                // Special case: Happens only when the ID is being edited for the first time
+                else
+                {
+                    localDC.SetProperty(input, value, type);
+                }
 
                 id = input;
             }
@@ -65,28 +73,25 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 {
                     DialogComponent localDC = dialogComponent;
                     string localKey = id;
-                    (object value, Type type) localValue = localDC.GetProperty(localKey);
 
                     try
                     {
                         if (!string.IsNullOrWhiteSpace(input))
                         {
-                            var val = TypeDescriptor.GetConverter(localValue.type).ConvertFromString(input);
-                            localDC.SetProperty(localKey, val, localValue.type);
+                            var val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
+                            localDC.SetProperty(localKey, val, type);
                         }
                         else
                         {
-                            var defaultValue = Activator.CreateInstance(localValue.type);
-                            localDC.SetProperty(localKey, defaultValue, localValue.type);
+                            var defaultValue = Activator.CreateInstance(type);
+                            localDC.SetProperty(localKey, defaultValue, type);
 
                             stringIntFloatInputField.SetTextWithoutNotify(defaultValue.ToString());
                         }
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError
-                        ("Couldn't convert " + input + " to " +
-                        localValue.type + " -- " + e.Message);
+                        Debug.LogError("Couldn't convert " + input + " to " + type.ToString() + " -- " + e.Message);
                     }
                 }
             );

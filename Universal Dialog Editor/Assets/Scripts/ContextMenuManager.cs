@@ -48,14 +48,14 @@ public class ContextMenuManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (!MouseOverContextMenu())
+            if (!IsMouseOverContextMenu())
                 DeactivateContextMenu();
         }
 
         // Open the context menu or close it if it is already open
         if (Input.GetMouseButtonDown(1))
         {
-            if (MouseOverContextMenu())
+            if (IsMouseOverContextMenu())
                 return;
 
             DeactivateContextMenu();
@@ -166,14 +166,8 @@ public class ContextMenuManager : MonoBehaviour
         b.onClick.AddListener(onClick + DeactivateContextMenu);
     }
 
-    private bool MouseOverContextMenu()
+    private bool IsMouseOverContextMenu()
     {
-        if (!contextMenuOpen)
-            return false;
-
-        if (Utility.GetWorldRect(contextMenuRectTransform).Contains(Input.mousePosition))
-            return true;
-
-        return false;
+        return contextMenuOpen && Utility.IsMouseOverUI(contextMenuRectTransform);
     }
 }

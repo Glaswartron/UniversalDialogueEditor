@@ -5,6 +5,17 @@ using UnityEngine;
 public class Utility : MonoBehaviour
 {
     /// <summary>
+    /// Checks whether the mouse is over an UI RectTransform
+    /// </summary>
+    /// <param name="uiRect">The UI Element which the mouse might be over</param>
+    /// <returns>Whether (true) or not (false) the mouse position lies within the
+    /// given RectTransforms Rect</returns>
+    public static bool IsMouseOverUI(RectTransform uiRect)
+    {
+        return GetWorldRect(uiRect).Contains(Input.mousePosition);
+    }
+
+    /// <summary>
     /// Gets the rect of a rectTransform in world space
     /// </summary>
     /// <param name="rectTransform">The rectTransform whose world space 

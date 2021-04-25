@@ -166,7 +166,7 @@ public class DialogComponent
             return value;
         }
         else
-            throw new UDSException(string.Format(UDSException.msg1, id, key));
+            throw new UDSException(string.Format(UDSException.msg2, id, key));
     }
 
     public string[] GetPropertyKeys()
