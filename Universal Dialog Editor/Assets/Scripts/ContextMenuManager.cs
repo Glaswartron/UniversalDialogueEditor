@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class ContextMenuManager : MonoBehaviour
@@ -8,30 +10,17 @@ public class ContextMenuManager : MonoBehaviour
     [HideInInspector]
     public bool contextMenuOpen;
 
-    [Header("Editor Context Menu")]
-    public GameObject editorContextMenu;
-    public Button createDialogPartButton;
+    [Header("Main UI")]
+    public GameObject contextMenu;
+    private RectTransform contextMenuRectTransform;
 
-    [Header("Dialog Part Context Menu")]
-    public GameObject dialogPartContextMenu;
-    public DialogPartVisual dialogPartVisual;
-    public Button addAnswerButton;
-    public Button connectDialogPartButton;
-    public Button setAsStartButton;
-    public Button deleteDialogPartButton;
-    public Slider sizeSlider;
-
-    [Header("Answer Context Menu")]
-    public GameObject answerContextMenu;
-    public AnswerVisual answerVisual;
-    public Button connectAnswerButton;
-    public Button deleteAnswerButton;
+    [Header("Prefabs")]
+    public GameObject contextMenuButton;
+    public GameObject contextMenuSlider;
 
     [Header("Connection Context Menu")]
     public GameObject connectionContextMenu;
     public Button deleteConnectionButton;
-
-    private RectTransform[] contextMenuRectTransforms;
 
     private EditorManager editorManager;
 
@@ -43,26 +32,7 @@ public class ContextMenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        createDialogPartButton.onClick.AddListener(
-            () => 
-            { 
-              editorManager.CreateDialogPart(); 
-              editorContextMenu.SetActive(false); 
-            }
-        );
-
-        setAsStartButton.onClick.AddListener(
-            () =>
-            {
-                EditorManager.instance.StartDialogPartVisual = dialogPartVisual;
-            }
-        );
-
-        contextMenuRectTransforms = new RectTransform[] {
-            editorContextMenu.GetComponent<RectTransform>(),
-            dialogPartContextMenu.GetComponent<RectTransform>(),
-            answerContextMenu.GetComponent<RectTransform>(),
-            connectionContextMenu.GetComponent<RectTransform>() };
+        contextMenuRectTransform = contextMenu.GetComponent<RectTransform>();
     }
 
     // Update is called once per frame
@@ -79,16 +49,16 @@ public class ContextMenuManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             if (!MouseOverContextMenu())
-                DeactivateAllContextMenus();
+                DeactivateContextMenu();
         }
 
-        // Open the right click menu or close it if it is already open
+        // Open the context menu or close it if it is already open
         if (Input.GetMouseButtonDown(1))
         {
             if (MouseOverContextMenu())
                 return;
 
-            DeactivateAllContextMenus();
+            DeactivateContextMenu();
 
             // No menu when mouse is over UI/editor panel
             if (editorManager.editorPanel.rect.Contains(Input.mousePosition))
@@ -99,7 +69,13 @@ public class ContextMenuManager : MonoBehaviour
             if (hit = Physics2D.GetRayIntersection
                 (editorManager.mainCam.ScreenPointToRay(Input.mousePosition)))
             {
-                if (hit.collider.CompareTag("DialogPart"))
+                IContextMenu target = hit.transform.GetComponent<IContextMenu>();
+                if (target != null)
+                {
+                    OpenContextMenu(target);
+                }
+
+                /*if (hit.collider.CompareTag("DialogPart"))
                 {
                     // Select dialog part
                     var diaPart = hit.collider.GetComponent<DialogPartVisual>();
@@ -132,42 +108,71 @@ public class ContextMenuManager : MonoBehaviour
                     return;
             }
             else
-                OpenContextMenu(editorContextMenu);
+                OpenContextMenu(editorContextMenu);*/
+            }
+            else
+                ShowEditorContextMenu(); // !
         }
     }
 
-    public void OpenContextMenu(GameObject menu)
+    private void ShowEditorContextMenu()
     {
-        if (contextMenuOpen)
-            DeactivateAllContextMenus(); // Closes the previously open context menu
+        AddButton(
+             "New Dialog Part",
+             EditorManager.instance.CreateDialogPart
+         );
+
+        OpenContextMenu(null);
+    }
+
+    public void OpenContextMenu(IContextMenu target)
+    {
+        DeactivateContextMenu(); // Closes the previously open context menu
 
         // Moves the menu to the mousePosition + a little offset to the bottom right
-        menu.transform.position = Input.mousePosition + new Vector3(110, -30);
+        contextMenu.transform.position = (Vector2)Input.mousePosition 
+                                         + editorManager.menuOffsetFromMouse;
 
-        menu.SetActive(true);
+        target?.ShowContextMenu(this);
+
+        contextMenu.SetActive(true);
 
         contextMenuOpen = true;
     }
 
     /// <summary>
-    /// Deactivates all context menus there are
+    /// Deactivates the context menu
     /// </summary>
-    public void DeactivateAllContextMenus()
+    public void DeactivateContextMenu()
     {
-        editorContextMenu.SetActive(false);
-        dialogPartContextMenu.SetActive(false);
-        answerContextMenu.SetActive(false);
-        connectionContextMenu.SetActive(false);
+        if (!contextMenuOpen)
+            return;
+
+        contextMenu.SetActive(false);
+
+        foreach (Transform child in contextMenu.transform)
+            Destroy(child.gameObject);
+
         contextMenuOpen = false;
+    }
+
+    public void AddButton(string text, UnityAction onClick)
+    {
+        Button b = Instantiate(contextMenuButton, contextMenu.transform)
+                   .GetComponent<Button>();
+
+        b.GetComponentInChildren<TMP_Text>().SetText(text);
+
+        b.onClick.AddListener(onClick + DeactivateContextMenu);
     }
 
     private bool MouseOverContextMenu()
     {
-        foreach (RectTransform rt in contextMenuRectTransforms)
-        {
-            if (Utility.GetWorldRect(rt).Contains(Input.mousePosition))
-                return true;
-        }
+        if (!contextMenuOpen)
+            return false;
+
+        if (Utility.GetWorldRect(contextMenuRectTransform).Contains(Input.mousePosition))
+            return true;
 
         return false;
     }

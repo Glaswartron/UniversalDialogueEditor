@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class IDInputUI : MonoBehaviour, ISubUI
@@ -26,6 +28,8 @@ public class IDInputUI : MonoBehaviour, ISubUI
             () =>
             {
                 dialogIDInputField.interactable = true;
+                EventSystem.current.SetSelectedGameObject(dialogIDInputField.gameObject);
+
                 dialogIDInputField.Select();
             }
         );

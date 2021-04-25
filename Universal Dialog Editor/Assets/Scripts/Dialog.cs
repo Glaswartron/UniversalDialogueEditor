@@ -192,6 +192,21 @@ public class DialogComponent
         return alreadyThere;
     }
 
+    internal bool UpdateProperty(string previousKey, string newKey, object newValue, Type type)
+    {
+        bool alreadyThere = !DeleteProperty(previousKey);
+
+        if (alreadyThere)
+        {
+            Debug.LogWarning("Called UpdateProperty with key " + previousKey + " although that " +
+                "property doesn't exist");
+        }
+
+        SetProperty(newKey, newValue, type);
+
+        return alreadyThere;
+    }
+
     internal bool DeleteProperty(string key)
     {
         return properties.Remove(key);

@@ -130,6 +130,11 @@ public class AnswerVisual : MonoBehaviour
         EditorManager.instance.SelectedAnswerVisual = Selected ? this : null;           
     }
 
+    public void FillContextMenu(ContextMenuManager menuManager)
+    {
+
+    }
+
     /// <summary>
     /// Connects the AnswerVisual to another DialogPartVisual and 
     /// sets all necessary references accordingly. Also shows the 

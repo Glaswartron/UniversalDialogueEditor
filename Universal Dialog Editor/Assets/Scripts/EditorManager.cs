@@ -43,7 +43,6 @@ public class EditorManager : MonoBehaviour
     public GameObject dialogUI;
     public GameObject dialogPartUI;
     public GameObject answerUI;
-    public GameObject localisationManager;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
@@ -54,6 +53,9 @@ public class EditorManager : MonoBehaviour
     public RectTransform graphEditorBounds;
     [HideInInspector]
     public Camera mainCam;
+
+    [Space(7)]
+    public Vector2 menuOffsetFromMouse;
 
     [Space(7)]
     // true => Editing Dialog Part; false => Editing answer!
@@ -78,6 +80,9 @@ public class EditorManager : MonoBehaviour
             // Set
             selectedDialogPartVisual = value;
 
+            if (value != null)
+                value.Selected = true;
+
             editingDialogPart = true;
 
             if (value == null && ActiveUI != startAndSelectUI)
@@ -101,6 +106,9 @@ public class EditorManager : MonoBehaviour
             DeselectPreviouslySelectedVisual();
 
             selectedAnswerVisual = value;
+
+            if (value != null)
+                value.Selected = true;
 
             editingDialogPart = false;
 
@@ -402,7 +410,7 @@ public class EditorManager : MonoBehaviour
     /// </summary>
     public void ClearEverything()
     {
-        ContextMenuManager.instance.DeactivateAllContextMenus();
+        ContextMenuManager.instance.DeactivateContextMenu();
 
         foreach (DialogPartVisual dpv in dialogPartVisuals)
             Destroy(dpv.gameObject);
@@ -504,7 +512,7 @@ public class EditorManager : MonoBehaviour
     public void SwitchToConnectMode()
     {
         inConnectMode = true;
-        ContextMenuManager.instance.DeactivateAllContextMenus();
+        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     /// <summary>
@@ -519,7 +527,7 @@ public class EditorManager : MonoBehaviour
 
         Destroy(SelectedDialogPartVisual.gameObject);
         SelectedDialogPartVisual = null;
-        ContextMenuManager.instance.DeactivateAllContextMenus();
+        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     public void DestroyConnection()
@@ -527,7 +535,7 @@ public class EditorManager : MonoBehaviour
         Destroy(selectedConnection.gameObject);
         noOfConnections--;
 
-        ContextMenuManager.instance.DeactivateAllContextMenus();
+        //ContextMenuManager.instance.DeactivateContextMenu();
     }
 
     public void AddAnswerToSelectedPart()

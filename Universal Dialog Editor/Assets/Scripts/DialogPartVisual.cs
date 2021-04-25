@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class DialogPartVisual : MonoBehaviour
+public class DialogPartVisual : MonoBehaviour, IContextMenu
 {
     /// <summary>
     /// The Dialog Part this visual encapsulates. Very important!
@@ -160,6 +161,16 @@ public class DialogPartVisual : MonoBehaviour
             EditorManager.instance.ConnectToSelectedDP(this);
             EditorManager.instance.SelectedDialogPartVisual = this;
         }
+    }
+
+    public void ShowContextMenu(ContextMenuManager menuManager)
+    {
+        EditorManager.instance.SelectedDialogPartVisual = this;
+
+        ContextMenuManager.instance.AddButton(
+            "Set as start",
+            () => { EditorManager.instance.StartDialogPartVisual = this; }
+        );
     }
 
     /// <summary>

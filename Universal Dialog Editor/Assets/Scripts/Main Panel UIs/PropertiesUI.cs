@@ -13,6 +13,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     public Button addPropertyButton;
     public Button loadPresetButton;
     public Button savePresetButton;
+    public AddPropertyDropdown addPropertyDropdown;
 
     [Header("Prefabs")]
     public GameObject stringProperty;
@@ -20,7 +21,21 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     public GameObject floatProperty;
     public GameObject boolProperty;
 
-    private List<GameObject> listElements;
+    private List<PropertyListElement> listElements;
+
+    public void Start()
+    {
+        addPropertyButton.onClick.AddListener(
+            () =>
+            {
+                addPropertyDropdown.transform.position 
+                    = (Vector2)Input.mousePosition 
+                        + EditorManager.instance.menuOffsetFromMouse;
+
+                addPropertyDropdown.gameObject.SetActive(true);
+            }
+        );
+    }
 
     /// <summary>
     /// Sets up the PropertiesUI and populates the
@@ -31,35 +46,39 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     /// is responsible for</param>
     public void Init(DialogComponent dialogComponent)
     {
-        listElements = new List<GameObject>();
+        listElements = new List<PropertyListElement>();
 
         this.dialogComponent = dialogComponent;
 
+        InitAddPropertyDropdown();
+
         /* Instantiate a fitting list/scroll view element for all properties
-         * and add listeners to the various UI elements within it */
+         * and add listeners to the various UI elements within it. */
         foreach (string key in dialogComponent.GetPropertyKeys())
         {
             (object value, Type type) value = dialogComponent.GetProperty(key);
             GameObject prefab = null;
 
             // Determine correct list element based on type of value
-            if (value.type == typeof(string))
+            Type type = value.type;
+            if (type == typeof(string))
                 prefab = stringProperty;
-            else if (value.type == typeof(int))
+            else if (type == typeof(int))
                 prefab = intProperty;
-            else if (value.type == typeof(float))
+            else if (type == typeof(float))
                 prefab = floatProperty;
-            else if (value.type == typeof(bool))
+            else if (type == typeof(bool))
                 prefab = boolProperty;
             else Debug.LogError("Property type proplems");
 
             GameObject listElementGO = Instantiate(prefab, scrollViewContent);
 
-            listElements.Add(listElementGO);
-
             PropertyListElement listElement 
                 = listElementGO.GetComponent<PropertyListElement>();
 
+            listElements.Add(listElement);
+
+            listElement.id = key;
             listElement.idInputField.SetTextWithoutNotify(key);
 
             listElement.stringIntFloatInputField.SetTextWithoutNotify(
@@ -67,79 +86,69 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                     TypeDescriptor.GetConverter(value.type).ConvertToString(value.value)
                 );
 
-            // ID Input Field
-            listElement.idInputField.onValueChanged.AddListener(
-                (input) =>
-                {
-                    if (string.IsNullOrWhiteSpace(input))
-                        return;
-
-                    DialogComponent localDC = dialogComponent;
-
-                    localDC.id = input;
-                }
-            );
-
-            // Either the stringIntFloatInputField or the boolToggle is there
-            if (listElement.stringIntFloatInputField != null)
-            {
-                // Input Field
-                listElement.stringIntFloatInputField.onValueChanged.AddListener(
-                    (input) =>
-                    {
-                        DialogComponent localDC = dialogComponent;
-                        string localKey = key;
-                        (object value, Type type) localValue = value;
-
-                        try
-                        {
-
-                            if (!string.IsNullOrWhiteSpace(input))
-                            {
-                                var val = TypeDescriptor.GetConverter(localValue.type).ConvertFromString(input);
-                                localDC.SetProperty(localKey, val, value.type);
-                            } else {
-                                var defaultValue = Activator.CreateInstance(localValue.type);
-                                localDC.SetProperty(localKey, defaultValue, value.type);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogError
-                            ("Couldn't convert " + input + " to " +
-                            value.type.ToString() + " -- " + e.Message);
-                        }
-                    }
-                );
-            } 
-            else
-            {
-                // Toggle
-                listElement.boolToggle.onValueChanged.AddListener(
-                    (state) =>
-                    {
-                        DialogComponent localDC = dialogComponent;
-                        string localKey = key;
-
-                        localDC.SetProperty(localKey, state);
-                    }
-                );
-            }
-
-            // Delete Button
-            listElement.deleteButton.onClick.AddListener(
-                () =>
-                {
-                    DialogComponent localDC = dialogComponent;
-                    string localKey = key;
-
-                    localDC.DeleteProperty(localKey); // !
-
-                    listElements.Remove(listElement.gameObject);
-                    Destroy(listElement.gameObject);
-                }
-            );
+            InitListElement(listElement, type);
         }
+    }
+
+    public void InitListElement(PropertyListElement listElement, Type type)
+    {
+        listElement.type = type; // Important
+
+        // Takes care of all UI elements except for the Delete Button
+        listElement.Init(dialogComponent);
+
+        // Delete Button
+        listElement.deleteButton.onClick.AddListener(
+            () =>
+            {
+                DialogComponent localDC = dialogComponent;
+                string localKey = listElement.id;
+
+                localDC.DeleteProperty(localKey); // !
+
+                listElements.Remove(listElement);
+                Destroy(listElement.gameObject);
+            }
+        );
+    }
+
+    public void InitAddPropertyDropdown()
+    {
+        addPropertyDropdown.stringPropertyButton.onClick.AddListener(
+            () =>
+            {
+                GameObject newListElement = Instantiate(stringProperty, scrollViewContent);
+                listElements.Add(newListElement.GetComponent<PropertyListElement>());
+                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(string));
+            }
+        );
+
+        addPropertyDropdown.intPropertyButton.onClick.AddListener(
+            () =>
+            {
+                GameObject newListElement = Instantiate(intProperty, scrollViewContent);
+                listElements.Add(newListElement.GetComponent<PropertyListElement>());
+                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(int));
+            }
+        );
+
+        addPropertyDropdown.boolPropertyButton.onClick.AddListener(
+            () =>
+            {    
+                GameObject newListElement = Instantiate(boolProperty, scrollViewContent);
+                listElements.Add(newListElement.GetComponent<PropertyListElement>());
+                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(bool));
+            }
+        );
+
+        addPropertyDropdown.floatPropertyButton.onClick.AddListener(
+            () =>
+            {
+                GameObject newListElement = Instantiate(floatProperty, scrollViewContent);
+                listElements.Add(newListElement.GetComponent<PropertyListElement>());
+                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(float));
+            }
+        );
     }
 
     private void OnDisable()
@@ -148,22 +157,10 @@ public class PropertiesUI : MonoBehaviour, ISubUI
          * (similar to ConcurrentModificationException in Java) */
         for (int i = listElements.Count - 1; i >= 0; i--)
         {
-            GameObject go = listElements[i];
+            GameObject go = listElements[i].gameObject;
             Destroy(go);
         }
 
         listElements.Clear();
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
