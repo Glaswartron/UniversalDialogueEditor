@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class PropertiesUI : MonoBehaviour, ISubUI
 {
+    // If the dialogComponent is null => Global properties
     private DialogComponent dialogComponent;
 
     [Header("Main UI")]
@@ -21,7 +22,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     public GameObject floatProperty;
     public GameObject boolProperty;
 
-    private List<PropertyListElement> listElements;
+    protected List<PropertyListElement> listElements;
 
     public void Start()
     {
@@ -47,11 +48,13 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     /// <summary>
     /// Sets up the PropertiesUI and populates the
     /// connected ScrollView based on the properties 
-    /// of the given dialogComponent
+    /// of the given dialogComponent OR the Global
+    /// Properties (if dialogComponent is null). In
+    /// that case, use GlobalPropertiesUI
     /// </summary>
     /// <param name="dialogComponent">The dialogComponent this PropertiesUI 
-    /// is responsible for</param>
-    public void Init(DialogComponent dialogComponent)
+    /// is responsible for. Null if it is for Global Properties</param>
+    public virtual void Init(DialogComponent dialogComponent)
     {
         listElements = new List<PropertyListElement>();
 
@@ -63,38 +66,44 @@ public class PropertiesUI : MonoBehaviour, ISubUI
          * and add listeners to the various UI elements within it. */
         foreach (string key in dialogComponent.GetPropertyKeys())
         {
-            (object value, Type type) value = dialogComponent.GetProperty(key);
-            GameObject prefab = null;
+            DialogComponent.Property property = dialogComponent.GetProperty(key);
 
-            // Determine correct list element based on type of value
-            Type type = value.type;
-            if (type == typeof(string))
-                prefab = stringProperty;
-            else if (type == typeof(int))
-                prefab = intProperty;
-            else if (type == typeof(float))
-                prefab = floatProperty;
-            else if (type == typeof(bool))
-                prefab = boolProperty;
-            else Debug.LogError("Property type proplems");
-
-            GameObject listElementGO = Instantiate(prefab, scrollViewContent);
-
-            PropertyListElement listElement 
-                = listElementGO.GetComponent<PropertyListElement>();
-
-            listElements.Add(listElement);
-
-            listElement.id = key;
-            listElement.idInputField.SetTextWithoutNotify(key);
-
-            listElement.stringIntFloatInputField.SetTextWithoutNotify(
-                    // Converts value.value to a string based on value.type
-                    TypeDescriptor.GetConverter(value.type).ConvertToString(value.value)
-                );
-
-            InitListElement(listElement, type);
+            CreateListElement(key, property);
         }
+    }
+
+    protected void CreateListElement(string id, DialogComponent.Property property)
+    {
+        GameObject prefab = null;
+
+        // Determine correct list element based on type of value
+        Type type = property.type;
+        if (type == typeof(string))
+            prefab = stringProperty;
+        else if (type == typeof(int))
+            prefab = intProperty;
+        else if (type == typeof(float))
+            prefab = floatProperty;
+        else if (type == typeof(bool))
+            prefab = boolProperty;
+        else Debug.LogError("Property type proplems");
+
+        GameObject listElementGO = Instantiate(prefab, scrollViewContent);
+
+        PropertyListElement listElement
+            = listElementGO.GetComponent<PropertyListElement>();
+
+        listElements.Add(listElement);
+
+        listElement.id = id;
+        listElement.idInputField.SetTextWithoutNotify(id);
+
+        listElement.stringIntFloatInputField.SetTextWithoutNotify(
+                // Converts value.value to a string based on value.type
+                TypeDescriptor.GetConverter(property.type).ConvertToString(property.value)
+            );
+
+        InitListElement(listElement, type);
     }
 
     public void InitListElement(PropertyListElement listElement, Type type)

@@ -47,7 +47,12 @@ public class StartAndSelectUI : MonoBehaviour
         dialogSelectables = new List<ExtendedToggle>();
 
         fileBrowserButton.onClick.AddListener(OpenFileBrowser);
-        submitButton.onClick.AddListener(LoadFolder);
+
+        submitButton.onClick.AddListener(
+            () => {
+                LoadFolder(pathInputField.text); 
+            }
+        );
 
         newButton.onClick.AddListener(CreateNewDialog);
         loadButton.onClick.AddListener(LoadSelectedDialog);
@@ -61,14 +66,14 @@ public class StartAndSelectUI : MonoBehaviour
         dialogSelectables[selectedDialogIndex].isOn = false;
     }
 
-    private void LoadFolder()
+    private void LoadFolder(string path)
     {
         ClearScrollView();
 
-        string path = pathInputField.text;
-
         if (string.IsNullOrWhiteSpace(path))
             return;
+
+        pathInputField.SetTextWithoutNotify(path);
 
         string[] files = FileHandler.GetAllDialogPathsFromDir(path);
 
@@ -251,7 +256,7 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void OpenFileBrowser()
     {
-        FileBrowser.ShowLoadDialog(path => pathInputField.text = path[0], null, true);
+        FileBrowser.ShowLoadDialog(path => LoadFolder(path[0]), null, true);
     }
 
     private void ClearScrollView()

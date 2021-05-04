@@ -22,7 +22,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
         foreach (string key in this.GetPropertyKeys())
         {
-            (object value, Type type) val = this.GetProperty(key);
+            Property val = this.GetProperty(key);
 
             copy.SetProperty(key, val.value, val.type);
         }
@@ -68,7 +68,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             foreach (string key in this.GetPropertyKeys())
             {
-                (object value, Type type) val = this.GetProperty(key);
+                Property val = this.GetProperty(key);
 
                 copy.SetProperty(key, val.value, val.type);
             }
@@ -107,7 +107,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
                 foreach (string key in this.GetPropertyKeys())
                 {
-                    (object value, Type type) val = this.GetProperty(key);
+                    Property val = this.GetProperty(key);
 
                     copy.SetProperty(key, val.value, val.type);
                 }
@@ -123,15 +123,27 @@ public sealed class Dialog : DialogComponent, ICloneable
 [Serializable]
 public class DialogComponent
 {
+    public struct Property
+    {
+        public object value;
+        public Type type;
+
+        public Property(object value, Type type)
+        {
+            this.value = value;
+            this.type = type;
+        }
+    }
+
     public string id;
 
     [SerializeField]
-    private readonly Dictionary<string, (object value, Type type)> properties;
+    private readonly Dictionary<string, Property> properties;
 
     public DialogComponent(string dialogComponentID)
     {
         id = dialogComponentID;
-        properties = new Dictionary<string, (object value, Type type)>();
+        properties = new Dictionary<string, Property>();
     }
 
     public bool HasProperty(string key)
@@ -142,7 +154,7 @@ public class DialogComponent
 
     public T GetProperty<T>(string key)
     {
-        (object value, Type type) valueRaw = ("", typeof(string));
+        Property valueRaw = default;
         if (properties.TryGetValue(key, out valueRaw))
         {
             if (valueRaw.type != typeof(T))
@@ -158,9 +170,9 @@ public class DialogComponent
                 (string.Format(UDSException.msg1, id, typeof(T).ToString(), key));
     }
 
-    public (object value, Type type) GetProperty(string key)
+    public Property GetProperty(string key)
     {
-        (object value, Type type) value;
+        Property value;
         if (properties.TryGetValue(key, out value))
         {
             return value;
@@ -178,7 +190,7 @@ public class DialogComponent
     {
         bool alreadyThere = HasProperty(key, typeof(T));
 
-        properties[key] = (value, typeof(T));
+        properties[key] = new Property(value, typeof(T));
 
         return alreadyThere;
     }
@@ -187,7 +199,7 @@ public class DialogComponent
     {
         bool alreadyThere = HasProperty(key, type);
 
-        properties[key] = (value, type);
+        properties[key] = new Property(value, type);
 
         return alreadyThere;
     }

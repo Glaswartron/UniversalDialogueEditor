@@ -265,6 +265,11 @@ public class FileHandler : MonoBehaviour
         }
     }
 
+    public static void SaveGlobalProperties()
+    {
+
+    }
+
     /// <summary>
     /// Builds and returns the (hypothetical) path to a
     /// dialog with ID nameOrID in directory folderPath
