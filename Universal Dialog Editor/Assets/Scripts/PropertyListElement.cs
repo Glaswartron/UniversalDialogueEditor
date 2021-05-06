@@ -24,7 +24,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
 
     private DialogComponent dialogComponent;
 
-    public void Init(DialogComponent dialogComponent)
+    public virtual void Init(DialogComponent dialogComponent)
     {
         this.dialogComponent = dialogComponent;
 

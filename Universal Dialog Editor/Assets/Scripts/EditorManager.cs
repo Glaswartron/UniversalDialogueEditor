@@ -8,6 +8,8 @@ public class EditorManager : MonoBehaviour
     // Singleton
     public static EditorManager instance;
 
+    public static Dictionary<string, UDSProperty> globalProperties;
+
     /// <summary>
     /// The Dialog which is currently loaded and being edited.
     /// HideInInspector extremely important because Dialog 
@@ -28,7 +30,9 @@ public class EditorManager : MonoBehaviour
     {
         set
         {
-            activeUI.SetActive(false);
+            if (activeUI != null)
+                activeUI.SetActive(false);
+
             activeUI = value;
             activeUI.SetActive(true);
         }
@@ -37,12 +41,32 @@ public class EditorManager : MonoBehaviour
     }
     private GameObject activeUI;
 
+    public GameObject ActiveMenu
+    {
+        set
+        {
+            if (value != null)
+                value.SetActive(true);
+
+            if (activeMenu == null)
+                activeMenu = value;
+            else
+                activeMenu.SetActive(false);
+        }
+
+        get { return activeMenu; }
+    }
+    private GameObject activeMenu;
+
     [Header("Main UI")]
     public RectTransform editorPanel;
     public GameObject startAndSelectUI;
     public GameObject dialogUI;
     public GameObject dialogPartUI;
     public GameObject answerUI;
+
+    [Header("Menu UI")]
+    public GameObject globalPropertiesMenu;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
@@ -157,10 +181,16 @@ public class EditorManager : MonoBehaviour
         else
             Destroy(this.gameObject);
 
+#if UNITY_EDITOR
+        FileHandler.CreateTestDialog();
+#endif
+
         // Init
+        globalProperties = new Dictionary<string, UDSProperty>
+            (FileHandler.LoadGlobalProperties());
         mainCam = Camera.main;
         dialogPartVisuals = new List<DialogPartVisual>();
-        activeUI = startAndSelectUI;
+        ActiveUI = startAndSelectUI;
     }
 
     private void Update()
@@ -429,7 +459,7 @@ public class EditorManager : MonoBehaviour
         pathToDialog = null;
 
         // Important that this happens before set is called on the properties (below)
-        ActiveUI = startAndSelectUI; 
+        ActiveUI = startAndSelectUI;
 
         SelectedDialogPartVisual = null;
         SelectedAnswerVisual = null;

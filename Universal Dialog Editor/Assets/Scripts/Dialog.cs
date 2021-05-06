@@ -4,6 +4,19 @@ using UnityEngine;
 using System.Linq;
 
 [Serializable]
+public struct UDSProperty
+{
+    public object value;
+    public Type type;
+
+    public UDSProperty(object value, Type type)
+    {
+        this.value = value;
+        this.type = type;
+    }
+}
+
+[Serializable]
 public sealed class Dialog : DialogComponent, ICloneable
 {
     public DialogPart[] dialogParts;
@@ -22,7 +35,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
         foreach (string key in this.GetPropertyKeys())
         {
-            Property val = this.GetProperty(key);
+            UDSProperty val = this.GetProperty(key);
 
             copy.SetProperty(key, val.value, val.type);
         }
@@ -68,7 +81,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             foreach (string key in this.GetPropertyKeys())
             {
-                Property val = this.GetProperty(key);
+                UDSProperty val = this.GetProperty(key);
 
                 copy.SetProperty(key, val.value, val.type);
             }
@@ -107,7 +120,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
                 foreach (string key in this.GetPropertyKeys())
                 {
-                    Property val = this.GetProperty(key);
+                    UDSProperty val = this.GetProperty(key);
 
                     copy.SetProperty(key, val.value, val.type);
                 }
@@ -123,27 +136,15 @@ public sealed class Dialog : DialogComponent, ICloneable
 [Serializable]
 public class DialogComponent
 {
-    public struct Property
-    {
-        public object value;
-        public Type type;
-
-        public Property(object value, Type type)
-        {
-            this.value = value;
-            this.type = type;
-        }
-    }
-
     public string id;
 
     [SerializeField]
-    private readonly Dictionary<string, Property> properties;
+    private readonly Dictionary<string, UDSProperty> properties;
 
     public DialogComponent(string dialogComponentID)
     {
         id = dialogComponentID;
-        properties = new Dictionary<string, Property>();
+        properties = new Dictionary<string, UDSProperty>();
     }
 
     public bool HasProperty(string key)
@@ -154,7 +155,7 @@ public class DialogComponent
 
     public T GetProperty<T>(string key)
     {
-        Property valueRaw = default;
+        UDSProperty valueRaw = default;
         if (properties.TryGetValue(key, out valueRaw))
         {
             if (valueRaw.type != typeof(T))
@@ -170,9 +171,9 @@ public class DialogComponent
                 (string.Format(UDSException.msg1, id, typeof(T).ToString(), key));
     }
 
-    public Property GetProperty(string key)
+    public UDSProperty GetProperty(string key)
     {
-        Property value;
+        UDSProperty value;
         if (properties.TryGetValue(key, out value))
         {
             return value;
@@ -190,7 +191,7 @@ public class DialogComponent
     {
         bool alreadyThere = HasProperty(key, typeof(T));
 
-        properties[key] = new Property(value, typeof(T));
+        properties[key] = new UDSProperty(value, typeof(T));
 
         return alreadyThere;
     }
@@ -199,7 +200,7 @@ public class DialogComponent
     {
         bool alreadyThere = HasProperty(key, type);
 
-        properties[key] = new Property(value, type);
+        properties[key] = new UDSProperty(value, type);
 
         return alreadyThere;
     }

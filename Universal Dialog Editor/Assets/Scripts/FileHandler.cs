@@ -3,14 +3,19 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using UnityEngine;
+using System.Collections.Generic;
 
-public class FileHandler : MonoBehaviour
+public class FileHandler
 {
     [Header("UI")]
     public TMP_InputField savePathInputField;
     public TMP_InputField loadPathInputField;
 
-    private void Start()
+    private static readonly string GLOBAL_PROPERTIES_PATH
+        = Application.persistentDataPath + "/properties.udsgp";
+
+
+    public static void CreateTestDialog()
     {
 #if UNITY_EDITOR
         // Generate test dialog
@@ -265,8 +270,63 @@ public class FileHandler : MonoBehaviour
         }
     }
 
-    public static void SaveGlobalProperties()
+    public static bool SaveGlobalProperties()
     {
+        Dictionary<string, UDSProperty> properties = EditorManager.globalProperties;
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
+
+        try
+        {
+            formatter.Serialize(stream, properties);
+        }
+        catch (Exception e)
+        {
+            ErrorMessage.instance.ShowErrorMessage
+                ("Something went wrong while saving the Global Properties under " +
+                GLOBAL_PROPERTIES_PATH + ". " +
+                "Please check if the path still exists and if there is enough disk space");
+
+            Debug.LogError(e.Message);
+
+            return false;
+        }
+        finally
+        {
+            stream.Flush();
+            stream.Close();
+        }
+
+        return true;
+    }
+
+    public static Dictionary<string, UDSProperty> LoadGlobalProperties()
+    {
+        if (!File.Exists(GLOBAL_PROPERTIES_PATH))
+            return null;
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+        
+        try
+        {
+            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream) 
+                                                         as Dictionary<string, UDSProperty>;
+            return properties;
+        }
+        catch (Exception e)
+        {
+            ErrorMessage.instance.ShowErrorMessage("An error occured while loading the " +
+                "Global Properties from " + GLOBAL_PROPERTIES_PATH + ". Please check " +
+                "if the path is still valid");
+            Debug.LogError("Path: " + GLOBAL_PROPERTIES_PATH + " -- " + e.Message);
+            return null;
+        }
+        finally
+        {
+            stream.Close();
+        }
 
     }
 

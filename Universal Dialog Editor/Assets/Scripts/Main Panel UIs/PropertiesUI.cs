@@ -12,9 +12,12 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     [Header("Main UI")]
     public Transform scrollViewContent;
     public Button addPropertyButton;
-    public Button loadPresetButton;
-    public Button savePresetButton;
     public AddPropertyDropdown addPropertyDropdown;
+
+    [Header("Optional")]
+    public Button loadPresetButton; // Optional
+    public Button savePresetButton; // Optional
+    public Button closeUIButton; // Optional
 
     [Header("Prefabs")]
     public GameObject stringProperty;
@@ -36,6 +39,18 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 addPropertyDropdown.gameObject.SetActive(true);
             }
         );
+
+        if (closeUIButton != null)
+        {
+            closeUIButton.onClick.AddListener(
+                () =>
+                {
+                    FileHandler.SaveGlobalProperties(); // !
+
+                    EditorManager.instance.ActiveMenu = null;
+                }
+            );
+        }
     }
 
     private void Update()
@@ -66,13 +81,13 @@ public class PropertiesUI : MonoBehaviour, ISubUI
          * and add listeners to the various UI elements within it. */
         foreach (string key in dialogComponent.GetPropertyKeys())
         {
-            DialogComponent.Property property = dialogComponent.GetProperty(key);
+            UDSProperty property = dialogComponent.GetProperty(key);
 
             CreateListElement(key, property);
         }
     }
 
-    protected void CreateListElement(string id, DialogComponent.Property property)
+    protected void CreateListElement(string id, UDSProperty property)
     {
         GameObject prefab = null;
 
@@ -90,8 +105,13 @@ public class PropertiesUI : MonoBehaviour, ISubUI
 
         GameObject listElementGO = Instantiate(prefab, scrollViewContent);
 
-        PropertyListElement listElement
-            = listElementGO.GetComponent<PropertyListElement>();
+        InitListElement(listElementGO, id, property);
+    }
+
+    protected virtual void InitListElement(GameObject listElementGO,
+        string id, UDSProperty property)
+    {
+        PropertyListElement listElement = listElementGO.GetComponent<PropertyListElement>();
 
         listElements.Add(listElement);
 
@@ -103,12 +123,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 TypeDescriptor.GetConverter(property.type).ConvertToString(property.value)
             );
 
-        InitListElement(listElement, type);
-    }
-
-    public void InitListElement(PropertyListElement listElement, Type type)
-    {
-        listElement.type = type; // Important
+        listElement.type = property.type; // Important
 
         // Takes care of all UI elements except for the Delete Button
         listElement.Init(dialogComponent);
@@ -141,7 +156,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {
                 GameObject newListElement = Instantiate(stringProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
-                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(string));
+                InitListElement(newListElement, "", new UDSProperty("", typeof(string)));
                 addPropertyDropdown.gameObject.SetActive(false);
             }
         );
@@ -151,7 +166,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {
                 GameObject newListElement = Instantiate(intProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
-                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(int));
+                InitListElement(newListElement, "", new UDSProperty(0, typeof(int)));
                 addPropertyDropdown.gameObject.SetActive(false);
             }
         );
@@ -161,7 +176,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {    
                 GameObject newListElement = Instantiate(boolProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
-                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(bool));
+                InitListElement(newListElement, "", new UDSProperty(false, typeof(bool)));
                 addPropertyDropdown.gameObject.SetActive(false);
             }
         );
@@ -171,7 +186,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {
                 GameObject newListElement = Instantiate(floatProperty, scrollViewContent);
                 listElements.Add(newListElement.GetComponent<PropertyListElement>());
-                InitListElement(newListElement.GetComponent<PropertyListElement>(), typeof(float));
+                InitListElement(newListElement, "", new UDSProperty(0, typeof(float)));
                 addPropertyDropdown.gameObject.SetActive(false);
             }
         );
