@@ -6,14 +6,18 @@ using UnityEngine;
 
 public class GlobalPropertiesUI : PropertiesUI
 {
-    new List<GlobalPropertyListElement> listElements;
+    private void OnEnable()
+    {
+        Init();
+    }
 
     public override void Init(DialogComponent dialogComponent = null)
     {
         if (dialogComponent != null)
             Debug.LogWarning("GlobalPropertiesUI.Init is called with dialogComponent != null");
 
-        listElements = new List<GlobalPropertyListElement>();
+        listElements = new List<PropertyListElement>();
+
         InitAddPropertyDropdown();
 
         Dictionary<string, UDSProperty> properties = EditorManager.globalProperties;

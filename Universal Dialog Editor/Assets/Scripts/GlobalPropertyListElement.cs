@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
 
@@ -16,7 +14,7 @@ public class GlobalPropertyListElement : PropertyListElement
             (input) =>
             {
                 // Invalid input or ID already taken
-                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input))
+                if (string.IsNullOrWhiteSpace(input) || EditorManager.globalProperties.ContainsKey(input))
                 {
                     // Go back to previous id
                     idInputField.SetTextWithoutNotify(id);
@@ -62,13 +60,13 @@ public class GlobalPropertyListElement : PropertyListElement
                         {
                             var val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
 
-                            SetGlobalProperty(localKey, val);
+                            SetGlobalProperty(localKey, val, type);
                         }
                         else
                         {
                             var defaultValue = Activator.CreateInstance(type);
 
-                            SetGlobalProperty(localKey, defaultValue);
+                            SetGlobalProperty(localKey, defaultValue, type);
 
                             stringIntFloatInputField.SetTextWithoutNotify(defaultValue.ToString());
                         }
@@ -88,17 +86,18 @@ public class GlobalPropertyListElement : PropertyListElement
                 {
                     string localKey = id;
 
-                    SetGlobalProperty(localKey, state);
+                    SetGlobalProperty(localKey, state, typeof(bool));
                 }
             );
         }
     }
 
-    private void SetGlobalProperty(string key, object newValue)
+    private void SetGlobalProperty(string key, object newValue, Type type)
     {
-        var oldProperty = EditorManager.globalProperties[key];
-
-        EditorManager.globalProperties[key] = new UDSProperty(newValue, oldProperty.type);
+        if (!EditorManager.globalProperties.ContainsKey(key))
+            EditorManager.globalProperties.Add(key, new UDSProperty(newValue, type));
+        else
+            EditorManager.globalProperties[key] = new UDSProperty(newValue, type);
     }
 
 }

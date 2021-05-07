@@ -45,13 +45,13 @@ public class EditorManager : MonoBehaviour
     {
         set
         {
+            if (activeMenu != null)
+                activeMenu.SetActive(false);
+
             if (value != null)
                 value.SetActive(true);
 
-            if (activeMenu == null)
-                activeMenu = value;
-            else
-                activeMenu.SetActive(false);
+            activeMenu = value;
         }
 
         get { return activeMenu; }
@@ -186,8 +186,14 @@ public class EditorManager : MonoBehaviour
 #endif
 
         // Init
-        globalProperties = new Dictionary<string, UDSProperty>
-            (FileHandler.LoadGlobalProperties());
+        Dictionary<string, UDSProperty> savedGlobalProperties 
+            = FileHandler.LoadGlobalProperties();
+
+        if (savedGlobalProperties == null)
+            globalProperties = new Dictionary<string, UDSProperty>();
+        else
+            globalProperties = new Dictionary<string, UDSProperty>(savedGlobalProperties);
+
         mainCam = Camera.main;
         dialogPartVisuals = new List<DialogPartVisual>();
         ActiveUI = startAndSelectUI;

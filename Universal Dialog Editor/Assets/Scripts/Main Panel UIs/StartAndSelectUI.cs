@@ -63,7 +63,8 @@ public class StartAndSelectUI : MonoBehaviour
     private void OnDisable()
     {
         // Deselect selected Dialog when UI is disabled
-        dialogSelectables[selectedDialogIndex].isOn = false;
+        if (dialogSelectables.Count > 0)
+            dialogSelectables[selectedDialogIndex].isOn = false;
     }
 
     private void LoadFolder(string path)

@@ -17,7 +17,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     [Header("Optional")]
     public Button loadPresetButton; // Optional
     public Button savePresetButton; // Optional
-    public Button closeUIButton; // Optional
+    public Button closeButton; // Optional
 
     [Header("Prefabs")]
     public GameObject stringProperty;
@@ -40,9 +40,9 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             }
         );
 
-        if (closeUIButton != null)
+        if (closeButton != null)
         {
-            closeUIButton.onClick.AddListener(
+            closeButton.onClick.AddListener(
                 () =>
                 {
                     FileHandler.SaveGlobalProperties(); // !
@@ -132,12 +132,12 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         listElement.deleteButton.onClick.AddListener(
             () =>
             {
-                DialogComponent localDC = dialogComponent;
                 string localKey = listElement.id;
 
-                localDC.DeleteProperty(localKey); // !
+                EditorManager.globalProperties.Remove(localKey);
 
                 listElements.Remove(listElement);
+
                 Destroy(listElement.gameObject);
             }
         );
