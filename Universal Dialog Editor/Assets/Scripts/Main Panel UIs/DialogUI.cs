@@ -18,6 +18,9 @@ public class DialogUI : MonoBehaviour
 
     private Dialog dialog;
 
+    // Extremely important for locating the correct file later on
+    private string oldID;
+
     private string infoTemplate = "Dialog Parts: {0}\n" +
                           "Answers: {1}\n"      +
                           "Connections: {2}\n" +
@@ -27,8 +30,7 @@ public class DialogUI : MonoBehaviour
     {
         dialog = EditorManager.instance.dialog;
 
-        idInputUI.dialogComponent = dialog;
-
+        idInputUI.Init(dialog);
         propertiesUI.Init(dialog); // Super important stuff
     }
 

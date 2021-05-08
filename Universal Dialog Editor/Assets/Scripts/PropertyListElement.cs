@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,6 +36,9 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 // Invalid input or ID already taken
                 if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input))
                 {
+                    if (dialogComponent.HasProperty(input) && !input.Equals(id))
+                        return; // ID hasn't been edited
+
                     // Go back to previous id
                     idInputField.SetTextWithoutNotify(id);
                     idInputField.caretPosition = id.Length - 1;
@@ -78,7 +82,12 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                     {
                         if (!string.IsNullOrWhiteSpace(input))
                         {
-                            var val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
+                            object val = null;
+                            if (type != typeof(float))
+                                val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
+                            else
+                                val = float.Parse(input, CultureInfo.CurrentCulture);
+
                             localDC.SetProperty(localKey, val, type);
                         }
                         else

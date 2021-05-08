@@ -12,7 +12,7 @@ public class FileHandler
     public TMP_InputField loadPathInputField;
 
     private static readonly string GLOBAL_PROPERTIES_PATH
-        = Application.persistentDataPath + "/properties.udsgp";
+        = Path.Combine(Application.persistentDataPath, "properties.udsgp");
 
 
     public static void CreateTestDialog()
@@ -21,7 +21,7 @@ public class FileHandler
         // Generate test dialog
         if (!File.Exists("F:/Testground/TestDialog.udsdialog"))
         {
-            Dialog dialog = new Dialog("testDialog");
+            Dialog dialog = new Dialog("TestDialog");
 
             Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0, 0), dialog);
             Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1), dialog);
@@ -202,7 +202,7 @@ public class FileHandler
     /// <summary>
     /// Serializes the given dialog into an existing/its .udsdialog 
     /// file at the given path, thus overriding the old file and saving
-    /// the dialog.
+    /// the dialog. Also renames the file if the DialogID has changed.
     /// The name/path to the file must follow the following rule:
     /// .../.../nameOrID.udsdialog
     /// </summary>
@@ -218,11 +218,23 @@ public class FileHandler
             // Shouldn't happen - use FileHandler.CreateNewDialogFile instead
             Debug.LogWarning("FileHandler.SaveDialogFile was called with path " +
                 path + " although there is not yet an existing dialog file in that location");
-
         }
 
+        string dir = Path.GetDirectoryName(path);
+        string newPath = BuildDialogFilePath(dialog.id, dir);
+        bool useNewPath = false;
+
+        /* Paths are case insensitive! As long as this is 
+         * the case everywhere, everything should be fine */
+        if (!newPath.ToLower().Equals(path.ToLower()))
+            useNewPath = true; // DialogID has changed
+
+        string actualPath = useNewPath ? newPath : path;
+
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream stream = new FileStream(path, FileMode.Create);
+        FileStream stream = new FileStream(actualPath, FileMode.Create);
+
+        Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
 
         try
         {
@@ -246,6 +258,10 @@ public class FileHandler
             stream.Flush();
             stream.Close();
         }
+
+        // Delete the old file after the new one has been written successfully
+        if (useNewPath)
+            DeleteDialogFile(path);
 
         return true;
     }
@@ -339,9 +355,7 @@ public class FileHandler
     /// <returns>A fitting save/load path for the dialog (ending in .udsdialog)</returns>
     public static string BuildDialogFilePath(string nameOrID, string folderPath)
     {
-        string path = folderPath;
-
-        path += "\\" + nameOrID;
+        string path = Path.Combine(folderPath, nameOrID);
 
         if (!nameOrID.EndsWith(".udsdialog"))
             path += ".udsdialog";

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using UnityEngine;
 
 public class GlobalPropertyListElement : PropertyListElement
@@ -16,6 +17,9 @@ public class GlobalPropertyListElement : PropertyListElement
                 // Invalid input or ID already taken
                 if (string.IsNullOrWhiteSpace(input) || EditorManager.globalProperties.ContainsKey(input))
                 {
+                    if (EditorManager.globalProperties.ContainsKey(input) && !input.Equals(id))
+                        return; // ID hasn't been edited
+
                     // Go back to previous id
                     idInputField.SetTextWithoutNotify(id);
                     idInputField.caretPosition = id.Length - 1;
@@ -58,7 +62,11 @@ public class GlobalPropertyListElement : PropertyListElement
                     {
                         if (!string.IsNullOrWhiteSpace(input))
                         {
-                            var val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
+                            object val = null;
+                            if (type != typeof(float))
+                                val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
+                            else
+                                val = float.Parse(input, CultureInfo.CurrentCulture);
 
                             SetGlobalProperty(localKey, val, type);
                         }

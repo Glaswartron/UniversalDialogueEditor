@@ -34,6 +34,7 @@ public class StartAndSelectUI : MonoBehaviour
     private List<ExtendedToggle> dialogSelectables;
 
     private bool folderLoaded = false;
+    private string folderPath = "";
 
     private int selectedDialogIndex;
 
@@ -60,6 +61,13 @@ public class StartAndSelectUI : MonoBehaviour
         deleteButton.onClick.AddListener(DeleteDialog);
     }
 
+    private void OnEnable()
+    {
+        // Refresh (e.g. if the user returns from a dialog)
+        if (folderLoaded)
+            LoadFolder(folderPath);
+    }
+
     private void OnDisable()
     {
         // Deselect selected Dialog when UI is disabled
@@ -69,10 +77,12 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void LoadFolder(string path)
     {
-        ClearScrollView();
+        Clear();
 
         if (string.IsNullOrWhiteSpace(path))
             return;
+
+        folderPath = path;
 
         pathInputField.SetTextWithoutNotify(path);
 
@@ -260,7 +270,7 @@ public class StartAndSelectUI : MonoBehaviour
         FileBrowser.ShowLoadDialog(path => LoadFolder(path[0]), null, true);
     }
 
-    private void ClearScrollView()
+    private void Clear()
     {
         foreach (ExtendedToggle selectable in dialogSelectables)
         {
@@ -268,6 +278,7 @@ public class StartAndSelectUI : MonoBehaviour
         }
 
         dialogSelectables.Clear();
+        dialogFilePaths.Clear();
 
         folderLoaded = false; // !
     }

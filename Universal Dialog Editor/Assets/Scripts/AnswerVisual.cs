@@ -5,6 +5,17 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
 {
     public int index;
 
+    public bool Conditional
+    {
+        set
+        {
+
+        }
+
+        get { return conditional;  }
+    }
+    private bool conditional;
+
     public SpriteRenderer indicator;
     public Sprite dialogEndIndicator;
 
@@ -21,6 +32,8 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
     [Header("Colors")]
     public Color normalColor;
     public Color selectedColor;
+    public Color conditionalColor;
+    public Color conditionalSelectedColor;
 
     private SpriteRenderer spriteRenderer;
     private Camera mainCam;
@@ -112,7 +125,6 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
 
             transform.position = (Vector2)parentDialogPart.transform.position
                                  + new Vector2(Mathf.Cos(angle) * 0.75f, Mathf.Sin(angle) * 0.75f);
-
         }
     }
 
@@ -137,8 +149,19 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
         // TODO
         ContextMenuManager.instance.AddButton(
             "Connect",
-            () => { Debug.LogWarning("TODO"); }
+            () => 
+            {
+                EditorManager.instance.inConnectMode = true;
+            }
         );
+
+        if (Conditional)
+        {
+            ContextMenuManager.instance.AddButton(
+                "Edit condition",
+                () => { Debug.LogWarning("TODO"); }
+            );
+        }
 
         ContextMenuManager.instance.AddButton(
             "Delete",
