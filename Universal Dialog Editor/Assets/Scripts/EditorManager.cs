@@ -10,6 +10,9 @@ public class EditorManager : MonoBehaviour
 
     public static Dictionary<string, UDSProperty> globalProperties;
 
+    public static readonly char[] invalidCharacters =
+        {'/', '\\', '<', '>', '|', '?', ':', '"', '*'};
+
     /// <summary>
     /// The Dialog which is currently loaded and being edited.
     /// HideInInspector extremely important because Dialog 
@@ -287,7 +290,7 @@ public class EditorManager : MonoBehaviour
         if (dialogPartVisuals.Count == 0)
         {
             ErrorMessage.instance.ShowErrorMessage
-                ("A dialog has to include at least one Dialog Part");
+                ("Failed. A dialog has to include at least one Dialog Part");
             return false;
         }
 

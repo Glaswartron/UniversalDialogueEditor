@@ -45,7 +45,8 @@ public class IDInputUI : MonoBehaviour, ISubUI
 
     private void SubmitIDInput(string input)
     {
-        if (!string.IsNullOrWhiteSpace(input)) 
+        if (!string.IsNullOrWhiteSpace(input)
+            && Array.TrueForAll(EditorManager.invalidCharacters, c => !input.Contains(c.ToString())))
         {
             // Update startDialogPartID if needed
             if (dialogComponent.GetType() == typeof(Dialog.DialogPart))
@@ -55,8 +56,13 @@ public class IDInputUI : MonoBehaviour, ISubUI
             dialogComponent.id = input;
         }
         else // Invalid input
+        { 
             dialogIDInputField.SetTextWithoutNotify
             (dialogComponent.id);
+
+            ErrorMessage.instance.ShowErrorMessage
+                ("Invalid input. Either no text or contains invalid characters");
+        }
 
         // Deactivates itself after input
         dialogIDInputField.interactable = false;

@@ -163,7 +163,7 @@ public class FileHandler
     {
         if (string.IsNullOrWhiteSpace(path)) // Shouldn't happen
         {
-            Debug.LogError("The path passed into FileHandler.LoadDialogFile " +
+            Debug.LogError("The path passed to FileHandler.LoadDialogFile " +
                 "was either null or white space");
             return null;
         }
@@ -222,22 +222,30 @@ public class FileHandler
 
         string dir = Path.GetDirectoryName(path);
         string newPath = BuildDialogFilePath(dialog.id, dir);
-        bool useNewPath = false;
 
-        /* Paths are case insensitive! As long as this is 
-         * the case everywhere, everything should be fine */
-        if (!newPath.ToLower().Equals(path.ToLower()))
+        bool useNewPath = false;
+        bool pathsEqualExceptForCase = false;
+
+        /* More testing required. Note that on Windows
+           paths are case insensitive, on Linux they aren't
+           (on MacOS they are?) */
+        if (!newPath.Equals(path))
+        {
             useNewPath = true; // DialogID has changed
+            if (newPath.ToLower().Equals(path.ToLower()))
+                pathsEqualExceptForCase = true;
+        }
 
         string actualPath = useNewPath ? newPath : path;
 
-        BinaryFormatter formatter = new BinaryFormatter();
-        FileStream stream = new FileStream(actualPath, FileMode.Create);
-
-        Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
-
+        FileStream stream = null;
         try
         {
+            BinaryFormatter formatter = new BinaryFormatter();
+            stream = new FileStream(actualPath, FileMode.Create);
+
+            Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
+
             formatter.Serialize(stream, dialog);
         }
         catch (Exception e)
@@ -255,12 +263,15 @@ public class FileHandler
         }
         finally
         {
-            stream.Flush();
-            stream.Close();
+            stream?.Flush();
+            stream?.Close();
         }
 
-        // Delete the old file after the new one has been written successfully
-        if (useNewPath)
+        /* Delete the old file after the new one has been written successfully.
+         * Only do so if the paths are really different OR on Linux
+         * (where paths are case insensitive) */
+        if (useNewPath && 
+            (!pathsEqualExceptForCase || Application.platform == RuntimePlatform.LinuxPlayer))
             DeleteDialogFile(path);
 
         return true;
