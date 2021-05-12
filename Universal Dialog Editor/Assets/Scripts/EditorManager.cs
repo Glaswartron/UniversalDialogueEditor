@@ -70,6 +70,7 @@ public class EditorManager : MonoBehaviour
 
     [Header("Menu UI")]
     public GameObject globalPropertiesMenu;
+    public ConditionMenu conditionMenu;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;

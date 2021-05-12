@@ -159,7 +159,11 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
         {
             ContextMenuManager.instance.AddButton(
                 "Edit condition",
-                () => { Debug.LogWarning("TODO"); }
+                () => 
+                {
+                    EditorManager.instance.ActiveMenu = EditorManager.instance.conditionMenu.gameObject;
+                    EditorManager.instance.conditionMenu.Init(this);
+                }
             );
         }
 
@@ -183,7 +187,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
         if (dp == parentDialogPart)
         {
             ErrorMessage.instance.ShowErrorMessage("It's currently not possible to " +
-                "connect an answer to its own Dialog Part.");
+                "connect an answer to its own Dialog Part");
             return;
         }
 
