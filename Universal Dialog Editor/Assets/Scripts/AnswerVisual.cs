@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class AnswerVisual : MonoBehaviour, IContextMenu
+public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 {
     public int index;
 
@@ -54,6 +54,8 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
     }
     private DialogPartVisual connectedDP;
     private LineRenderer connection;
+
+    private UDSCondition condition;
 
     /// <summary>
     /// Whether or not this visual is currently selected (by the user)
@@ -221,10 +223,19 @@ public class AnswerVisual : MonoBehaviour, IContextMenu
         //answer.nextPartID = dp.dialogPart.id;
     }
 
+    public void SetCondition(UDSCondition condition)
+    {
+        this.condition = condition;
+    }
+
+    public UDSCondition GetCondition()
+    {
+        return condition;
+    }
+
     private void OnDestroy()
     {
         if (connection != null)
             Destroy(connection.gameObject);
     }
-
 }

@@ -3,12 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-struct Condition
+[Serializable]
+public struct UDSCondition
 {
-    public Type type;
+    public string globalPropertyKey;
+    public string operation;
+    public object compareTo;
 }
 
-public class IConditional : MonoBehaviour
+public interface IConditional
 {
-    public readonly Dictionary<Type, Dictionary<string, Func<object, object, bool>>> typeToOperators;
+    public void SetCondition(UDSCondition condition);
+    public UDSCondition GetCondition();
 }
