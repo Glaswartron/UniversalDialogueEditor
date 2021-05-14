@@ -173,6 +173,11 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         );
 
         ContextMenuManager.instance.AddButton(
+            "Add conditional answer",
+            () => { AddAnswer(true); }
+        );
+
+        ContextMenuManager.instance.AddButton(
             "Set as start",
             () => { EditorManager.instance.StartDialogPartVisual = this; }
         );
@@ -186,8 +191,10 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     /// <summary>
     /// Adds a new blank answer to the Dialog Part (Visual)
     /// </summary>
+    /// <param name="conditional">Whether or not the answer shall be 
+    /// conditional = require a Global Property based condition to show up</param>
     /// <returns>Successful?</returns>
-    public bool AddAnswer()
+    public bool AddAnswer(bool conditional = false)
     {
         if (connectedDP != null)
         {
@@ -203,6 +210,8 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         answers.Add(answerVis);
 
         answerVis.answer = new Dialog.DialogPart.Answer("", answers.Count - 1, dialogPart);
+
+        answerVis.Conditional = conditional;
 
         answerVis.parentDialogPart = this;
 

@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 24856514}
   - component: {fileID: 24856513}
   m_Layer: 5
-  m_Name: GlobalVariableDropdown
+  m_Name: GlobalPropertyDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1468,6 +1468,7 @@ MonoBehaviour:
   dialogPartUI: {fileID: 287014766}
   answerUI: {fileID: 1079745664}
   globalPropertiesMenu: {fileID: 1790433875}
+  conditionMenu: {fileID: 1750897753}
   dialogPartVisual: {fileID: 8252622723369243653, guid: e49f2f2291618ae4bb49073279fc5350,
     type: 3}
   answerVisual: {fileID: 8049454694504549614, guid: 709dd5dfc1d85464c8d401a39878ad80,
@@ -1510,7 +1511,7 @@ GameObject:
   - component: {fileID: 198204715}
   - component: {fileID: 198204714}
   m_Layer: 5
-  m_Name: PathInputField
+  m_Name: CompareToInputField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26108,7 +26109,7 @@ GameObject:
   - component: {fileID: 1554244680}
   - component: {fileID: 1554244679}
   m_Layer: 5
-  m_Name: GlobalPropertiesText
+  m_Name: ConditionText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26153,7 +26154,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Conditions:'
+  m_text: 'Condition:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -29713,7 +29714,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1750897749
 RectTransform:
   m_ObjectHideFlags: 0
@@ -29802,6 +29803,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dbdcc4ad2317174ea88467a73081ab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  globalPropertyDropdown: {fileID: 24856513}
+  operatorDropdown: {fileID: 476330212}
+  compareToInputField: {fileID: 198204714}
+  closeButton: {fileID: 1171243255}
 --- !u!1 &1752180221
 GameObject:
   m_ObjectHideFlags: 0

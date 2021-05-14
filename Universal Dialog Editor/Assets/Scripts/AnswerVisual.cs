@@ -9,7 +9,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     {
         set
         {
-
+            conditional = value;
         }
 
         get { return conditional;  }
@@ -163,8 +163,17 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
                 "Edit condition",
                 () => 
                 {
-                    EditorManager.instance.ActiveMenu = EditorManager.instance.conditionMenu.gameObject;
-                    EditorManager.instance.conditionMenu.Init(this);
+                    if (EditorManager.globalProperties.Count > 0)
+                    {
+                        EditorManager.instance.ActiveMenu = 
+                            EditorManager.instance.conditionMenu.gameObject;
+                        EditorManager.instance.conditionMenu.Init(this);
+                    } 
+                    else
+                    {
+                        ErrorMessage.instance.ShowErrorMessage("You need at least one " +
+                            "Global Property to use conditions");
+                    }
                 }
             );
         }

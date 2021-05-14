@@ -90,7 +90,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
 
                             localDC.SetProperty(localKey, val, type);
                         }
-                        else
+                        else if (type != typeof(string))
                         {
                             var defaultValue = Activator.CreateInstance(type);
                             localDC.SetProperty(localKey, defaultValue, type);
