@@ -22,10 +22,19 @@ public class GlobalPropertiesUI : PropertiesUI
 
         Dictionary<string, UDSProperty> properties = EditorManager.globalProperties;
 
-        foreach (string id in properties.Keys)
-        {
-            CreateListElement(id, properties[id]);
-        }
+        InitListElements(properties.Keys);
+
+        searchBar.onValueChanged.AddListener(
+            (input) =>
+            {
+                if (!string.IsNullOrWhiteSpace(input))
+                {
+                    List<string> ids = SearchProperties(input);
+                    InitListElements(ids);
+                } else
+                    InitListElements(EditorManager.globalProperties.Keys);
+            }
+        );
     }
 
     protected override void InitListElement(GameObject listElementGO, string id, UDSProperty property)
@@ -36,11 +45,6 @@ public class GlobalPropertiesUI : PropertiesUI
 
         listElement.id = id;
         listElement.idInputField.SetTextWithoutNotify(id);
-
-        listElement.stringIntFloatInputField.SetTextWithoutNotify(
-                // Converts value.value to a string based on value.type
-                TypeDescriptor.GetConverter(property.type).ConvertToString(property.value)
-            );
 
         listElement.type = property.type; // Important
 
@@ -59,6 +63,30 @@ public class GlobalPropertiesUI : PropertiesUI
                 Destroy(listElement.gameObject);
             }
         );
+    }
+
+    private List<string> SearchProperties(string query)
+    {
+        List<string> matchingGlobalPropertyIDs = new List<string>();
+
+        foreach (string id in EditorManager.globalProperties.Keys)
+        {
+            if (id.ToLower().Contains(query.ToLower()))
+                matchingGlobalPropertyIDs.Add(id);
+        }
+
+        return matchingGlobalPropertyIDs;
+    }
+
+    private void InitListElements(IEnumerable properties)
+    {
+        ClearScrollView();
+        listElements.Clear();
+
+        foreach (string id in properties)
+        {
+            CreateListElement(id, EditorManager.globalProperties[id]);
+        }
     }
 
 }

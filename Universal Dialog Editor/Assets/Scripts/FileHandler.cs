@@ -244,7 +244,7 @@ public class FileHandler
             BinaryFormatter formatter = new BinaryFormatter();
             stream = new FileStream(actualPath, FileMode.Create);
 
-            Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
+            //Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
 
             formatter.Serialize(stream, dialog);
         }

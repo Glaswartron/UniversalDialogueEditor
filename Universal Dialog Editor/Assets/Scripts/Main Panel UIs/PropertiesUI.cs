@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,10 +14,11 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     public Transform scrollViewContent;
     public Button addPropertyButton;
     public AddPropertyDropdown addPropertyDropdown;
+    public Button loadPresetButton; 
+    public Button savePresetButton;
 
     [Header("Optional")]
-    public Button loadPresetButton; // Optional
-    public Button savePresetButton; // Optional
+    public TMP_InputField searchBar; // Optional
     public Button closeButton; // Optional
 
     [Header("Prefabs")]
@@ -114,14 +116,9 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         PropertyListElement listElement = listElementGO.GetComponent<PropertyListElement>();
 
         listElements.Add(listElement);
-
+        
         listElement.id = id;
         listElement.idInputField.SetTextWithoutNotify(id);
-
-        listElement.stringIntFloatInputField.SetTextWithoutNotify(
-                // Converts value.value to a string based on value.type
-                TypeDescriptor.GetConverter(property.type).ConvertToString(property.value)
-            );
 
         listElement.type = property.type; // Important
 
@@ -192,7 +189,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         );
     }
 
-    private void OnDisable()
+    protected void ClearScrollView()
     {
         /* Must go backwards to prevent InvalidOperationException
          * (similar to ConcurrentModificationException in Java) */
@@ -201,6 +198,11 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             GameObject go = listElements[i].gameObject;
             Destroy(go);
         }
+    }
+
+    protected void OnDisable()
+    {
+        ClearScrollView();
 
         listElements.Clear();
     }

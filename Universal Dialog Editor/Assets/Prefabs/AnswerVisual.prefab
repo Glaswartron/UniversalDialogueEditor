@@ -274,16 +274,16 @@ MonoBehaviour:
   answer:
     id: 
     dialogPart:
-      id: 
-      answers: []
-      dialog:
-        id: 
-        dialogParts: []
-        startDialogPart: 
-      nextDialogPartID: 
+      id: 0
     nextDialogPartID: 
   normalColor: {r: 0.10980393, g: 0.7254902, b: 1, a: 1}
   selectedColor: {r: 0.10980393, g: 0.44705883, b: 1, a: 1}
+  conditionalColor: {r: 0.8962264, g: 0.76321924, b: 0.0033819198, a: 1}
+  conditionalSelectedColor: {r: 0.754717, g: 0.64217156, b: 0, a: 1}
+  references:
+    version: 1
+    00000000:
+      type: {class: , ns: , asm: }
 --- !u!58 &4089660825586766153
 CircleCollider2D:
   m_ObjectHideFlags: 0

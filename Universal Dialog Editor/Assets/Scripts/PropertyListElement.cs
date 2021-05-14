@@ -52,7 +52,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 DialogComponent localDC = dialogComponent;
 
                 // Standard case: Property exists but ID is being changed
-                if (localDC.HasProperty(id)) 
+                if (localDC.HasProperty(id))
                 {
                     var oldProperty = localDC.GetProperty(id);
                     localDC.UpdateProperty
@@ -68,9 +68,21 @@ public class PropertyListElement : MonoBehaviour, ISubUI
             }
         );
 
+        UDSProperty? property = null; // Nullable
+        if (dialogComponent.HasProperty(id))
+            property = dialogComponent.GetProperty(id);
+
         // String/Int/Float => InputField, Bool => Toggle
         if (type != typeof(bool))
         {
+            if (property != null)
+            {
+                stringIntFloatInputField.SetTextWithoutNotify(
+                    // Converts value.value to a string based on value.type
+                    TypeDescriptor.GetConverter(property.Value.type).ConvertToString(property.Value.value)
+                );
+            }
+
             // Input Field
             stringIntFloatInputField.onValueChanged.AddListener(
                 (input) =>
@@ -107,6 +119,9 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         }
         else
         {
+            if (property != null)
+                boolToggle.SetIsOnWithoutNotify((bool)property.Value.value);
+
             // Toggle
             boolToggle.onValueChanged.AddListener(
                 (state) =>

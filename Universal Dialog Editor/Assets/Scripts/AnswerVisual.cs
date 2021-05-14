@@ -10,6 +10,11 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         set
         {
             conditional = value;
+
+            if (spriteRenderer == null)
+                spriteRenderer = GetComponent<SpriteRenderer>();
+
+            spriteRenderer.color = GetColor();
         }
 
         get { return conditional;  }
@@ -67,7 +72,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
             selected = value;
 
             // Changes color if selected
-            spriteRenderer.color = value ? selectedColor : normalColor;
+            spriteRenderer.color = GetColor();
         }
 
         get { return selected; }
@@ -79,7 +84,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     {
         // Init
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.color = normalColor;
+        spriteRenderer.color = GetColor();
         mainCam = Camera.main;
     }
 
@@ -242,9 +247,24 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         return condition;
     }
 
+    private Color GetColor()
+    {
+        if (Selected)
+        {
+            if (conditional) return conditionalSelectedColor;
+            else return selectedColor;
+        }
+        else
+        {
+            if (conditional) return conditionalColor;
+            else return normalColor;
+        }
+    }
+
     private void OnDestroy()
     {
         if (connection != null)
             Destroy(connection.gameObject);
     }
+
 }

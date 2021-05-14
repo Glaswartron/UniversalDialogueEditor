@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ba0d296fb522f324183928661c612576, type: 3}
-  m_Color: {r: 0, g: 0.5960784, b: 1, a: 1}
+  m_Color: {r: 0, g: 0.59607846, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -106,7 +106,7 @@ MonoBehaviour:
   answers: []
   idText: {fileID: 8252622724407111819}
   normalColor: {r: 0, g: 0.59607846, b: 1, a: 1}
-  selectedColor: {r: 0, g: 0.3930181, b: 0.6603774, a: 1}
+  selectedColor: {r: 0, g: 0.4217536, b: 0.7075472, a: 1}
   startColor: {r: 1, g: 0.6034083, b: 0, a: 1}
   startSelectedColor: {r: 0.65882355, g: 0.4025919, b: 0, a: 1}
   dpConnection: {fileID: 0}

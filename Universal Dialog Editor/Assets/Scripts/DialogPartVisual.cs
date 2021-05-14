@@ -99,6 +99,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     {
         // Init
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.color = GetColor();
         mainCam = Camera.main;
     }
 
