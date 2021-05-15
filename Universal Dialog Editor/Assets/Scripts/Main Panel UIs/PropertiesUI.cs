@@ -1,9 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
+[Serializable]
+public struct PropertyPreset
+{
+    public string id;
+    public List<Dictionary<string, UDSProperty>> properties;
+    public PropertyPresetType propertyPresetType;
+
+    [Serializable]
+    public enum PropertyPresetType
+    {
+        DIALOG_PART, ANSWER
+    }
+}
 
 public class PropertiesUI : MonoBehaviour, ISubUI
 {

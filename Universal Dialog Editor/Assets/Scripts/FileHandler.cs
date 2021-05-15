@@ -12,8 +12,13 @@ public class FileHandler
     public TMP_InputField loadPathInputField;
 
     private static readonly string GLOBAL_PROPERTIES_PATH
-        = Path.Combine(Application.persistentDataPath, "properties.udsgp");
+        = Path.Combine(Application.persistentDataPath, "globalProperties.udsgp");
 
+    private static readonly string DIALOG_PART_PROPERTY_PRESET_PATH
+        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "DialogPartPropertyPresets");
+
+    private static readonly string ANSWER_PROPERTY_PRESET_PATH
+    = Path.Combine(Application.persistentDataPath, "PropertyPresets", "AnswerPropertyPresets");
 
     public static void CreateTestDialog()
     {
@@ -354,7 +359,88 @@ public class FileHandler
         {
             stream.Close();
         }
+    }
 
+    public static bool SavePropertyPreset(PropertyPreset propertyPreset)
+    {
+        if (!Directory.Exists(DIALOG_PART_PROPERTY_PRESET_PATH))
+            Directory.CreateDirectory(DIALOG_PART_PROPERTY_PRESET_PATH);
+
+        if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
+            Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
+
+        BinaryFormatter formatter = new BinaryFormatter();
+
+        string path =
+            propertyPreset.propertyPresetType == PropertyPreset.PropertyPresetType.DIALOG_PART
+            ? DIALOG_PART_PROPERTY_PRESET_PATH
+            : ANSWER_PROPERTY_PRESET_PATH;
+
+        path = Path.Combine(path, propertyPreset.id + ".udspreset");
+
+        FileStream stream = null;
+
+        try
+        {
+            stream = new FileStream(path, FileMode.Create);
+
+            if (File.Exists(path))
+                return false;
+
+            formatter.Serialize(stream, propertyPreset);
+        }
+        catch (Exception e)
+        {
+            ErrorMessage.instance.ShowErrorMessage
+                ("Something went wrong while saving the Property Preset under " +
+                path + ". " +
+                "Please check if the name is valid, the path exists and if there is enough disk space");
+
+            Debug.LogError(e.Message);
+
+            return false;
+        }
+        finally
+        {
+            stream?.Flush();
+            stream?.Close();
+        }
+
+        return true;
+    }
+
+    public static string[] GetAllPropertyPresets()
+    {
+        return null;
+    }
+
+    public static PropertyPreset LoadPropertyPreset(string id)
+    {
+        /*string path = 
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+
+        try
+        {
+            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream)
+                                                         as Dictionary<string, UDSProperty>;
+            return properties;
+        }
+        catch (Exception e)
+        {
+            ErrorMessage.instance.ShowErrorMessage("An error occured while loading the " +
+                "Global Properties from " + GLOBAL_PROPERTIES_PATH + ". Please check " +
+                "if the path is still valid");
+            Debug.LogError("Path: " + GLOBAL_PROPERTIES_PATH + " -- " + e.Message);
+            return null;
+        }
+        finally
+        {
+            stream.Close();
+        } */
+
+        return default;
     }
 
     /// <summary>

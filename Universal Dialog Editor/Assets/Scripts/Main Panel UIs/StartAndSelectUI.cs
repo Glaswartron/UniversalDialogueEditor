@@ -19,7 +19,8 @@ public class StartAndSelectUI : MonoBehaviour
     public TMP_Dropdown dialogPartPresetDropdown;
     public TMP_Dropdown answerPresetDropdown;
     public Button importPresetButton;
-    public Button exportPresetButton;
+    public Button exportDialogPartPresetButton;
+    public Button exportAnswerPresetButton;
     public Button helpButtonDialogs;
     public Button helpButtonPresets;
 
