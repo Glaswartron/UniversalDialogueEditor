@@ -21,8 +21,6 @@ public class StartAndSelectUI : MonoBehaviour
     public Button importPresetButton;
     public Button exportDialogPartPresetButton;
     public Button exportAnswerPresetButton;
-    public Button helpButtonDialogs;
-    public Button helpButtonPresets;
 
     [Header("Prefabs")]
     public GameObject selectableTextLarge;
@@ -60,6 +58,8 @@ public class StartAndSelectUI : MonoBehaviour
         loadButton.onClick.AddListener(LoadSelectedDialog);
 
         deleteButton.onClick.AddListener(DeleteDialog);
+
+        InitPresetDropdowns();
     }
 
     private void OnEnable()
@@ -284,5 +284,53 @@ public class StartAndSelectUI : MonoBehaviour
         folderLoaded = false; // !
     }
 
+    private void InitPresetDropdowns()
+    {
+        PopulatePresetDropdowns();
+
+        dialogPartPresetDropdown.onValueChanged.AddListener(
+            (value) =>
+            {
+                if (value > 0)
+                {
+                    EditorManager.globalDialogPartPropertyPreset
+                        = dialogPartPresetDropdown.options[value].text;
+                }
+                else
+                    EditorManager.globalDialogPartPropertyPreset = null;
+            }
+        );
+
+        answerPresetDropdown.onValueChanged.AddListener(
+            (value) =>
+            {
+                if (value > 0)
+                {
+                    EditorManager.globalAnswerPropertyPreset
+                        = answerPresetDropdown.options[value].text;
+                }
+                else
+                    EditorManager.globalAnswerPropertyPreset = null;
+            }
+        );
+    }
+
+    private void PopulatePresetDropdowns()
+    {
+        string[] dialogPartPresets = 
+            FileHandler.GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType.DIALOG_PART);
+
+        string[] answerPresets =
+            FileHandler.GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType.ANSWER);
+
+        List<string> dialogPartDropdownOptions = new List<string>(dialogPartPresets);
+        dialogPartDropdownOptions.Insert(0, "None");
+
+        List<string> answerDropdownOptions = new List<string>(answerPresets);
+        answerDropdownOptions.Insert(0, "None");
+
+        dialogPartPresetDropdown.AddOptions(dialogPartDropdownOptions);
+        answerPresetDropdown.AddOptions(answerDropdownOptions);
+    }
 
 }

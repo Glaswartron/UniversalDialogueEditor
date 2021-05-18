@@ -18,7 +18,10 @@ public class FileHandler
         = Path.Combine(Application.persistentDataPath, "PropertyPresets", "DialogPartPropertyPresets");
 
     private static readonly string ANSWER_PROPERTY_PRESET_PATH
-    = Path.Combine(Application.persistentDataPath, "PropertyPresets", "AnswerPropertyPresets");
+        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "AnswerPropertyPresets");
+
+    private static readonly string GLOBAL_PROPERTY_PRESET_PATH
+        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "GlobalPropertyPresets");
 
     public static void CreateTestDialog()
     {
@@ -120,20 +123,22 @@ public class FileHandler
         if (!File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Create);
+            FileStream stream = null;
 
             try
             {
+                stream = new FileStream(path, FileMode.Create);
+
                 formatter.Serialize(stream, dialog);
             }
             catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage
                     ("Something went wrong while creating the file. Please " +
-                    "check if the dialog name/id you entered contains any " +
-                    "invalid characters. Also check if you/the editor has " +
-                    "writing permission for the folder you selected. " +
-                    "Try changing it to a different folder");
+                    "check the dialog id you entered. " +
+                    "Also check if you/the editor have/has " +
+                    "writing permission for the selected folder. " +
+                    "Try changing the folder");
 
                 Debug.LogError(e.Message);
 
@@ -141,8 +146,8 @@ public class FileHandler
             }
             finally
             {
-                stream.Flush();
-                stream.Close();
+                stream?.Flush();
+                stream?.Close();
             }
         }
         else
@@ -176,10 +181,12 @@ public class FileHandler
         if (File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
+            FileStream stream = null;
 
             try
             {
+                stream = new FileStream(path, FileMode.Open);
+
                 Dialog dialog = formatter.Deserialize(stream) as Dialog;
                 return dialog;
             }
@@ -192,7 +199,7 @@ public class FileHandler
             }
             finally
             {
-                stream.Close();
+                stream?.Close();
             }
         }
         else
@@ -243,13 +250,12 @@ public class FileHandler
 
         string actualPath = useNewPath ? newPath : path;
 
+        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+
         try
         {
-            BinaryFormatter formatter = new BinaryFormatter();
             stream = new FileStream(actualPath, FileMode.Create);
-
-            //Debug.Log(path + "--" + actualPath + " -- " + useNewPath);
 
             formatter.Serialize(stream, dialog);
         }
@@ -275,7 +281,7 @@ public class FileHandler
         /* Delete the old file after the new one has been written successfully.
          * Only do so if the paths are really different OR on Linux
          * (where paths are case insensitive) */
-        if (useNewPath && 
+        if (useNewPath &&
             (!pathsEqualExceptForCase || Application.platform == RuntimePlatform.LinuxPlayer))
             DeleteDialogFile(path);
 
@@ -307,10 +313,11 @@ public class FileHandler
         Dictionary<string, UDSProperty> properties = EditorManager.globalProperties;
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
+        FileStream stream = null;
 
         try
         {
+            stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
             formatter.Serialize(stream, properties);
         }
         catch (Exception e)
@@ -339,11 +346,13 @@ public class FileHandler
             return null;
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
-        
+        FileStream stream = null;
+
         try
         {
-            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream) 
+            stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+
+            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream)
                                                          as Dictionary<string, UDSProperty>;
             return properties;
         }
@@ -357,11 +366,11 @@ public class FileHandler
         }
         finally
         {
-            stream.Close();
+            stream?.Close();
         }
     }
 
-    public static bool SavePropertyPreset(PropertyPreset propertyPreset)
+    public static bool SavePropertyPreset(PropertyPreset propertyPreset, string path = null)
     {
         if (!Directory.Exists(DIALOG_PART_PROPERTY_PRESET_PATH))
             Directory.CreateDirectory(DIALOG_PART_PROPERTY_PRESET_PATH);
@@ -369,14 +378,31 @@ public class FileHandler
         if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
             Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
 
+        if (!Directory.Exists(GLOBAL_PROPERTY_PRESET_PATH))
+            Directory.CreateDirectory(GLOBAL_PROPERTY_PRESET_PATH);
+
         BinaryFormatter formatter = new BinaryFormatter();
 
-        string path =
-            propertyPreset.propertyPresetType == PropertyPreset.PropertyPresetType.DIALOG_PART
-            ? DIALOG_PART_PROPERTY_PRESET_PATH
-            : ANSWER_PROPERTY_PRESET_PATH;
+        if (path == null)
+        {
+            path = GetPropertyPresetDirectoryPath(propertyPreset.propertyPresetType);
+            path = Path.Combine(path, propertyPreset.id + ".udspreset");
+        }
 
-        path = Path.Combine(path, propertyPreset.id + ".udspreset");
+        bool dewIt = true;
+        if (File.Exists(path))
+        {
+            AreYouSureDialog.instance.Open(
+                "A Property Preset with this ID already exists. Do you want to override it?",
+                "Yes",
+                "No",
+                onYes: () => { dewIt = true; },
+                onNo: () => { dewIt = false; }
+            );
+        }
+
+        if (!dewIt)
+            return false;
 
         FileStream stream = null;
 
@@ -384,16 +410,12 @@ public class FileHandler
         {
             stream = new FileStream(path, FileMode.Create);
 
-            if (File.Exists(path))
-                return false;
-
             formatter.Serialize(stream, propertyPreset);
         }
         catch (Exception e)
         {
             ErrorMessage.instance.ShowErrorMessage
-                ("Something went wrong while saving the Property Preset under " +
-                path + ". " +
+                ("Something went wrong while saving the Property Preset under" + path + ". " +
                 "Please check if the name is valid, the path exists and if there is enough disk space");
 
             Debug.LogError(e.Message);
@@ -409,38 +431,55 @@ public class FileHandler
         return true;
     }
 
-    public static string[] GetAllPropertyPresets()
+    public static string[] GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType type)
     {
-        return null;
+        string path = GetPropertyPresetDirectoryPath(type);
+
+        if (path == null)
+        {
+            Debug.LogError("Invalid path in GetAllPropertyPresetIDs");
+            return null;
+        }
+
+        string[] paths = Directory.GetFiles(path, "*.udspreset");
+
+        return Array.ConvertAll(paths, p => p.Remove(p.IndexOf(".")));
     }
 
-    public static PropertyPreset LoadPropertyPreset(string id)
+    public static PropertyPreset? LoadPropertyPreset
+        (string id, PropertyPreset.PropertyPresetType type, string path = null)
     {
-        /*string path = 
+        if (path == null)
+        {
+            path = GetPropertyPresetDirectoryPath(type);
+            path = Path.Combine(id, ".udspreset");
+        }
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+        FileStream stream = null;
 
         try
         {
-            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream)
-                                                         as Dictionary<string, UDSProperty>;
-            return properties;
+
+            stream = new FileStream(path, FileMode.Open);
+
+            PropertyPreset preset = (PropertyPreset)formatter.Deserialize(stream);
+            return preset;
+
         }
         catch (Exception e)
         {
-            ErrorMessage.instance.ShowErrorMessage("An error occured while loading the " +
-                "Global Properties from " + GLOBAL_PROPERTIES_PATH + ". Please check " +
-                "if the path is still valid");
-            Debug.LogError("Path: " + GLOBAL_PROPERTIES_PATH + " -- " + e.Message);
+            ErrorMessage.instance.ShowErrorMessage("An error occured while loading a " +
+                "Property Preset from " + path + ". Please check if the path is still valid");
+
+            Debug.LogError("Path: " + path + " -- " + e.Message);
+
             return null;
         }
         finally
         {
-            stream.Close();
-        } */
-
-        return default;
+            stream?.Close();
+        }
     }
 
     /// <summary>
@@ -458,6 +497,21 @@ public class FileHandler
             path += ".udsdialog";
 
         return path;
+    }
+
+    public static string GetPropertyPresetDirectoryPath(PropertyPreset.PropertyPresetType type)
+    {
+        switch (type)
+        {
+            case PropertyPreset.PropertyPresetType.DIALOG_PART:
+                return DIALOG_PART_PROPERTY_PRESET_PATH;
+            case PropertyPreset.PropertyPresetType.ANSWER:
+                return ANSWER_PROPERTY_PRESET_PATH;
+            case PropertyPreset.PropertyPresetType.GLOBAL:
+                return GLOBAL_PROPERTY_PRESET_PATH;
+            default:
+                return null;
+        }
     }
 
     /// <summary>

@@ -8,13 +8,13 @@ using UnityEngine.UI;
 public struct PropertyPreset
 {
     public string id;
-    public List<Dictionary<string, UDSProperty>> properties;
+    public Dictionary<string, UDSProperty> properties;
     public PropertyPresetType propertyPresetType;
 
     [Serializable]
     public enum PropertyPresetType
     {
-        DIALOG_PART, ANSWER
+        DIALOG_PART, ANSWER, GLOBAL
     }
 }
 
@@ -55,6 +55,20 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             }
         );
 
+        savePresetButton.onClick.AddListener(
+            () =>
+            {
+                EditorManager.instance.ActiveMenu 
+                    = EditorManager.instance.savePresetMenu.gameObject;
+
+                Dictionary<string, UDSProperty> properties = GetPropertiesForPreset();
+                PropertyPreset.PropertyPresetType type = GetTypeForPreset();
+
+                EditorManager.instance.savePresetMenu.Init(properties, type);
+            }
+        );
+
+        // Close Button only there if it's the Global Properties menu
         if (closeButton != null)
         {
             closeButton.onClick.AddListener(
@@ -200,6 +214,27 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 addPropertyDropdown.gameObject.SetActive(false);
             }
         );
+    }
+
+    private Dictionary<string, UDSProperty> GetPropertiesForPreset()
+    {
+        if (dialogComponent == null)
+            return EditorManager.globalProperties;
+        else
+            return dialogComponent.GetProperties();
+    }
+
+    private PropertyPreset.PropertyPresetType GetTypeForPreset()
+    {
+        if (dialogComponent == null)
+            return PropertyPreset.PropertyPresetType.GLOBAL;
+
+        if (dialogComponent is Dialog.DialogPart)
+            return PropertyPreset.PropertyPresetType.DIALOG_PART;
+        else if (dialogComponent is Dialog.DialogPart.Answer)
+            return PropertyPreset.PropertyPresetType.ANSWER;
+
+        return default;
     }
 
     protected void ClearScrollView()

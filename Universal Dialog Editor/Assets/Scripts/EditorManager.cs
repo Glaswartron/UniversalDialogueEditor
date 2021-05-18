@@ -13,6 +13,10 @@ public class EditorManager : MonoBehaviour
     public static readonly char[] invalidCharacters =
         {'/', '\\', '<', '>', '|', '?', ':', '"', '*'};
 
+    // The Property Presets selected for new Dialogs in the StartAndSelectUI
+    public static string globalDialogPartPropertyPreset = null;
+    public static string globalAnswerPropertyPreset = null;
+
     /// <summary>
     /// The Dialog which is currently loaded and being edited.
     /// HideInInspector extremely important because Dialog 
@@ -71,6 +75,7 @@ public class EditorManager : MonoBehaviour
     [Header("Menu UI")]
     public GameObject globalPropertiesMenu;
     public ConditionMenu conditionMenu;
+    public SavePresetMenu savePresetMenu;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
@@ -492,6 +497,12 @@ public class EditorManager : MonoBehaviour
         dialogPartVisuals.Add(dpVisual);
 
         dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position, dialog);
+
+        // If a Property Preset for new Dialog Parts is selected
+        if (globalDialogPartPropertyPreset != null)
+        {
+
+        }
     }
 
     /// <summary>

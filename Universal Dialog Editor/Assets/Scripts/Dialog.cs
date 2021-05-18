@@ -187,6 +187,11 @@ public class DialogComponent
         return properties.Keys.ToArray();
     }
 
+    internal Dictionary<string, UDSProperty> GetProperties()
+    {
+        return properties;
+    }
+
     internal bool SetProperty<T>(string key, T value)
     {
         bool alreadyThere = HasProperty(key, typeof(T));
