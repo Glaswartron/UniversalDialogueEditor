@@ -41,12 +41,27 @@ public class LoadPresetMenu : MonoBehaviour
         );
     }
 
+    private void OnDisable()
+    {
+        ClearScrollView();
+    }
+
     public void Init(PropertiesUI caller, PropertyPreset.PropertyPresetType type)
     {
+        if (presetScrollViewToggleGroup == null)
+            presetScrollViewToggleGroup = scrollViewContent.GetComponent<ToggleGroup>();
+
+        if (loadButtonRectTransform == null)
+            loadButtonRectTransform = loadButton.GetComponent<RectTransform>();
+
         this.caller = caller;
         this.type = type;
 
+        presetSelectables = new List<ExtendedToggle>();
+
         presetIDs = FileHandler.GetAllPropertyPresetIDs(type);
+
+        ClearScrollView();
 
         foreach (string p in presetIDs)
         {
@@ -105,5 +120,21 @@ public class LoadPresetMenu : MonoBehaviour
         toggle.relatedUIElements = new RectTransform[] { loadButtonRectTransform };
 
         return toggleGO;
+    }
+
+    private void ClearScrollView()
+    {
+        /* Must go backwards to prevent InvalidOperationException
+         * (similar to ConcurrentModificationException in Java) */
+        for (int i = presetSelectables.Count - 1; i >= 0; i--)
+        {
+            if (presetSelectables[i] != null && presetSelectables[i].gameObject != null)
+            {
+                GameObject go = presetSelectables[i].gameObject;
+                Destroy(go);
+            }
+        }
+
+        presetSelectables.Clear();
     }
 }

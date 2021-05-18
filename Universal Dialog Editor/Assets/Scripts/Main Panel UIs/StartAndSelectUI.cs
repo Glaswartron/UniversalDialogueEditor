@@ -46,7 +46,7 @@ public class StartAndSelectUI : MonoBehaviour
         dialogFilePaths = new List<string>();
         dialogSelectables = new List<ExtendedToggle>();
 
-        fileBrowserButton.onClick.AddListener(OpenFileBrowser);
+        fileBrowserButton.onClick.AddListener(OpenFolderFileBrowser);
 
         submitButton.onClick.AddListener(
             () => {
@@ -58,6 +58,24 @@ public class StartAndSelectUI : MonoBehaviour
         loadButton.onClick.AddListener(LoadSelectedDialog);
 
         deleteButton.onClick.AddListener(DeleteDialog);
+
+        importPresetButton.onClick.AddListener(ImportPreset);
+
+        exportDialogPartPresetButton.onClick.AddListener(
+            () =>
+            {
+                ExportPreset(dialogPartPresetDropdown.options[dialogPartPresetDropdown.value].text,
+                             PropertyPreset.PropertyPresetType.DIALOG_PART);
+            }
+        );
+
+        exportAnswerPresetButton.onClick.AddListener(
+            () =>
+            {
+                ExportPreset(answerPresetDropdown.options[answerPresetDropdown.value].text,
+                             PropertyPreset.PropertyPresetType.ANSWER);
+            }
+        );
 
         if ((folderPath = PlayerPrefs.GetString("startAndSelectUIDirPath", null)) != null)
             LoadFolder(folderPath);
@@ -102,8 +120,7 @@ public class StartAndSelectUI : MonoBehaviour
             dialogFilePaths.Add(file);
 
             // Dialogs are always saved in the format '.../.../nameOrID.udsdialog'
-            string dialogName = file.Substring(file.LastIndexOf("\\") + 1,
-                                               file.IndexOf(".udsdialog") - file.LastIndexOf("\\") - 1);
+            string dialogName = Path.GetFileNameWithoutExtension(file);
 
             // That's where the magic happens
             InstantiateDialogSelectableText(dialogName);
@@ -270,7 +287,7 @@ public class StartAndSelectUI : MonoBehaviour
         return FileHandler.DeleteDialogFile(path);
     }
 
-    private void OpenFileBrowser()
+    private void OpenFolderFileBrowser()
     {
         FileBrowser.ShowLoadDialog(path => LoadFolder(path[0]), null, true);
     }
@@ -338,6 +355,45 @@ public class StartAndSelectUI : MonoBehaviour
 
         dialogPartPresetDropdown.AddOptions(dialogPartDropdownOptions);
         answerPresetDropdown.AddOptions(answerDropdownOptions);
+    }
+
+    private void ImportPreset()
+    {
+        FileBrowser.ShowLoadDialog(
+            onSuccess: (path) =>
+            {
+                if (path[0].EndsWith(".udspreset")) {
+                    FileHandler.ImportPropertyPreset(path[0]);
+                    InitPresetDropdowns();
+                }
+                else
+                {
+                    ErrorMessage.instance.ShowErrorMessage("The file you selected is not a valid .udspreset file");
+                }
+            },
+            onCancel: () => { },
+            allowMultiSelection: false
+        );
+    }
+
+    private void ExportPreset(string id, PropertyPreset.PropertyPresetType type)
+    {
+        if (type == PropertyPreset.PropertyPresetType.DIALOG_PART && dialogPartPresetDropdown.value == 0
+            || type == PropertyPreset.PropertyPresetType.ANSWER && answerPresetDropdown.value == 0)
+        {
+            ErrorMessage.instance.ShowErrorMessage("You first have to select a Preset in the dropdown menu");
+            return;
+        }
+
+        FileBrowser.ShowSaveDialog(
+            onSuccess: (path) =>
+            {
+                FileHandler.ExportPropertyPreset(id, type, path[0]);
+            },
+            onCancel: () => { },
+            folderMode: true,
+            allowMultiSelection: false
+        );
     }
 
 }

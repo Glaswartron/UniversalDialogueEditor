@@ -107,6 +107,9 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             public string nextDialogPartID;
 
+            public bool conditional;
+            public UDSCondition condition;
+
             internal Answer(string answerID, int answerIndex, DialogPart dialogPart)
                 : base(answerID) 
             { 

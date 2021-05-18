@@ -11,7 +11,7 @@ public class EditorManager : MonoBehaviour
     public static Dictionary<string, UDSProperty> globalProperties;
 
     public static readonly char[] invalidCharacters =
-        {'/', '\\', '<', '>', '|', '?', ':', '"', '*'};
+        {'/', '\\', '<', '>', '|', '?', ':', '"', '*', '@'};
 
     // The Property Presets selected for new Dialogs in the StartAndSelectUI
     public static string globalDialogPartPropertyPreset = null;
@@ -284,10 +284,11 @@ public class EditorManager : MonoBehaviour
     /// These are:
     /// - At least one dialog part is there (1)
     /// - The Dialog ID is not empty (2)
-    /// - All Dialog Parts have an ID (3)
-    /// - All Dialog Part IDs are unique (4)
-    /// - All Answers have an ID (5)
-    /// - All Answer IDs are unique (6)
+    /// - There is a start Dialog Part (3)
+    /// - All Dialog Parts have an ID (4)
+    /// - All Dialog Part IDs are unique (5)
+    /// - All Answers have an ID (6)
+    /// - All Answer IDs are unique (7)
     /// Displays an error message if at least one criterion is not met!
     /// </summary>
     /// <returns>Whether or not the dialog is valid</returns>
@@ -308,17 +309,24 @@ public class EditorManager : MonoBehaviour
             return false;
         }
 
+        // 3
+        if (string.IsNullOrWhiteSpace(dialog.startDialogPartID))
+        {
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialog has to have a start Dialog Part");
+            return false;
+        }
+
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
         {
-            // 3
+            // 4
             if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
             {
                 ErrorMessage.instance.ShowErrorMessage("Failed. There is a Dialog Part without an ID");
                 return false;
             }
 
-            // 4
+            // 5
             if (diapartIDs.Contains(diapart.dialogPart.id))
             {
                 ErrorMessage.instance.ShowErrorMessage(
@@ -333,7 +341,7 @@ public class EditorManager : MonoBehaviour
             HashSet<string> answerIDs = new HashSet<string>();
             foreach (AnswerVisual answer in diapart.answers)
             {
-                // 5
+                // 6
                 if (string.IsNullOrWhiteSpace(answer.answer.id))
                 {
                     ErrorMessage.instance.ShowErrorMessage(
@@ -343,7 +351,7 @@ public class EditorManager : MonoBehaviour
                     return false;
                 }
 
-                // 6
+                // 7
                 if (answerIDs.Contains(answer.answer.id))
                 {
                     ErrorMessage.instance.ShowErrorMessage(
@@ -456,6 +464,110 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Variant of ValidateDialog that generates DialogUI.Warnings for the DialogUI
+    /// Criteria:
+    /// - At least one dialog part is there (1)
+    /// - The Dialog ID is not empty (2)
+    /// - There is a start Dialog Part (3)
+    /// - All Dialog Parts have an ID (4)
+    /// - All Dialog Part IDs are unique (5)
+    /// - All Answers have an ID (6)
+    /// - All Answer IDs are unique (7)
+    /// </summary>
+    /// <returns>A list with warnings for the warning field in the DialogUI</returns>
+    public List<DialogUI.Warning> GenerateWarnings()
+    {
+        List<DialogUI.Warning> warnings = new List<DialogUI.Warning>();
+
+        // 1
+        if (dialogPartVisuals.Count == 0)
+        {
+            warnings.Add(new DialogUI.Warning
+            {
+                text = "A dialog has to contain at least one Dialog Part",
+                color = Color.red
+            });
+        }
+
+        // 2
+        if (string.IsNullOrWhiteSpace(dialog.id))
+        {
+            warnings.Add(new DialogUI.Warning
+            {
+                text = "The Dialog requires a name",
+                color = Color.red
+            });
+        }
+
+        // 3
+        if (string.IsNullOrEmpty(dialog.startDialogPartID))
+        {
+            warnings.Add(new DialogUI.Warning
+            {
+                text = "The Dialog requires a start Dialog Part",
+                color = Color.red
+            });
+        }
+
+        HashSet<string> diapartIDs = new HashSet<string>();
+        foreach (var diapart in dialogPartVisuals)
+        {
+            // 4
+            if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
+            {
+                warnings.Add(new DialogUI.Warning
+                {
+                    text = "There is a DialogPart without an ID",
+                    color = Color.red
+                });
+            }
+
+            // 5
+            if (diapartIDs.Contains(diapart.dialogPart.id))
+            {
+                warnings.Add(new DialogUI.Warning
+                {
+                    text = string.Format(
+                        "All IDs have to be unique. Dialog Part ID {0} appears twice",
+                        diapart.dialogPart.id),
+                    color = Color.red
+                });
+            }
+            diapartIDs.Add(diapart.dialogPart.id);
+
+            HashSet<string> answerIDs = new HashSet<string>();
+            foreach (AnswerVisual answer in diapart.answers)
+            {
+                // 6
+                if (string.IsNullOrWhiteSpace(answer.answer.id))
+                {
+                    warnings.Add(new DialogUI.Warning
+                    {
+                        text = "All answers need an ID. There is an " +
+                        "answer without an ID in Dialog Part " + diapart,
+                        color = Color.red
+                    });
+                }
+
+                // 7
+                if (answerIDs.Contains(answer.answer.id))
+                {
+                    warnings.Add(new DialogUI.Warning
+                    {
+                        text = string.Format(
+                        "All IDs have to be unique. Answer ID {0} appears twice",
+                        diapart.dialogPart.id),
+                        color = Color.red
+                    });
+                }
+                diapartIDs.Add(diapart.dialogPart.id);
+            }
+        }
+
+        return warnings;
+    }
+
+    /// <summary>
     /// Clears everything and returns to StartAndSelectUI.
     /// Discards any unsaved data.
     /// Use with caution!
@@ -498,6 +610,10 @@ public class EditorManager : MonoBehaviour
         dialogPartVisuals.Add(dpVisual);
 
         dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position, dialog);
+
+        // If it's the first part in the Dialog
+        if (dialogPartVisuals.Count == 1)
+            dpVisual.IsStart = true;
 
         // If a Property Preset for new Dialog Parts is selected
         if (globalDialogPartPropertyPreset != null)

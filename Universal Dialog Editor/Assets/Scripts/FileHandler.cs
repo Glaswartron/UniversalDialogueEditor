@@ -369,11 +369,7 @@ public class FileHandler
 
     public static bool SavePropertyPreset(PropertyPreset propertyPreset, string path = null)
     {
-        if (!Directory.Exists(DIALOG_PART_PROPERTY_PRESET_PATH))
-            Directory.CreateDirectory(DIALOG_PART_PROPERTY_PRESET_PATH);
-
-        if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
-            Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
+        CreateDirectoriesIfNotThere();
 
         BinaryFormatter formatter = new BinaryFormatter();
 
@@ -427,6 +423,8 @@ public class FileHandler
 
     public static string[] GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType type)
     {
+        CreateDirectoriesIfNotThere();
+
         string path = GetPropertyPresetDirectoryPath(type);
 
         if (path == null)
@@ -436,8 +434,8 @@ public class FileHandler
         }
 
         string[] paths = Directory.GetFiles(path, "*.udspreset");
-
-        return Array.ConvertAll(paths, p => p.Remove(p.IndexOf(".")));
+        
+        return Array.ConvertAll(paths, p => Path.GetFileNameWithoutExtension(p));
     }
 
     public static PropertyPreset? LoadPropertyPreset
@@ -446,7 +444,7 @@ public class FileHandler
         if (path == null)
         {
             path = GetPropertyPresetDirectoryPath(type);
-            path = Path.Combine(id, ".udspreset");
+            path = Path.Combine(path, id + ".udspreset");
         }
 
         BinaryFormatter formatter = new BinaryFormatter();
@@ -474,6 +472,36 @@ public class FileHandler
         {
             stream?.Close();
         }
+    }
+
+    public static void ImportPropertyPreset(string path)
+    {
+        PropertyPreset? preset = LoadPropertyPreset(null, default, path);
+
+        if (preset == null)
+        {
+            Debug.LogError("Error while importing Property Preset from path " + path);
+            return;
+        }
+
+        path = GetPropertyPresetDirectoryPath(preset.Value.propertyPresetType);
+        path = Path.Combine(path, preset.Value.id + ".udspreset");
+
+        SavePropertyPreset(preset.Value, path);
+    }
+
+    public static void ExportPropertyPreset
+        (string id, PropertyPreset.PropertyPresetType type, string path)
+    {
+        PropertyPreset? preset = LoadPropertyPreset(id, type, null);
+
+        if (preset == null)
+        {
+            Debug.LogError("Error while exporting Property Preset to path " + path);
+            return;
+        }
+
+        SavePropertyPreset(preset.Value, Path.Combine(path, id + ".udspreset"));
     }
 
     /// <summary>
@@ -504,6 +532,25 @@ public class FileHandler
             default:
                 return null;
         }
+    }
+
+    private static bool CreateDirectoriesIfNotThere()
+    {
+        bool directoryCreated = false;
+
+        if (!Directory.Exists(DIALOG_PART_PROPERTY_PRESET_PATH))
+        {
+            Directory.CreateDirectory(DIALOG_PART_PROPERTY_PRESET_PATH);
+            directoryCreated = true;
+        }
+
+        if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
+        {
+            Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
+            directoryCreated = true;
+        }
+
+        return directoryCreated;
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ public struct PropertyPreset
 {
     public string id;
     public Dictionary<string, UDSProperty> properties;
+    public List<string> orderedKeyList;
     public PropertyPresetType propertyPresetType;
 
     [Serializable]
@@ -27,6 +28,8 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     public Transform scrollViewContent;
     public Button addPropertyButton;
     public AddPropertyDropdown addPropertyDropdown;
+
+    [Header("Presets")]
     public Button loadPresetButton; 
     public Button savePresetButton;
 
@@ -55,28 +58,37 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             }
         );
 
-        savePresetButton.onClick.AddListener(
-            () =>
-            {
-                EditorManager.instance.ActiveMenu 
-                    = EditorManager.instance.savePresetMenu.gameObject;
+        if (savePresetButton != null)
+        {
+            savePresetButton.onClick.AddListener(
+                () =>
+                {
+                    EditorManager.instance.ActiveMenu
+                        = EditorManager.instance.savePresetMenu.gameObject;
 
-                Dictionary<string, UDSProperty> properties = GetPropertiesForPreset();
-                PropertyPreset.PropertyPresetType type = GetTypeForPreset();
+                    Dictionary<string, UDSProperty> properties = GetPropertiesForPreset();
+                    PropertyPreset.PropertyPresetType type = GetTypeForPreset();
 
-                EditorManager.instance.savePresetMenu.Init(properties, type);
-            }
-        );
+                    // Ordered
+                    List<string> keys = listElements.ConvertAll(le => le.id);
 
-        loadPresetButton.onClick.AddListener(
-            () =>
-            {
-                EditorManager.instance.ActiveMenu 
-                    = EditorManager.instance.loadPresetMenu.gameObject;
+                    EditorManager.instance.savePresetMenu.Init(properties, keys, type);
+                }
+            );
+        }
 
-                EditorManager.instance.loadPresetMenu.Init(this, GetTypeForPreset());
-            }
-        );
+        if (loadPresetButton != null)
+        {
+            loadPresetButton.onClick.AddListener(
+                () =>
+                {
+                    EditorManager.instance.ActiveMenu
+                        = EditorManager.instance.loadPresetMenu.gameObject;
+
+                    EditorManager.instance.loadPresetMenu.Init(this, GetTypeForPreset());
+                }
+            );
+        }
 
         // Close Button only there if it's the Global Properties menu
         if (closeButton != null)
@@ -172,12 +184,13 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             () =>
             {
                 string localKey = listElement.id;
+                PropertyListElement localListElement = listElement;
 
                 dialogComponent.DeleteProperty(localKey); // !
 
-                listElements.Remove(listElement);
+                listElements.Remove(localListElement);
 
-                Destroy(listElement.gameObject);
+                Destroy(localListElement.gameObject);
             }
         );
     }
@@ -246,10 +259,10 @@ public class PropertiesUI : MonoBehaviour, ISubUI
 
         Dictionary<string, UDSProperty> properties = preset.Value.properties;
 
-        foreach (string propertyKey in properties.Keys)
+        foreach (string propertyKey in preset.Value.orderedKeyList)
         {
             UDSProperty property = properties[propertyKey];
-            dialogComponent.SetProperty(propertyKey, property.value, property.type);
+            dialogComponent.SetProperty(propertyKey, property.value, property.type, property.required);
         }
 
         Init(dialogComponent); // Re-init
@@ -276,16 +289,19 @@ public class PropertiesUI : MonoBehaviour, ISubUI
          * (similar to ConcurrentModificationException in Java) */
         for (int i = listElements.Count - 1; i >= 0; i--)
         {
-            GameObject go = listElements[i].gameObject;
-            Destroy(go);
+            if (listElements[i] != null && listElements[i].gameObject != null)
+            {
+                GameObject go = listElements[i].gameObject;
+                Destroy(go);
+            }
         }
+
+        listElements.Clear();
     }
 
     protected void OnDisable()
     {
         ClearScrollView();
-
-        listElements.Clear();
     }
 
     private bool IsMouseOverAddPropertyDropdown()

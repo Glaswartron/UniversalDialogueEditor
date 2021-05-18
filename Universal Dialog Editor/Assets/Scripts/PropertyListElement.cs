@@ -33,8 +33,20 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         idInputField.onEndEdit.AddListener(
             (input) =>
             {
+                bool containsInvalidCharacter = false;
+                char invalidChar = default;
+                foreach (char c in EditorManager.invalidCharacters)
+                {
+                    if (input.Contains(c.ToString()))
+                    {
+                        containsInvalidCharacter = true;
+                        invalidChar = c;
+                    }
+                }
+
                 // Invalid input or ID already taken
-                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input))
+                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
+                    || containsInvalidCharacter)
                 {
                     if (dialogComponent.HasProperty(input) && !input.Equals(id))
                         return; // ID hasn't been edited
@@ -43,8 +55,11 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                     idInputField.SetTextWithoutNotify(id);
                     idInputField.caretPosition = id.Length - 1;
 
-                    ErrorMessage.instance.ShowErrorMessage
-                        ("This ID is either invalid (empty) or already taken by another property");
+                    if (!containsInvalidCharacter)
+                        ErrorMessage.instance.ShowErrorMessage
+                            ("This ID is either invalid (empty) or already taken by another property");
+                    else
+                        ErrorMessage.instance.ShowErrorMessage("Name contains the invalid character " + invalidChar);
 
                     return;
                 }

@@ -21,14 +21,20 @@ public class SavePresetMenu : MonoBehaviour
     }
 
     public void Init
-        (Dictionary<string, UDSProperty> properties, PropertyPreset.PropertyPresetType type)
+        (Dictionary<string, UDSProperty> properties, List<string> keys, PropertyPreset.PropertyPresetType type)
     {
         saveButton.onClick.RemoveAllListeners();
 
         saveButton.onClick.AddListener(
             () => 
             {
-                CreateAndSavePreset(properties, type); 
+                bool successful = CreateAndSavePreset(properties, keys, type);
+
+                if (successful)
+                {
+                    ErrorMessage.instance.ShowErrorMessage("Preset saved", true);
+                    EditorManager.instance.ActiveMenu = null;
+                }
             }
         );
 
@@ -43,25 +49,32 @@ public class SavePresetMenu : MonoBehaviour
                 break;
         }
 
-        saveButton.GetComponentInChildren<TMP_Text>().SetText("Save " + typeStr + " Property Preset");
+        saveButton.GetComponentInChildren<TMP_Text>().SetText("Save " + typeStr + " Preset");
     }
 
-    private void CreateAndSavePreset
-        (Dictionary<string, UDSProperty> _properties, PropertyPreset.PropertyPresetType type)
+    private bool CreateAndSavePreset
+        (Dictionary<string, UDSProperty> _properties, List<string> keys, PropertyPreset.PropertyPresetType type)
     {
         if (string.IsNullOrWhiteSpace(idInputField.text))
         {
             ErrorMessage.instance.ShowErrorMessage("You have to enter a name/id for the Property Preset");
-            return;
+            return false;
+        }
+
+        foreach (char c in EditorManager.invalidCharacters)
+        {
+            if (idInputField.text.Contains(c.ToString()))
+                ErrorMessage.instance.ShowErrorMessage("Name contains the invalid character " + c);
         }
 
         PropertyPreset preset = new PropertyPreset()
         {
             id = idInputField.text,
             properties = _properties,
+            orderedKeyList = keys,
             propertyPresetType = type
         };
 
-        FileHandler.SavePropertyPreset(preset);
+        return FileHandler.SavePropertyPreset(preset);
     }
 }

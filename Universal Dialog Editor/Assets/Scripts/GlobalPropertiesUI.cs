@@ -85,7 +85,6 @@ public class GlobalPropertiesUI : PropertiesUI
     private void InitListElements(IEnumerable properties)
     {
         ClearScrollView();
-        listElements.Clear();
 
         foreach (string id in properties)
         {

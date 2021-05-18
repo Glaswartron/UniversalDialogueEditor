@@ -11,6 +11,8 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         {
             conditional = value;
 
+            answer.conditional = value;
+
             if (spriteRenderer == null)
                 spriteRenderer = GetComponent<SpriteRenderer>();
 
@@ -60,6 +62,17 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     private DialogPartVisual connectedDP;
     private LineRenderer connection;
 
+    public UDSCondition Condition
+    {
+        set
+        {
+            condition = value;
+
+            answer.condition = value;
+        }
+
+        get { return condition; }
+    }
     private UDSCondition condition;
 
     /// <summary>
@@ -239,12 +252,12 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 
     public void SetCondition(UDSCondition condition)
     {
-        this.condition = condition;
+        this.Condition = condition;
     }
 
     public UDSCondition GetCondition()
     {
-        return condition;
+        return Condition;
     }
 
     private Color GetColor()

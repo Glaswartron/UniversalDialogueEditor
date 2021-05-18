@@ -1,9 +1,16 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class DialogUI : MonoBehaviour
 {
+    public struct Warning
+    {
+        public string text;
+        public Color color;
+    }
+
     [Header("Main UI")]
     public PropertiesUI propertiesUI;
     public IDInputUI idInputUI;
@@ -18,8 +25,10 @@ public class DialogUI : MonoBehaviour
 
     private Dialog dialog;
 
-    // Extremely important for locating the correct file later on
+    // Extremely important for locating the correct file later on(?)
     private string oldID;
+
+    private List<Warning> warnings;
 
     private string infoTemplate = "Dialog Parts: {0}\n" +
                           "Answers: {1}\n"      +
@@ -32,6 +41,8 @@ public class DialogUI : MonoBehaviour
 
         idInputUI.Init(dialog);
         propertiesUI.Init(dialog); // Super important stuff
+
+        warnings = EditorManager.instance.GenerateWarnings();
     }
 
     // Start is called before the first frame update
