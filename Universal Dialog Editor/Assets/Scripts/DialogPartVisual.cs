@@ -219,6 +219,26 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         // Update the answer array on the Dialog Part
         dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
 
+        // If a Property Preset for new Dialog Parts is selected
+        if (EditorManager.globalAnswerPropertyPreset != null)
+        {
+            PropertyPreset? preset =
+                FileHandler.LoadPropertyPreset
+                (EditorManager.globalAnswerPropertyPreset, PropertyPreset.PropertyPresetType.ANSWER);
+
+            if (preset == null)
+                // Error message handled by FileHandler - true because Answer was created
+                return true; 
+
+            Dictionary<string, UDSProperty> properties = preset.Value.properties;
+
+            // Add all properties from the preset
+            foreach (string p in properties.Keys)
+            {
+                answerVis.answer.SetProperty(p, properties[p].value, properties[p].type);
+            }
+        }
+
         return true;
     }
 

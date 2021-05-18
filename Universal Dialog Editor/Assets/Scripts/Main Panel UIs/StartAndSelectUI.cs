@@ -23,7 +23,7 @@ public class StartAndSelectUI : MonoBehaviour
     public Button exportAnswerPresetButton;
 
     [Header("Prefabs")]
-    public GameObject selectableTextLarge;
+    public GameObject selectableText;
     public GameObject newDialogInputField;
 
     private RectTransform loadButtonRectTransform;
@@ -59,7 +59,8 @@ public class StartAndSelectUI : MonoBehaviour
 
         deleteButton.onClick.AddListener(DeleteDialog);
 
-        InitPresetDropdowns();
+        if ((folderPath = PlayerPrefs.GetString("startAndSelectUIDirPath", null)) != null)
+            LoadFolder(folderPath);
     }
 
     private void OnEnable()
@@ -67,6 +68,8 @@ public class StartAndSelectUI : MonoBehaviour
         // Refresh (e.g. if the user returns from a dialog)
         if (folderLoaded)
             LoadFolder(folderPath);
+
+        InitPresetDropdowns();
     }
 
     private void OnDisable()
@@ -84,6 +87,7 @@ public class StartAndSelectUI : MonoBehaviour
             return;
 
         folderPath = path;
+        PlayerPrefs.SetString("startAndSelectUIDirPath", folderPath); // Save path
 
         pathInputField.SetTextWithoutNotify(path);
 
@@ -112,7 +116,7 @@ public class StartAndSelectUI : MonoBehaviour
 
     private GameObject InstantiateDialogSelectableText(string text)
     {
-        GameObject toggleGO = Instantiate(selectableTextLarge,
+        GameObject toggleGO = Instantiate(selectableText,
                                           dialogsScrollViewContent.transform);
 
         toggleGO.GetComponentInChildren<TMP_Text>().SetText(text);
@@ -317,6 +321,9 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void PopulatePresetDropdowns()
     {
+        dialogPartPresetDropdown.ClearOptions();
+        answerPresetDropdown.ClearOptions();
+
         string[] dialogPartPresets = 
             FileHandler.GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType.DIALOG_PART);
 

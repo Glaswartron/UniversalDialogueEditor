@@ -76,6 +76,7 @@ public class EditorManager : MonoBehaviour
     public GameObject globalPropertiesMenu;
     public ConditionMenu conditionMenu;
     public SavePresetMenu savePresetMenu;
+    public LoadPresetMenu loadPresetMenu;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
@@ -501,7 +502,20 @@ public class EditorManager : MonoBehaviour
         // If a Property Preset for new Dialog Parts is selected
         if (globalDialogPartPropertyPreset != null)
         {
+            PropertyPreset? preset = 
+                FileHandler.LoadPropertyPreset
+                (globalDialogPartPropertyPreset, PropertyPreset.PropertyPresetType.DIALOG_PART);
 
+            if (preset == null)
+                return; // Error message handled by FileHandler
+
+            Dictionary<string, UDSProperty> properties = preset.Value.properties;
+
+            // Add all properties from the preset
+            foreach (string p in properties.Keys)
+            {
+                dpVisual.dialogPart.SetProperty(p, properties[p].value, properties[p].type);
+            }    
         }
     }
 

@@ -8,11 +8,13 @@ public struct UDSProperty
 {
     public object value;
     public Type type;
+    public bool required;
 
-    public UDSProperty(object value, Type type)
+    public UDSProperty(object value, Type type, bool required = false)
     {
         this.value = value;
         this.type = type;
+        this.required = required;
     }
 }
 
@@ -70,8 +72,8 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             this.dialog = dialog;
 
-            SetProperty("Text", "");
-            SetProperty("Text speed", 1);
+            SetProperty("Text", "", required: true);
+            SetProperty("Text speed", 1, required: true);
         }
 
         internal DialogPart Copy(Dialog dialog)
@@ -111,7 +113,7 @@ public sealed class Dialog : DialogComponent, ICloneable
                 index = answerIndex;
                 this.dialogPart = dialogPart;
 
-                SetProperty("Text", "");
+                SetProperty("Text", "", required: true);
             }
 
             internal Answer Copy(DialogPart dialogPart)
@@ -192,20 +194,20 @@ public class DialogComponent
         return properties;
     }
 
-    internal bool SetProperty<T>(string key, T value)
+    internal bool SetProperty<T>(string key, T value, bool required = false)
     {
         bool alreadyThere = HasProperty(key, typeof(T));
 
-        properties[key] = new UDSProperty(value, typeof(T));
+        properties[key] = new UDSProperty(value, typeof(T), required);
 
         return alreadyThere;
     }
 
-    internal bool SetProperty(string key, object value, Type type)
+    internal bool SetProperty(string key, object value, Type type, bool required = false)
     {
         bool alreadyThere = HasProperty(key, type);
 
-        properties[key] = new UDSProperty(value, type);
+        properties[key] = new UDSProperty(value, type, required);
 
         return alreadyThere;
     }
@@ -228,6 +230,15 @@ public class DialogComponent
     internal bool DeleteProperty(string key)
     {
         return properties.Remove(key);
+    }
+
+    internal void DeleteAllProperties()
+    {
+        foreach (string property in GetPropertyKeys())
+        {
+            if (!properties[property].required)
+                DeleteProperty(property);
+        }
     }
 
     /*public string GetStringProperty(string key)

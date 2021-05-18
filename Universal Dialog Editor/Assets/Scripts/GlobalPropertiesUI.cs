@@ -49,15 +49,21 @@ public class GlobalPropertiesUI : PropertiesUI
         // Takes care of all UI elements except for the Delete Button
         listElement.Init();
 
+        if (property.required)
+            listElement.deleteButton.gameObject.SetActive(false);
+        else
+            listElement.deleteButton.gameObject.SetActive(true);
+
         // Delete Button
         listElement.deleteButton.onClick.AddListener(
             () =>
             {
                 string localKey = id;
 
-                EditorManager.globalProperties.Remove(localKey);
+                EditorManager.globalProperties.Remove(localKey); // !
 
                 listElements.Remove(listElement);
+
                 Destroy(listElement.gameObject);
             }
         );

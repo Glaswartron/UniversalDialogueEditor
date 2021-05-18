@@ -20,9 +20,6 @@ public class FileHandler
     private static readonly string ANSWER_PROPERTY_PRESET_PATH
         = Path.Combine(Application.persistentDataPath, "PropertyPresets", "AnswerPropertyPresets");
 
-    private static readonly string GLOBAL_PROPERTY_PRESET_PATH
-        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "GlobalPropertyPresets");
-
     public static void CreateTestDialog()
     {
 #if UNITY_EDITOR
@@ -378,9 +375,6 @@ public class FileHandler
         if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
             Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
 
-        if (!Directory.Exists(GLOBAL_PROPERTY_PRESET_PATH))
-            Directory.CreateDirectory(GLOBAL_PROPERTY_PRESET_PATH);
-
         BinaryFormatter formatter = new BinaryFormatter();
 
         if (path == null)
@@ -507,8 +501,6 @@ public class FileHandler
                 return DIALOG_PART_PROPERTY_PRESET_PATH;
             case PropertyPreset.PropertyPresetType.ANSWER:
                 return ANSWER_PROPERTY_PRESET_PATH;
-            case PropertyPreset.PropertyPresetType.GLOBAL:
-                return GLOBAL_PROPERTY_PRESET_PATH;
             default:
                 return null;
         }

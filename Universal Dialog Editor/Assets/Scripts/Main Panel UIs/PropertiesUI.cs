@@ -14,7 +14,7 @@ public struct PropertyPreset
     [Serializable]
     public enum PropertyPresetType
     {
-        DIALOG_PART, ANSWER, GLOBAL
+        DIALOG_PART, ANSWER
     }
 }
 
@@ -65,6 +65,16 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                 PropertyPreset.PropertyPresetType type = GetTypeForPreset();
 
                 EditorManager.instance.savePresetMenu.Init(properties, type);
+            }
+        );
+
+        loadPresetButton.onClick.AddListener(
+            () =>
+            {
+                EditorManager.instance.ActiveMenu 
+                    = EditorManager.instance.loadPresetMenu.gameObject;
+
+                EditorManager.instance.loadPresetMenu.Init(this, GetTypeForPreset());
             }
         );
 
@@ -152,13 +162,18 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         // Takes care of all UI elements except for the Delete Button
         listElement.Init(dialogComponent);
 
+        if (property.required)
+            listElement.deleteButton.gameObject.SetActive(false);
+        else
+            listElement.deleteButton.gameObject.SetActive(true);
+
         // Delete Button
         listElement.deleteButton.onClick.AddListener(
             () =>
             {
                 string localKey = listElement.id;
 
-                EditorManager.globalProperties.Remove(localKey);
+                dialogComponent.DeleteProperty(localKey); // !
 
                 listElements.Remove(listElement);
 
@@ -216,19 +231,37 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         );
     }
 
-    private Dictionary<string, UDSProperty> GetPropertiesForPreset()
+    public void LoadPropertyPreset(PropertyPreset? preset)
     {
-        if (dialogComponent == null)
-            return EditorManager.globalProperties;
-        else
-            return dialogComponent.GetProperties();
+        if (preset == null)
+        {
+            Debug.LogError("Preset passed to LoadPropertyPreset is null");
+            return;
+        }
+
+        // Clear properties (except for the required ones)
+        dialogComponent.DeleteAllProperties();
+
+        ClearScrollView();
+
+        Dictionary<string, UDSProperty> properties = preset.Value.properties;
+
+        foreach (string propertyKey in properties.Keys)
+        {
+            UDSProperty property = properties[propertyKey];
+            dialogComponent.SetProperty(propertyKey, property.value, property.type);
+        }
+
+        Init(dialogComponent); // Re-init
+    }
+
+    private Dictionary<string, UDSProperty> GetPropertiesForPreset()
+    { 
+        return dialogComponent.GetProperties();
     }
 
     private PropertyPreset.PropertyPresetType GetTypeForPreset()
     {
-        if (dialogComponent == null)
-            return PropertyPreset.PropertyPresetType.GLOBAL;
-
         if (dialogComponent is Dialog.DialogPart)
             return PropertyPreset.PropertyPresetType.DIALOG_PART;
         else if (dialogComponent is Dialog.DialogPart.Answer)
