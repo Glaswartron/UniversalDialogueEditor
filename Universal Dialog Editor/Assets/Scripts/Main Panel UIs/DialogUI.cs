@@ -18,17 +18,15 @@ public class DialogUI : MonoBehaviour
     public Button saveAndExitButton;
     public Button discardAndExitButton;
     public TMP_Text infoText;
-    public GameObject warningScrollViewContent;
+    public Transform warningScrollViewContent;
 
     [Header("Prefabs")]
     public GameObject warningBox;
 
     private Dialog dialog;
 
-    // Extremely important for locating the correct file later on(?)
-    private string oldID;
-
     private List<Warning> warnings;
+    private List<GameObject> warningBoxes;
 
     private string infoTemplate = "Dialog Parts: {0}\n" +
                           "Answers: {1}\n"      +
@@ -39,10 +37,16 @@ public class DialogUI : MonoBehaviour
     {
         dialog = EditorManager.instance.dialog;
 
+        // Super important stuff
         idInputUI.Init(dialog);
-        propertiesUI.Init(dialog); // Super important stuff
+        propertiesUI.Init(dialog);
 
-        warnings = EditorManager.instance.GenerateWarnings();
+        ShowWarnings();
+    }
+
+    private void OnDisable()
+    {
+        ClearWarnings();
     }
 
     // Start is called before the first frame update
@@ -50,7 +54,7 @@ public class DialogUI : MonoBehaviour
     {
         saveButton.onClick.AddListener(
             () => AreYouSureDialog.instance.Open(
-                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog",
+                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog or any dialog with the same ID if there is one",
                 "Yes",
                 "No",
                 onYes: () => Save(),
@@ -60,7 +64,7 @@ public class DialogUI : MonoBehaviour
 
         saveAndExitButton.onClick.AddListener(
             () => AreYouSureDialog.instance.Open(
-                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog",
+                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog or any dialog with the same ID if there is one",
                 "Yes",
                 "No",
                 onYes: () => {
@@ -99,11 +103,47 @@ public class DialogUI : MonoBehaviour
     private void Save()
     {
         bool success =
-                    FileHandler.SaveDialog(EditorManager.instance.ConstructDialog(),
-                                           EditorManager.instance.pathToDialog);
+            FileHandler.SaveDialog(EditorManager.instance.ConstructDialog(),
+                                   EditorManager.instance.pathToDialog);
 
         if (success)
             ErrorMessage.instance.ShowErrorMessage("Saved", true);
         // Error message for else case handled by FileHandler.SaveDialog
+    }
+
+    private void ShowWarnings()
+    {
+        if (warningBoxes == null)
+            warningBoxes = new List<GameObject>();
+
+        ClearWarnings();
+
+        warnings = EditorManager.instance.GenerateWarnings();
+
+        foreach (Warning warning in warnings)
+        {
+            GameObject newWarningBox = Instantiate(warningBox, warningScrollViewContent);
+            warningBoxes.Add(newWarningBox);
+            TMP_Text text = newWarningBox.GetComponentInChildren<TMP_Text>();
+
+            text.SetText(warning.text);
+            text.color = warning.color;
+        }
+    }
+
+    private void ClearWarnings()
+    {
+        if (warningBoxes == null)
+            return;
+
+        foreach (GameObject warningBox in warningBoxes)
+        {
+            Destroy(warningBox.gameObject);
+        }
+
+        warningBoxes.Clear();
+
+        if (warnings != null)
+            warnings.Clear();
     }
 }

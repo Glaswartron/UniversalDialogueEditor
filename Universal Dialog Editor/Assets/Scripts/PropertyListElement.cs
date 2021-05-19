@@ -29,63 +29,82 @@ public class PropertyListElement : MonoBehaviour, ISubUI
     {
         this.dialogComponent = dialogComponent;
 
-        // ID Input Field
-        idInputField.onEndEdit.AddListener(
-            (input) =>
-            {
-                bool containsInvalidCharacter = false;
-                char invalidChar = default;
-                foreach (char c in EditorManager.invalidCharacters)
-                {
-                    if (input.Contains(c.ToString()))
-                    {
-                        containsInvalidCharacter = true;
-                        invalidChar = c;
-                    }
-                }
-
-                // Invalid input or ID already taken
-                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
-                    || containsInvalidCharacter)
-                {
-                    if (dialogComponent.HasProperty(input) && !input.Equals(id))
-                        return; // ID hasn't been edited
-
-                    // Go back to previous id
-                    idInputField.SetTextWithoutNotify(id);
-                    idInputField.caretPosition = id.Length - 1;
-
-                    if (!containsInvalidCharacter)
-                        ErrorMessage.instance.ShowErrorMessage
-                            ("This ID is either invalid (empty) or already taken by another property");
-                    else
-                        ErrorMessage.instance.ShowErrorMessage("Name contains the invalid character " + invalidChar);
-
-                    return;
-                }
-
-                DialogComponent localDC = dialogComponent;
-
-                // Standard case: Property exists but ID is being changed
-                if (localDC.HasProperty(id))
-                {
-                    var oldProperty = localDC.GetProperty(id);
-                    localDC.UpdateProperty
-                        (id, input, oldProperty.value, type);
-                }
-                // Special case: Happens only when the ID is being edited for the first time
-                else
-                {
-                    localDC.SetProperty(input, value, type);
-                }
-
-                id = input;
-            }
-        );
-
         UDSProperty? property = null; // Nullable
         if (dialogComponent.HasProperty(id))
             property = dialogComponent.GetProperty(id);
+
+        if (property != null && property.Value.required)
+            idInputField.interactable = false;
+
+        if (property == null || !property.Value.required) // Only if not required
+        {
+            // ID Input Field
+            idInputField.onEndEdit.AddListener(
+                (input) =>
+                {
+                    if (dialogComponent.HasProperty(input))
+                    {
+                        ErrorMessage.instance.ShowErrorMessage
+                            ("The Dialog Component already contains a Property with that ID");
+
+                    // Go back to previous id
+                    idInputField.SetTextWithoutNotify(id);
+                        idInputField.caretPosition = id.Length - 1;
+
+                        return;
+                    }
+
+                // Check if input contains invalid char
+                bool containsInvalidCharacter = false;
+                    char invalidChar = default;
+                    foreach (char c in EditorManager.invalidCharacters)
+                    {
+                        if (input.Contains(c.ToString()))
+                        {
+                            containsInvalidCharacter = true;
+                            invalidChar = c;
+                        }
+                    }
+
+                // Invalid input or ID already taken
+                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
+                        || containsInvalidCharacter)
+                    {
+                        if (dialogComponent.HasProperty(input) && !input.Equals(id))
+                            return; // ID hasn't been edited
+
+                    // Go back to previous id
+                    idInputField.SetTextWithoutNotify(id);
+                        idInputField.caretPosition = id.Length - 1;
+
+                        if (!containsInvalidCharacter)
+                            ErrorMessage.instance.ShowErrorMessage
+                                ("This ID is either invalid (empty) or already taken by another property");
+                        else
+                            ErrorMessage.instance.ShowErrorMessage("Name contains the invalid character " + invalidChar);
+
+                        return;
+                    }
+
+                    DialogComponent localDC = dialogComponent;
+
+                // Standard case: Property exists but ID is being changed
+                if (localDC.HasProperty(id))
+                    {
+                        var oldProperty = localDC.GetProperty(id);
+                        localDC.UpdateProperty
+                            (id, input, oldProperty.value, type);
+                    }
+                // Special case: Happens only when the ID is being edited for the first time
+                else
+                    {
+                        localDC.SetProperty(input, value, type);
+                    }
+
+                    id = input;
+                }
+            );
+        }
 
         // String/Int/Float => InputField, Bool => Toggle
         if (type != typeof(bool))
@@ -104,10 +123,11 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 {
                     DialogComponent localDC = dialogComponent;
                     string localKey = id;
+                    UDSProperty? localProperty = property;
 
                     try
                     {
-                        if (!string.IsNullOrWhiteSpace(input))
+                        if (!string.IsNullOrWhiteSpace(input) || type == typeof(string))
                         {
                             object val = null;
                             if (type != typeof(float))
@@ -115,12 +135,19 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                             else
                                 val = float.Parse(input, CultureInfo.CurrentCulture);
 
-                            localDC.SetProperty(localKey, val, type);
+                            if (localProperty == null)
+                                localDC.SetProperty(localKey, val, type);
+                            else
+                                localDC.SetProperty(localKey, val, type, localProperty.Value.required);
                         }
-                        else if (type != typeof(string))
+                        else
                         {
                             var defaultValue = Activator.CreateInstance(type);
-                            localDC.SetProperty(localKey, defaultValue, type);
+
+                            if (localProperty == null)
+                                localDC.SetProperty(localKey, defaultValue, type);
+                            else
+                                localDC.SetProperty(localKey, defaultValue, type, localProperty.Value.required);
 
                             stringIntFloatInputField.SetTextWithoutNotify(defaultValue.ToString());
                         }

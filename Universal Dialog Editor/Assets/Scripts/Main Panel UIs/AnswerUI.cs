@@ -17,7 +17,7 @@ public class AnswerUI : MonoBehaviour
         answer = EditorManager.instance.SelectedAnswerVisual.answer;
 
         propertiesUI.Init(answer);
-        idInputUI.dialogComponent = answer;
+        idInputUI.Init(answer);
 
         string nextPartID = answer.nextDialogPartID;
         string fromTo 

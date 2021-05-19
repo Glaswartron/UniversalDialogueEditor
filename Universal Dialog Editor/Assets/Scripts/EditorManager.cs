@@ -362,6 +362,7 @@ public class EditorManager : MonoBehaviour
 
                     return false;
                 }
+
                 diapartIDs.Add(diapart.dialogPart.id);
             }
         }
@@ -466,18 +467,23 @@ public class EditorManager : MonoBehaviour
     /// <summary>
     /// Variant of ValidateDialog that generates DialogUI.Warnings for the DialogUI
     /// Criteria:
-    /// - At least one dialog part is there (1)
-    /// - The Dialog ID is not empty (2)
-    /// - There is a start Dialog Part (3)
-    /// - All Dialog Parts have an ID (4)
-    /// - All Dialog Part IDs are unique (5)
-    /// - All Answers have an ID (6)
-    /// - All Answer IDs are unique (7)
+    /// - At least one dialog part is there (1) - red
+    /// - The Dialog ID is not empty (2) - red
+    /// - There is a start Dialog Part (3) - red
+    /// - All Dialog Parts have an ID (4) - red
+    /// - All Dialog Part IDs are unique (5) - red
+    /// - All Answers have an ID (6) - red
+    /// - All Answer IDs are unique (7) - red
+    /// - There is no empty Text Property on an Answer (8) - yellow
+    /// - All Dialog Parts are reachable (9) - yellow
+    /// - There is no empty Text Property on a Dialog Part (10) - yellow
     /// </summary>
     /// <returns>A list with warnings for the warning field in the DialogUI</returns>
     public List<DialogUI.Warning> GenerateWarnings()
     {
         List<DialogUI.Warning> warnings = new List<DialogUI.Warning>();
+
+        bool[] warningFlags = new bool[10];
 
         // 1
         if (dialogPartVisuals.Count == 0)
@@ -487,6 +493,8 @@ public class EditorManager : MonoBehaviour
                 text = "A dialog has to contain at least one Dialog Part",
                 color = Color.red
             });
+
+            warningFlags[0] = true;
         }
 
         // 2
@@ -497,6 +505,8 @@ public class EditorManager : MonoBehaviour
                 text = "The Dialog requires a name",
                 color = Color.red
             });
+
+            warningFlags[1] = true;
         }
 
         // 3
@@ -507,60 +517,162 @@ public class EditorManager : MonoBehaviour
                 text = "The Dialog requires a start Dialog Part",
                 color = Color.red
             });
+
+            warningFlags[2] = true;
         }
 
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
         {
             // 4
-            if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
+            if (!warningFlags[3])
             {
-                warnings.Add(new DialogUI.Warning
+                if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
                 {
-                    text = "There is a DialogPart without an ID",
-                    color = Color.red
-                });
+                    warnings.Add(new DialogUI.Warning
+                    {
+                        text = "There is a DialogPart without an ID",
+                        color = Color.red
+                    });
+
+                    warningFlags[3] = true;
+                }
             }
 
             // 5
-            if (diapartIDs.Contains(diapart.dialogPart.id))
+            if (!warningFlags[4])
             {
-                warnings.Add(new DialogUI.Warning
+                if (diapartIDs.Contains(diapart.dialogPart.id))
                 {
-                    text = string.Format(
-                        "All IDs have to be unique. Dialog Part ID {0} appears twice",
-                        diapart.dialogPart.id),
-                    color = Color.red
-                });
+                    warnings.Add(new DialogUI.Warning
+                    {
+                        text = string.Format(
+                            "All IDs have to be unique. Dialog Part ID {0} appears twice",
+                            diapart.dialogPart.id),
+                        color = Color.red
+                    });
+
+                    warningFlags[4] = true;
+                }
             }
             diapartIDs.Add(diapart.dialogPart.id);
 
             HashSet<string> answerIDs = new HashSet<string>();
             foreach (AnswerVisual answer in diapart.answers)
             {
-                // 6
-                if (string.IsNullOrWhiteSpace(answer.answer.id))
+                if (!warningFlags[5])
                 {
-                    warnings.Add(new DialogUI.Warning
+                    // 6
+                    if (string.IsNullOrWhiteSpace(answer.answer.id))
                     {
-                        text = "All answers need an ID. There is an " +
-                        "answer without an ID in Dialog Part " + diapart,
-                        color = Color.red
-                    });
+                        warnings.Add(new DialogUI.Warning
+                        {
+                            text = "There is an " +
+                            "answer without an ID in Dialog Part " + diapart.dialogPart.id,
+                            color = Color.red
+                        });
+
+                        warningFlags[5] = true;
+                    }
                 }
 
                 // 7
-                if (answerIDs.Contains(answer.answer.id))
+                if (!warningFlags[6])
+                {
+                    if (answerIDs.Contains(answer.answer.id))
+                    {
+                        warnings.Add(new DialogUI.Warning
+                        {
+                            text = string.Format(
+                            "All IDs have to be unique. Answer ID {0} appears twice",
+                            diapart.dialogPart.id),
+                            color = Color.red
+                        });
+
+                        warningFlags[6] = true;
+                    }
+                }
+
+                diapartIDs.Add(diapart.dialogPart.id);
+
+                // 8
+                if (!warningFlags[7])
+                {
+                    if (string.IsNullOrWhiteSpace(answer.answer.GetProperty<string>("Text")))
+                    {
+                        warnings.Add(new DialogUI.Warning
+                        {
+                            text = string.Format(
+                                    "The Text on Answer {0} is empty",
+                                    answer.answer.id),
+                            color = Color.yellow
+                        });
+
+                        warningFlags[7] = true;
+                    }
+                }
+            }
+
+            // 9 
+            if (!warningFlags[8])
+            {
+                if (!diapart.IsStart)
+                {
+                    bool connected = false;
+                    foreach (var otherDiapart in dialogPartVisuals)
+                    {
+                        if (otherDiapart == diapart)
+                            continue;
+
+                        if (otherDiapart.ConnectedDP == diapart)
+                        {
+                            connected = true;
+                            break;
+                        }
+
+                        foreach (var answer in otherDiapart.answers)
+                        {
+                            if (answer.ConnectedDP == diapart)
+                            {
+                                connected = true;
+                                break;
+                            }
+                        }
+
+                        if (connected)
+                            break;
+                    }
+
+                    if (!connected)
+                    {
+                        warnings.Add(new DialogUI.Warning
+                        {
+                            text = string.Format(
+                                "Dialog Part {0} is unreachable",
+                                diapart.dialogPart.id),
+                            color = Color.yellow
+                        });
+
+                        warningFlags[8] = true;
+                    }
+                }
+            }
+
+            // 10
+            if (!warningFlags[9])
+            {
+                if (string.IsNullOrWhiteSpace(diapart.dialogPart.GetProperty<string>("Text")))
                 {
                     warnings.Add(new DialogUI.Warning
                     {
                         text = string.Format(
-                        "All IDs have to be unique. Answer ID {0} appears twice",
-                        diapart.dialogPart.id),
-                        color = Color.red
+                                "The Text on Dialog Part {0} is empty",
+                                diapart.dialogPart.id),
+                        color = Color.yellow
                     });
+
+                    warningFlags[9] = true;
                 }
-                diapartIDs.Add(diapart.dialogPart.id);
             }
         }
 

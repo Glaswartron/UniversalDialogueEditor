@@ -4,13 +4,13 @@ public class UDSException : Exception
 {
     internal static readonly string msg1
           = "DialogComponent {0} does not contain " +
-            "a {1} property with key '{2}'. Consider checking " +
-            "DialogComponent.HasProperty() before querying the property";
+            "a {1} Property with key '{2}'. Consider checking " +
+            "DialogComponent.HasProperty() before querying the Property";
 
     internal static readonly string msg2
           = "DialogComponent {0} does not contain " +
-            "a property with key '{1}'. Consider checking " +
-            "DialogComponent.HasProperty() before querying the property";
+            "a Property with key '{1}'. Consider checking " +
+            "DialogComponent.HasProperty() before querying the Property";
 
     internal static readonly string msg3
               = "Property with key {0} of DialogComponent {1} exists but can not " +

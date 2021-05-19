@@ -232,16 +232,19 @@ public class DialogComponent
 
     internal bool DeleteProperty(string key)
     {
-        return properties.Remove(key);
+        if (!GetProperty(key).required)
+            return properties.Remove(key);
+        else
+        {
+            Debug.LogWarning("Called DeleteProperty on a required Property");
+            return false;
+        }
     }
 
     internal void DeleteAllProperties()
     {
         foreach (string property in GetPropertyKeys())
-        {
-            if (!properties[property].required)
-                DeleteProperty(property);
-        }
+            DeleteProperty(property);
     }
 
     /*public string GetStringProperty(string key)

@@ -177,22 +177,24 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         if (property.required)
             listElement.deleteButton.gameObject.SetActive(false);
         else
+        {
             listElement.deleteButton.gameObject.SetActive(true);
 
-        // Delete Button
-        listElement.deleteButton.onClick.AddListener(
-            () =>
-            {
-                string localKey = listElement.id;
-                PropertyListElement localListElement = listElement;
+            // Delete Button
+            listElement.deleteButton.onClick.AddListener(
+                () =>
+                {
+                    string localKey = listElement.id;
+                    PropertyListElement localListElement = listElement;
 
-                dialogComponent.DeleteProperty(localKey); // !
+                    dialogComponent.DeleteProperty(localKey); // !
 
                 listElements.Remove(localListElement);
 
-                Destroy(localListElement.gameObject);
-            }
-        );
+                    Destroy(localListElement.gameObject);
+                }
+            );
+        }
     }
 
     public void InitAddPropertyDropdown()
@@ -291,7 +293,14 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         {
             if (listElements[i] != null && listElements[i].gameObject != null)
             {
+                if (string.IsNullOrWhiteSpace(listElements[i].id))
+                {
+                    ErrorMessage.instance.ShowErrorMessage
+                        ("A Property without an ID was found and discarded on Dialog Component " + dialogComponent.id);
+                }
+
                 GameObject go = listElements[i].gameObject;
+
                 Destroy(go);
             }
         }
