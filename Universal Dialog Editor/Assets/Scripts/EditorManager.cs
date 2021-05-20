@@ -99,8 +99,6 @@ public class EditorManager : MonoBehaviour
 
     //public DialogInfoInputField[] inputFields;
 
-    private bool contextMenuOpen;
-
     /// <summary>
     /// The currently selected Dialog Part (visual)
     /// </summary>
@@ -407,8 +405,8 @@ public class EditorManager : MonoBehaviour
             // Add all the answers (for each Dialog Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
             {
-                // Mathzzz
-                float angle = (i + 1) * ((2 * Mathf.PI) / diaPart.answers.Length);
+                // Position Mathzzz
+                float angle = diaPart.answers[i].angle;
 
                 Vector2 middle = visualGO.transform.position;
                 Vector2 position = new Vector2(middle.x + Mathf.Cos(angle) * 0.75f,
@@ -423,6 +421,8 @@ public class EditorManager : MonoBehaviour
                 answerVisualGO.transform.parent = visualGO.transform;
                 answerVis.parentDialogPart = visual;
                 answerVis.answer = diaPart.answers[i];
+                answerVis.Conditional = diaPart.answers[i].conditional;
+                answerVis.Condition = diaPart.answers[i].condition;
                 answerVis.index = i;
                 answers.Add(answerVis);
 
@@ -742,8 +742,9 @@ public class EditorManager : MonoBehaviour
             // Add all properties from the preset
             foreach (string p in properties.Keys)
             {
-                dpVisual.dialogPart.SetProperty(p, properties[p].value, properties[p].type);
-            }    
+                dpVisual.dialogPart.SetProperty
+                    (p, properties[p].value, properties[p].type, properties[p].required);
+            }
         }
     }
 
@@ -759,21 +760,6 @@ public class EditorManager : MonoBehaviour
         GameObject dpGO = Instantiate(dialogPartVisual, pos, Quaternion.identity);
 
         DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
-        //dpVisual.dialogPart = new DialogOld.DialogPart();
-
-        // Do se magic
-        /*dpVisual.dialogPart.id = SelectedDialogPartVisual.dialogPart.id;
-        dpVisual.dialogPart.nextPartID = SelectedDialogPartVisual.dialogPart.nextPartID;
-        dpVisual.dialogPart.name = SelectedDialogPartVisual.dialogPart.name;
-        dpVisual.dialogPart.nameDE = SelectedDialogPartVisual.dialogPart.nameDE;
-        dpVisual.dialogPart.text = SelectedDialogPartVisual.dialogPart.text;
-        dpVisual.dialogPart.textDE = SelectedDialogPartVisual.dialogPart.textDE;
-        dpVisual.dialogPart.answers = SelectedDialogPartVisual.dialogPart.answers;
-        dpVisual.dialogPart.gameVariable = SelectedDialogPartVisual.dialogPart.gameVariable;
-        dpVisual.dialogPart.gvValue = SelectedDialogPartVisual.dialogPart.gvValue;
-        dpVisual.dialogPart.itemID = SelectedDialogPartVisual.dialogPart.itemID;
-        dpVisual.dialogPart.itemAmount = SelectedDialogPartVisual.dialogPart.itemAmount;
-        dpVisual.dialogPart.cutsceneToStartID = SelectedDialogPartVisual.dialogPart.cutsceneToStartID;*/
 
         dialogPartVisuals.Add(dpVisual);
     }
@@ -797,8 +783,8 @@ public class EditorManager : MonoBehaviour
     {
         if (SelectedDialogPartVisual.dialogPart.answers.Length > 0)
         {
-            ErrorMessage.instance.ShowErrorMessage("Nur Dialog Parts ohne Antwort " +
-                "können direkt zu einem anderen verbunden werden!");
+            ErrorMessage.instance.ShowErrorMessage("Only Dialog Parts without an (non-conditional) Answer + " +
+                "can be connected directly to other Dialog Parts");
             inConnectMode = false;
             return;
         }
@@ -808,11 +794,6 @@ public class EditorManager : MonoBehaviour
         noOfConnections++;
 
         inConnectMode = false;
-    }
-
-    public void SwitchToConnectMode()
-    {
-        inConnectMode = true;
     }
 
     /// <summary>
@@ -861,50 +842,6 @@ public class EditorManager : MonoBehaviour
         {
             selectedAnswerVisual.Selected = false;
             selectedAnswerVisual = null;
-        }
-    }
-
-    /// <summary>
-    /// Goes through all dialog parts and texts and adds the 
-    /// "|" delimiter in front of and behind color tags
-    /// </summary>
-    private void AddRichTextTagDelimiters()
-    {
-        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
-        {
-            /*if (diaPart.text.Contains("<color") && !diaPart.text.Contains("|<color"))
-                diaPart.text = diaPart.text.Replace("<color", "|<color");
-
-            if (diaPart.text.Contains("</color>") && !diaPart.text.Contains("</color>|"))
-                diaPart.text = diaPart.text.Replace("</color>", "</color>|");
-
-            if (diaPart.textDE.Contains("<color") && !diaPart.textDE.Contains("|<color"))
-                diaPart.textDE = diaPart.textDE.Replace("<color", "|<color");
-
-            if (diaPart.textDE.Contains("</color>") && !diaPart.textDE.Contains("</color>|"))
-                diaPart.textDE = diaPart.textDE.Replace("</color>", "</color>|");*/
-        }
-    }
-
-    /// <summary>
-    /// Goes through all dialog parts and texts and deletes the 
-    /// "|" delimiter in front of and behind color tags
-    /// </summary>
-    private void DeleteRichTextTagDelimiters()
-    {
-        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
-        {
-            /*if (diaPart.text.Contains("|<color"))
-                diaPart.text = diaPart.text.Replace("|<color", "<color");
-
-            if (diaPart.text.Contains("</color>|"))
-                diaPart.text = diaPart.text.Replace("</color>|", "</color>");
-
-            if (diaPart.textDE.Contains("|<color"))
-                diaPart.textDE = diaPart.textDE.Replace("|<color", "<color");
-
-            if (diaPart.textDE.Contains("</color>|"))
-                diaPart.textDE = diaPart.textDE.Replace("</color>|", "</color>");*/
         }
     }
 }

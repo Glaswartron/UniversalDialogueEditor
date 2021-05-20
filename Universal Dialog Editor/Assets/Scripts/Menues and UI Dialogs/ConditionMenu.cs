@@ -80,14 +80,17 @@ public class ConditionMenu : MonoBehaviour
     {
         currentConditional = conditional;
 
-        UDSCondition condition = conditional.GetCondition();
+        UDSCondition? conditionNullable = conditional.GetCondition();
 
-        // In case this conditions is being edited for the first time
-        if (string.IsNullOrWhiteSpace(condition.globalPropertyKey)
-            || string.IsNullOrWhiteSpace(condition.operation))
+        // In case this Condition is being edited for the first time
+        if (conditionNullable == null)
+        {
+            // Init Condition
+            conditional.SetCondition(new UDSCondition());
             InitCondition();
+        }
 
-        condition = conditional.GetCondition(); // Important
+        UDSCondition condition = conditional.GetCondition().Value; // Important
 
         // Cache type
         currentType = EditorManager.globalProperties[condition.globalPropertyKey].type;
@@ -251,7 +254,7 @@ public class ConditionMenu : MonoBehaviour
         if (reInitElements)
         {
             // Reinitialize everything
-            UDSCondition condition = currentConditional.GetCondition();
+            UDSCondition condition = currentConditional.GetCondition().Value;
             InitOperatorDropdown(condition);
             InitCompareToInputField(condition);
         }

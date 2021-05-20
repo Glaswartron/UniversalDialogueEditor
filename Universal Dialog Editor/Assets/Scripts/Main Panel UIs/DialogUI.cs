@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -119,6 +120,9 @@ public class DialogUI : MonoBehaviour
         ClearWarnings();
 
         warnings = EditorManager.instance.GenerateWarnings();
+
+        // Sort so that red warnings are on top
+        warnings = warnings.OrderByDescending(w => w.color == Color.red).ToList();
 
         foreach (Warning warning in warnings)
         {

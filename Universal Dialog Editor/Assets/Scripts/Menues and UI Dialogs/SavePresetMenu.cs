@@ -26,7 +26,7 @@ public class SavePresetMenu : MonoBehaviour
         saveButton.onClick.RemoveAllListeners();
 
         saveButton.onClick.AddListener(
-            () => 
+            () =>
             {
                 bool successful = CreateAndSavePreset(properties, keys, type);
 
@@ -75,6 +75,27 @@ public class SavePresetMenu : MonoBehaviour
             propertyPresetType = type
         };
 
+        if (FileHandler.ExistsPropertyPreset(preset))
+        {
+            bool done = false;
+            AreYouSureDialog.instance.Open(
+                "A Property Preset with this ID already exists. Do you want to override it?",
+                "Yes",
+                "No",
+                onYes: () => { done = Save(preset); },
+                onNo: () => { done = false; }
+            );
+
+            return done;
+        } 
+        else
+        {
+            return Save(preset);
+        }
+    }
+
+    private bool Save(PropertyPreset preset)
+    {
         return FileHandler.SavePropertyPreset(preset);
     }
 }

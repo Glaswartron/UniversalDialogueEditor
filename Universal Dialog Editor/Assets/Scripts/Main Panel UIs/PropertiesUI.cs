@@ -295,8 +295,16 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {
                 if (string.IsNullOrWhiteSpace(listElements[i].id))
                 {
-                    ErrorMessage.instance.ShowErrorMessage
-                        ("A Property without an ID was found and discarded on Dialog Component " + dialogComponent.id);
+                    if (dialogComponent != null)
+                    {
+                        ErrorMessage.instance.ShowErrorMessage
+                            ("A Property without an ID was found and discarded on Dialog Component " + dialogComponent.id);
+                    }
+                    else
+                    {
+                        ErrorMessage.instance.ShowErrorMessage
+                            ("A Global Property without an ID was found and discarded");
+                    }
                 }
 
                 GameObject go = listElements[i].gameObject;

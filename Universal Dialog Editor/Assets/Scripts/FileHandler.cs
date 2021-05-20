@@ -34,8 +34,8 @@ public class FileHandler
 
             diaPart2.answers = new Dialog.DialogPart.Answer[]
             {
-                new Dialog.DialogPart.Answer("Yes", 0, diaPart2),
-                new Dialog.DialogPart.Answer("No", 1, diaPart2)
+                new Dialog.DialogPart.Answer("Yes", 0, diaPart2, Mathf.PI),
+                new Dialog.DialogPart.Answer("No", 1, diaPart2, Mathf.PI/2)
             };
 
             dialog.startDialogPartID = "TestID";
@@ -367,11 +367,20 @@ public class FileHandler
         }
     }
 
+    public static bool ExistsPropertyPreset(PropertyPreset propertyPreset, string path = null)
+    {
+        if (path == null)
+        {
+            path = GetPropertyPresetDirectoryPath(propertyPreset.propertyPresetType);
+            path = Path.Combine(path, propertyPreset.id + ".udspreset");
+        }
+
+        return File.Exists(path);
+    }
+
     public static bool SavePropertyPreset(PropertyPreset propertyPreset, string path = null)
     {
         CreateDirectoriesIfNotThere();
-
-        BinaryFormatter formatter = new BinaryFormatter();
 
         if (path == null)
         {
@@ -379,21 +388,7 @@ public class FileHandler
             path = Path.Combine(path, propertyPreset.id + ".udspreset");
         }
 
-        bool dewIt = true;
-        if (File.Exists(path))
-        {
-            AreYouSureDialog.instance.Open(
-                "A Property Preset with this ID already exists. Do you want to override it?",
-                "Yes",
-                "No",
-                onYes: () => { dewIt = true; },
-                onNo: () => { dewIt = false; }
-            );
-        }
-
-        if (!dewIt)
-            return false;
-
+        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
 
         try

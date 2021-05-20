@@ -2,10 +2,10 @@
 
 public class Connection : MonoBehaviour
 {
-    public DialogPartVisual oneDP;
-    public AnswerVisual oneA;
+    public DialogPartVisual fromDP;
+    public AnswerVisual fromA;
 
-    public DialogPartVisual two;
+    public DialogPartVisual toDP;
 
     private LineRenderer lineRenderer;
     private GameObject coll;
@@ -45,11 +45,11 @@ public class Connection : MonoBehaviour
             return;
         }
 
-        if (oneDP != null)
-            oneDP.ConnectedDP = null;
+        if (fromDP != null)
+            fromDP.ConnectedDP = null;
 
-        if (oneA != null)
-            oneA.ConnectedDP = null;
+        if (fromA != null)
+            fromA.ConnectedDP = null;
     }
 
     public void DontUpdateConnectedVisual()

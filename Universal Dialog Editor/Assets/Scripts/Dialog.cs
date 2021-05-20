@@ -108,20 +108,30 @@ public sealed class Dialog : DialogComponent, ICloneable
             public string nextDialogPartID;
 
             public bool conditional;
-            public UDSCondition condition;
+            public UDSCondition? condition;
 
-            internal Answer(string answerID, int answerIndex, DialogPart dialogPart)
+            internal float angle; 
+
+            internal Answer(string answerID, int answerIndex, 
+                DialogPart dialogPart, float angle, 
+                bool conditional = false, UDSCondition? condition = null)
                 : base(answerID) 
             { 
                 index = answerIndex;
                 this.dialogPart = dialogPart;
+
+                this.conditional = conditional;
+                this.condition = condition;
+
+                this.angle = angle;
 
                 SetProperty("Text", "", required: true);
             }
 
             internal Answer Copy(DialogPart dialogPart)
             {
-                Answer copy = new Answer(this.id, this.index, dialogPart);
+                Answer copy = new Answer(this.id, this.index, dialogPart,
+                    this.angle, this.conditional, this.condition);
 
                 foreach (string key in this.GetPropertyKeys())
                 {

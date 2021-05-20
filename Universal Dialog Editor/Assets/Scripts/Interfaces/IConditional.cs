@@ -11,5 +11,5 @@ public struct UDSCondition
 public interface IConditional
 {
     public void SetCondition(UDSCondition condition);
-    public UDSCondition GetCondition();
+    public UDSCondition? GetCondition();
 }

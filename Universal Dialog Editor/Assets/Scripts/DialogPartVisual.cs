@@ -154,11 +154,13 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
             EditorManager.instance.SelectedDialogPartVisual = Selected ? this : null;
         else if (EditorManager.instance.SelectedAnswerVisual != null)
         {
+            // Answer selected + inConnectMode => Connect Answer to DialogPart
             EditorManager.instance.ConnectToSelectedAnswer(this);
             EditorManager.instance.SelectedDialogPartVisual = this;
         }
         else if (EditorManager.instance.SelectedDialogPartVisual != null)
         {
+            // DialogPart selected + inConnectMode => Connect DialogPart to DialogPart
             EditorManager.instance.ConnectToSelectedDP(this);
             EditorManager.instance.SelectedDialogPartVisual = this;
         }
@@ -176,6 +178,11 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         ContextMenuManager.instance.AddButton(
             "Add conditional answer",
             () => { AddAnswer(true); }
+        );
+
+        ContextMenuManager.instance.AddButton(
+            "Connect",
+            () => { EditorManager.instance.inConnectMode = true; }
         );
 
         ContextMenuManager.instance.AddButton(
@@ -205,15 +212,26 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
             return false;
         }
 
+        if (conditional && EditorManager.globalProperties.Count == 0)
+        {
+            ErrorMessage.instance.ShowErrorMessage("You need at least one " +
+                "Global Property to use conditions");
+            return false;
+        }
+
         GameObject answerGO = Instantiate(EditorManager.instance.answerVisual, transform);
         AnswerVisual answerVis = answerGO.GetComponent<AnswerVisual>();
 
         answers.Add(answerVis);
 
-        answerVis.answer = new Dialog.DialogPart.Answer("", answers.Count - 1, dialogPart);
+        answerVis.answer = new Dialog.DialogPart.Answer
+            ("", answers.Count - 1, dialogPart, 0, conditional);
+
+        if (conditional)
+            // Default values - initialized when ConditionMenu is opened at the end *
+            answerVis.answer.condition = new UDSCondition(); 
 
         answerVis.Conditional = conditional;
-
         answerVis.parentDialogPart = this;
 
         // Update the answer array on the Dialog Part
@@ -235,8 +253,18 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
             // Add all properties from the preset
             foreach (string p in properties.Keys)
             {
-                answerVis.answer.SetProperty(p, properties[p].value, properties[p].type);
+                answerVis.answer.SetProperty
+                    (p, properties[p].value, properties[p].type, properties[p].required);
             }
+        }
+
+        if (conditional)
+        {
+            // Show Condition menu - Important because it also initializes the Condition *
+            EditorManager.instance.ActiveMenu =
+                EditorManager.instance.conditionMenu.gameObject;
+
+            EditorManager.instance.conditionMenu.Init(answerVis);
         }
 
         return true;
@@ -287,8 +315,8 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         lineRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)dp.transform.position});
 
-        conn.oneDP = this;
-        conn.two = dp;
+        conn.fromDP = this;
+        conn.toDP = dp;
 
         ConnectedDP = dp;
         dpConnection = lineRenderer.GetComponent<Connection>();

@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 {
     public int index;
+
+    public TMP_Text idTextField;
 
     public bool Conditional
     {
@@ -45,6 +48,18 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     private SpriteRenderer spriteRenderer;
     private Camera mainCam;
 
+    public float Angle
+    {
+        set
+        {
+            angle = value;
+            answer.angle = value;
+        }
+
+        get { return angle; }
+    }
+    private float angle; // Position
+
     public DialogPartVisual ConnectedDP
     {
         set
@@ -62,7 +77,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     private DialogPartVisual connectedDP;
     private LineRenderer connection;
 
-    public UDSCondition Condition
+    public UDSCondition? Condition
     {
         set
         {
@@ -73,7 +88,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 
         get { return condition; }
     }
-    private UDSCondition condition;
+    private UDSCondition? condition;
 
     /// <summary>
     /// Whether or not this visual is currently selected (by the user)
@@ -108,6 +123,8 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
          * to apply the stuff changed in the editor */
         parentDialogPart.dialogPart.answers[index] = answer;
 
+        idTextField.SetText(answer.id);
+
         // Connection
         if (connection != null && ConnectedDP != null)
             connection.SetPositions(new Vector3[] {(Vector2)transform.position,
@@ -141,10 +158,10 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
                                     - (Vector2)parentDialogPart.transform.position;
             circleToMouse.Normalize();
 
-            float angle = Mathf.Atan2(circleToMouse.y, circleToMouse.x);
+            Angle = Mathf.Atan2(circleToMouse.y, circleToMouse.x);
 
             transform.position = (Vector2)parentDialogPart.transform.position
-                                 + new Vector2(Mathf.Cos(angle) * 0.75f, Mathf.Sin(angle) * 0.75f);
+                                 + new Vector2(Mathf.Cos(Angle) * 0.75f, Mathf.Sin(Angle) * 0.75f);
         }
     }
 
@@ -166,7 +183,6 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     {
         EditorManager.instance.SelectedAnswerVisual = this;
 
-        // TODO
         ContextMenuManager.instance.AddButton(
             "Connect",
             () => 
@@ -185,6 +201,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
                     {
                         EditorManager.instance.ActiveMenu = 
                             EditorManager.instance.conditionMenu.gameObject;
+
                         EditorManager.instance.conditionMenu.Init(this);
                     } 
                     else
@@ -241,13 +258,11 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         lineRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)dp.transform.position});
 
-        conn.oneA = this;
-        conn.two = dp;
+        conn.fromA = this;
+        conn.toDP = dp;
 
         ConnectedDP = dp;
         connection = lineRenderer;
-
-        //answer.nextPartID = dp.dialogPart.id;
     }
 
     public void SetCondition(UDSCondition condition)
@@ -255,7 +270,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         this.Condition = condition;
     }
 
-    public UDSCondition GetCondition()
+    public UDSCondition? GetCondition()
     {
         return Condition;
     }
