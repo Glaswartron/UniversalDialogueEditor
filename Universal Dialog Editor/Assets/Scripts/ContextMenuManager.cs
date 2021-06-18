@@ -16,7 +16,6 @@ public class ContextMenuManager : MonoBehaviour
 
     [Header("Prefabs")]
     public GameObject contextMenuButton;
-    public GameObject contextMenuSlider;
 
     [Header("Connection Context Menu")]
     public GameObject connectionContextMenu;

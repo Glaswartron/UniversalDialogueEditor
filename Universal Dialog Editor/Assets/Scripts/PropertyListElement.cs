@@ -13,7 +13,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
 
     [Header("Input Fields")]
     public TMP_InputField stringIntFloatInputField;
-    public Toggle boolToggle;
+    public ExtendedColorToggle boolToggle;
 
     [HideInInspector]
     public Type type;
@@ -33,10 +33,10 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         if (dialogComponent.HasProperty(id))
             property = dialogComponent.GetProperty(id);
 
-        if (property != null && property.Value.required)
+        if (property.HasValue && property.Value.required)
             idInputField.interactable = false;
 
-        if (property == null || !property.Value.required) // Only if not required
+        if (!property.HasValue || !property.Value.required) // Only if not required
         {
             // ID Input Field
             idInputField.onEndEdit.AddListener(
@@ -47,15 +47,15 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                         ErrorMessage.instance.ShowErrorMessage
                             ("The Dialog Component already contains a Property with that ID");
 
-                    // Go back to previous id
-                    idInputField.SetTextWithoutNotify(id);
+                        // Go back to previous id
+                        idInputField.SetTextWithoutNotify(id);
                         idInputField.caretPosition = id.Length - 1;
 
                         return;
                     }
 
-                // Check if input contains invalid char
-                bool containsInvalidCharacter = false;
+                    // Check if input contains invalid char
+                    bool containsInvalidCharacter = false;
                     char invalidChar = default;
                     foreach (char c in EditorManager.invalidCharacters)
                     {
@@ -66,15 +66,15 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                         }
                     }
 
-                // Invalid input or ID already taken
-                if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
-                        || containsInvalidCharacter)
+                    // Invalid input or ID already taken
+                    if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
+                            || containsInvalidCharacter)
                     {
                         if (dialogComponent.HasProperty(input) && !input.Equals(id))
                             return; // ID hasn't been edited
 
-                    // Go back to previous id
-                    idInputField.SetTextWithoutNotify(id);
+                        // Go back to previous id
+                        idInputField.SetTextWithoutNotify(id);
                         idInputField.caretPosition = id.Length - 1;
 
                         if (!containsInvalidCharacter)
@@ -88,15 +88,15 @@ public class PropertyListElement : MonoBehaviour, ISubUI
 
                     DialogComponent localDC = dialogComponent;
 
-                // Standard case: Property exists but ID is being changed
-                if (localDC.HasProperty(id))
+                    // Standard case: Property exists but ID is being changed
+                    if (localDC.HasProperty(id))
                     {
                         var oldProperty = localDC.GetProperty(id);
                         localDC.UpdateProperty
                             (id, input, oldProperty.value, type);
                     }
-                // Special case: Happens only when the ID is being edited for the first time
-                else
+                    // Special case: Happens only when the ID is being edited for the first time
+                    else
                     {
                         localDC.SetProperty(input, value, type);
                     }
@@ -109,7 +109,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         // String/Int/Float => InputField, Bool => Toggle
         if (type != typeof(bool))
         {
-            if (property != null)
+            if (property.HasValue)
             {
                 stringIntFloatInputField.SetTextWithoutNotify(
                     // Converts value.value to a string based on value.type
@@ -135,7 +135,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                             else
                                 val = float.Parse(input, CultureInfo.CurrentCulture);
 
-                            if (localProperty == null)
+                            if (!localProperty.HasValue)
                                 localDC.SetProperty(localKey, val, type);
                             else
                                 localDC.SetProperty(localKey, val, type, localProperty.Value.required);
@@ -144,7 +144,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                         {
                             var defaultValue = Activator.CreateInstance(type);
 
-                            if (localProperty == null)
+                            if (!localProperty.HasValue)
                                 localDC.SetProperty(localKey, defaultValue, type);
                             else
                                 localDC.SetProperty(localKey, defaultValue, type, localProperty.Value.required);
@@ -161,7 +161,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         }
         else
         {
-            if (property != null)
+            if (property.HasValue && property.Value.value != null) // 2nd condition important
                 boolToggle.SetIsOnWithoutNotify((bool)property.Value.value);
 
             // Toggle

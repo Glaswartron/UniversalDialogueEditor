@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GlobalPropertiesUI : PropertiesUI
 {
@@ -58,13 +59,25 @@ public class GlobalPropertiesUI : PropertiesUI
         listElement.deleteButton.onClick.AddListener(
             () =>
             {
+                
                 string localKey = id;
 
-                EditorManager.globalProperties.Remove(localKey); // !
+                if (!HasDependantCondition(localKey))
+                {
 
-                listElements.Remove(listElement);
+                    EditorManager.globalProperties.Remove(localKey); // !
 
-                Destroy(listElement.gameObject);
+                    listElements.Remove(listElement);
+
+                    Destroy(listElement.gameObject);
+                }
+                else
+                {
+                    ErrorMessage.instance.ShowErrorMessage
+                    ("You cannot delete this Global Property," +
+                    " because there is a conditional answer whose " +
+                        "condition depends on this Property!");
+                }
             }
         );
     }
@@ -90,6 +103,21 @@ public class GlobalPropertiesUI : PropertiesUI
         {
             CreateListElement(id, EditorManager.globalProperties[id]);
         }
+    }
+
+    private bool HasDependantCondition(string id)
+    {
+        /* Go through all answers
+         * (https://stackoverflow.com/questions/1191054/how-to-merge-a-list-of-lists-with-same-type-of-items-to-a-single-list-of-items) */
+        foreach (Dialog.DialogPart.Answer ans in 
+                 EditorManager.instance.dialogPartVisuals.ConvertAll
+                 (dpv => dpv.dialogPart.answers).SelectMany(x => x).ToList())
+        {
+            if (ans.conditional && ans.condition.Value.globalPropertyKey.Equals(id))
+                return true;
+        }
+
+        return false;
     }
 
 }

@@ -268,12 +268,6 @@ public class EditorManager : MonoBehaviour
 
         dialog.dialogParts = dialogParts;
 
-        // TODO: Rich Text
-        /*if (dialog.revealTextGradually)
-            AddRichTextTagDelimiters();
-        else
-            DeleteRichTextTagDelimiters();*/
-
         return dialog;
     }
 
@@ -734,7 +728,7 @@ public class EditorManager : MonoBehaviour
                 FileHandler.LoadPropertyPreset
                 (globalDialogPartPropertyPreset, PropertyPreset.PropertyPresetType.DIALOG_PART);
 
-            if (preset == null)
+            if (!preset.HasValue)
                 return; // Error message handled by FileHandler
 
             Dictionary<string, UDSProperty> properties = preset.Value.properties;

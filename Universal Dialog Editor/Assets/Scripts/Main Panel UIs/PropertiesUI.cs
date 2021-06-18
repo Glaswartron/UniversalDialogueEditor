@@ -189,7 +189,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
 
                     dialogComponent.DeleteProperty(localKey); // !
 
-                listElements.Remove(localListElement);
+                    listElements.Remove(localListElement);
 
                     Destroy(localListElement.gameObject);
                 }
