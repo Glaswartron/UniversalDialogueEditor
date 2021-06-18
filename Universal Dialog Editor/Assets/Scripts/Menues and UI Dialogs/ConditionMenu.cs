@@ -104,7 +104,8 @@ public class ConditionMenu : MonoBehaviour
             () =>
             {
                 EditorManager.instance.ActiveMenu = null;
-            });
+            }
+        );
     }
 
     private void SaveCondition()

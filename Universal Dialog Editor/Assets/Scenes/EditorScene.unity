@@ -15453,11 +15453,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
+  m_fontSize: 20
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 24
+  m_fontSizeMin: 20
   m_fontSizeMax: 72
   m_fontStyle: 1
   m_HorizontalAlignment: 2
@@ -15489,7 +15489,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 1
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -139.58578, y: -11.9105835, z: -142.99042, w: -10.209106}
+  m_margin: {x: -222.6657, y: -17.60249, z: -224.93231, w: -20.454502}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -25302,8 +25302,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 313.65152, y: -349.52957}
-  m_SizeDelta: {x: 237.303, y: 47.1629}
+  m_AnchoredPosition: {x: 274.805, y: -349.52957}
+  m_SizeDelta: {x: 159.61, y: 47.1629}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1433394954
 MonoBehaviour:

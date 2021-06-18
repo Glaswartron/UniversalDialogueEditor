@@ -116,7 +116,7 @@ public class EditorManager : MonoBehaviour
                 value.Selected = true;
 
             editingDialogPart = true;
-
+            
             if (value == null && ActiveUI != startAndSelectUI)
                 ActiveUI = dialogUI;
             else if (value != null)
@@ -415,9 +415,13 @@ public class EditorManager : MonoBehaviour
                 answerVisualGO.transform.parent = visualGO.transform;
                 answerVis.parentDialogPart = visual;
                 answerVis.answer = diaPart.answers[i];
+
                 answerVis.Conditional = diaPart.answers[i].conditional;
-                answerVis.Condition = diaPart.answers[i].condition;
+                if (answerVis.Conditional)
+                    answerVis.Condition = diaPart.answers[i].condition.Value;
+                
                 answerVis.index = i;
+
                 answers.Add(answerVis);
 
                 noOfAnswers++; // Count how many answers there are in total
