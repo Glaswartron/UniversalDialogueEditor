@@ -2,25 +2,29 @@
 
 public class Connection : MonoBehaviour
 {
+    [Header("Connection")]
     public DialogPartVisual fromDP;
     public AnswerVisual fromA;
 
     public DialogPartVisual toDP;
 
+    [Header("Visuals")]
+    [Space(5)]
+    public Transform arrowTip;
+
+    [HideInInspector] public bool collSet;
+    [HideInInspector] public bool dontUpdateConnectedVisual;
+
     private LineRenderer lineRenderer;
-    private GameObject coll;
-
-    bool collSet;
-
-    bool dontUpdateConnectedVisual;
+    private CircleCollider2D coll;
 
     private void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        coll = transform.GetChild(0).gameObject;
+        coll = transform.GetChild(0).GetComponent<CircleCollider2D>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (!collSet)
         {
@@ -30,8 +34,14 @@ public class Connection : MonoBehaviour
             coll.transform.position =
                 0.5f * (firstPos + secondPos);
 
-            coll.GetComponent<CircleCollider2D>().radius = 
-                Vector2.Distance(secondPos, firstPos) / 4;
+            coll.radius = Vector2.Distance(secondPos, firstPos) / 4;
+
+            // Place tip triangle
+            Vector2 firstPosToSecondPos = secondPos - firstPos;
+            float angle = Mathf.Atan2(firstPosToSecondPos.y, firstPosToSecondPos.x) * Mathf.Rad2Deg;
+            Vector2 newPos = (Vector2)secondPos - firstPosToSecondPos.normalized * 0.6f;
+            arrowTip.transform.position = newPos;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
             collSet = true;
         }

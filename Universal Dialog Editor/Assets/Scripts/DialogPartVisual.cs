@@ -111,9 +111,13 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         if (ConnectedDP == null && dpConnection != null)
             Destroy(dpConnection.gameObject);
-        else if (dpConnection != null) // Connections
+        // Constantly update connection
+        else if (dpConnection != null)
+        { 
             connectionLineRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)connectedDP.transform.position});
+            dpConnection.collSet = false; // Update collider
+        }
 
         if (ConnectedDP != null)
             dialogPart.nextDialogPartID = connectedDP.dialogPart.id;

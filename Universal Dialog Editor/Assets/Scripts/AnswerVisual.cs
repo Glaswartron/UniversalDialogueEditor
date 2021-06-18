@@ -75,7 +75,8 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         get { return connectedDP; }
     }
     private DialogPartVisual connectedDP;
-    private LineRenderer connection;
+    private Connection connection;
+    private LineRenderer connectionRenderer;
 
     public UDSCondition? Condition
     {
@@ -127,8 +128,12 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 
         // Connection
         if (connection != null && ConnectedDP != null)
-            connection.SetPositions(new Vector3[] {(Vector2)transform.position,
+        {
+            connectionRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)ConnectedDP.transform.position});
+
+            connection.collSet = false;
+        }
 
         if (ConnectedDP != null)
             answer.nextDialogPartID = ConnectedDP.dialogPart.id;
@@ -246,23 +251,22 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
 
         if (connection != null)
         {
-            connection.GetComponent<Connection>().DontUpdateConnectedVisual();
+            connection.DontUpdateConnectedVisual();
             Destroy(connection.gameObject);
         }
 
         var a = Instantiate(EditorManager.instance.arrow, 
                             transform.position, Quaternion.identity);
-        var lineRenderer = a.GetComponent<LineRenderer>();
-        var conn = a.GetComponent<Connection>();
+        connection = a.GetComponent<Connection>();
+        connectionRenderer = a.GetComponent<LineRenderer>();
 
-        lineRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
+        connectionRenderer.SetPositions(new Vector3[] {(Vector2)transform.position,
                                                  (Vector2)dp.transform.position});
 
-        conn.fromA = this;
-        conn.toDP = dp;
+        connection.fromA = this;
+        connection.toDP = dp;
 
         ConnectedDP = dp;
-        connection = lineRenderer;
     }
 
     public void SetCondition(UDSCondition condition)
