@@ -56,12 +56,12 @@ public sealed class Dialog : DialogComponent, ICloneable
     public sealed class DialogPart : DialogComponent
     {
         public Answer[] answers;
-        [SerializeReference] 
-        public Dialog dialog;
+        [SerializeReference] public Dialog dialog;
 
         public string nextDialogPartID;
 
-        internal int visualX, visualY;
+        [SerializeField] internal int visualX;
+        [SerializeField] internal int visualY;
 
         internal DialogPart(string dialogPartID, Vector2 visualPos, Dialog dialog)
             : base(dialogPartID) 
@@ -102,15 +102,14 @@ public sealed class Dialog : DialogComponent, ICloneable
         public sealed class Answer : DialogComponent
         {
             int index;
-            [SerializeReference]
-            public DialogPart dialogPart;
+            [SerializeReference] public DialogPart dialogPart;
 
             public string nextDialogPartID;
 
             public bool conditional;
             public UDSCondition? condition;
 
-            internal float angle; 
+            [SerializeField] internal float angle; 
 
             internal Answer(string answerID, int answerIndex, 
                 DialogPart dialogPart, float angle, 
@@ -153,8 +152,7 @@ public class DialogComponent
 {
     public string id;
 
-    [SerializeField]
-    private readonly Dictionary<string, UDSProperty> properties;
+    [SerializeField] private readonly Dictionary<string, UDSProperty> properties;
 
     public DialogComponent(string dialogComponentID)
     {

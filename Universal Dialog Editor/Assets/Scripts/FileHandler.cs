@@ -48,11 +48,18 @@ public class FileHandler
             dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
 
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog", FileMode.Create);
+            FileStream stream = new FileStream("F:/Testground/TestDialog.json", FileMode.Create);
+
+            string dialogJSON = JsonUtility.ToJson(dialog, prettyPrint: true);
+
+            StreamWriter writer = null;
 
             try
             {
-                formatter.Serialize(stream, dialog);
+                //formatter.Serialize(stream, dialog);
+
+                writer = new StreamWriter(stream);
+                writer.Write(dialogJSON);
             }
             catch (Exception e)
             {
@@ -60,6 +67,7 @@ public class FileHandler
             }
             finally
             {
+                writer.Flush();
                 stream.Flush();
                 stream.Close();
             }
@@ -247,14 +255,16 @@ public class FileHandler
 
         string actualPath = useNewPath ? newPath : path;
 
-        BinaryFormatter formatter = new BinaryFormatter();
+        //BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+
+        string dialogJSON = JsonUtility.ToJson(dialog);
 
         try
         {
             stream = new FileStream(actualPath, FileMode.Create);
 
-            formatter.Serialize(stream, dialog);
+            new StreamWriter(stream).Write(dialogJSON);
         }
         catch (Exception e)
         {
