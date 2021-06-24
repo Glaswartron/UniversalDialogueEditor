@@ -719,7 +719,7 @@ public class EditorManager : MonoBehaviour
 
         dialogPartVisuals.Add(dpVisual);
 
-        dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position, dialog);
+        dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position);
 
         // If it's the first part in the Dialog
         if (dialogPartVisuals.Count == 1)

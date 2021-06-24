@@ -229,7 +229,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         answers.Add(answerVis);
 
         answerVis.answer = new Dialog.DialogPart.Answer
-            ("", answers.Count - 1, dialogPart, 0, conditional);
+            ("", answers.Count - 1, 0, conditional);
 
         if (conditional)
             // Default values - initialized when ConditionMenu is opened at the end *

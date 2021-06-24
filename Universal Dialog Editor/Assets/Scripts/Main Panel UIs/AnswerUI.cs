@@ -21,7 +21,7 @@ public class AnswerUI : MonoBehaviour
 
         string nextPartID = answer.nextDialogPartID;
         string fromTo 
-            = answer.dialogPart.id + 
+            = EditorManager.instance.SelectedAnswerVisual.ConnectedDP.dialogPart.id + 
             " --> " + 
             (nextPartID != null ? nextPartID : "End");
 

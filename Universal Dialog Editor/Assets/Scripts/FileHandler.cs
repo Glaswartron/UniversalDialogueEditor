@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using UnityEngine;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 public class FileHandler
 {
@@ -28,14 +28,14 @@ public class FileHandler
         {
             Dialog dialog = new Dialog("TestDialog");
 
-            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0, 0), dialog);
-            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1), dialog);
-            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(1, 0), dialog);
+            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0, 0));
+            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1));
+            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(1, 0));
 
             diaPart2.answers = new Dialog.DialogPart.Answer[]
             {
-                new Dialog.DialogPart.Answer("Yes", 0, diaPart2, Mathf.PI),
-                new Dialog.DialogPart.Answer("No", 1, diaPart2, Mathf.PI/2)
+                new Dialog.DialogPart.Answer("Yes", 0, Mathf.PI),
+                new Dialog.DialogPart.Answer("No", 1, Mathf.PI/2)
             };
 
             dialog.startDialogPartID = "TestID";
@@ -47,17 +47,14 @@ public class FileHandler
 
             dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
 
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream("F:/Testground/TestDialog.json", FileMode.Create);
+            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog", FileMode.Create);
 
-            string dialogJSON = JsonUtility.ToJson(dialog, prettyPrint: true);
+            string dialogJSON = ToJSON(dialog);
 
             StreamWriter writer = null;
 
             try
             {
-                //formatter.Serialize(stream, dialog);
-
                 writer = new StreamWriter(stream);
                 writer.Write(dialogJSON);
             }
@@ -67,9 +64,8 @@ public class FileHandler
             }
             finally
             {
-                writer.Flush();
-                stream.Flush();
-                stream.Close();
+                writer?.Flush();
+                writer?.Close();
             }
         }
 #endif
@@ -127,14 +123,17 @@ public class FileHandler
 
         if (!File.Exists(path))
         {
-            BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = null;
+            StreamWriter writer = null;
 
             try
             {
                 stream = new FileStream(path, FileMode.Create);
 
-                formatter.Serialize(stream, dialog);
+                writer = new StreamWriter(stream);
+
+                string dialogJSON = ToJSON(dialog);
+                writer.Write(dialogJSON);
             }
             catch (Exception e)
             {
@@ -151,8 +150,8 @@ public class FileHandler
             }
             finally
             {
-                stream?.Flush();
-                stream?.Close();
+                writer?.Flush();
+                writer?.Close();
             }
         }
         else
@@ -185,26 +184,28 @@ public class FileHandler
 
         if (File.Exists(path))
         {
-            BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = null;
+            StreamReader reader = null;
 
             try
             {
                 stream = new FileStream(path, FileMode.Open);
 
-                Dialog dialog = formatter.Deserialize(stream) as Dialog;
-                return dialog;
+                reader = new StreamReader(stream);
+                string dialogJSON = reader.ReadToEnd();
+
+                return JsonConvert.DeserializeObject<Dialog>(dialogJSON);
             }
             catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage("An error occured while loading " +
-                    "the dialog.");
+                    "the dialog. The file might be corrupted or the JSON cannot be parsed");
                 Debug.LogError("Path: " + path + " -- " + e.Message);
                 return null;
             }
             finally
             {
-                stream?.Close();
+                reader?.Close();
             }
         }
         else
@@ -257,14 +258,16 @@ public class FileHandler
 
         //BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
-
-        string dialogJSON = JsonUtility.ToJson(dialog);
+        StreamWriter writer = null;
 
         try
         {
             stream = new FileStream(actualPath, FileMode.Create);
 
-            new StreamWriter(stream).Write(dialogJSON);
+            string dialogJSON = ToJSON(dialog);
+
+            writer = new StreamWriter(stream);
+            writer.Write(dialogJSON);
         }
         catch (Exception e)
         {
@@ -281,8 +284,8 @@ public class FileHandler
         }
         finally
         {
-            stream?.Flush();
-            stream?.Close();
+            writer?.Flush();
+            writer?.Close();
         }
 
         /* Delete the old file after the new one has been written successfully.
@@ -319,13 +322,16 @@ public class FileHandler
     {
         Dictionary<string, UDSProperty> properties = EditorManager.globalProperties;
 
-        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+        StreamWriter writer = null;
 
         try
         {
             stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
-            formatter.Serialize(stream, properties);
+            writer = new StreamWriter(stream);
+
+            string propertiesJSON = ToJSON(properties);
+            writer.Write(propertiesJSON);
         }
         catch (Exception e)
         {
@@ -340,8 +346,8 @@ public class FileHandler
         }
         finally
         {
-            stream.Flush();
-            stream.Close();
+            writer?.Flush();
+            writer?.Close();
         }
 
         return true;
@@ -352,15 +358,18 @@ public class FileHandler
         if (!File.Exists(GLOBAL_PROPERTIES_PATH))
             return null;
 
-        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+        StreamReader reader = null;
 
         try
         {
             stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+            reader = new StreamReader(stream);
 
-            Dictionary<string, UDSProperty> properties = formatter.Deserialize(stream)
-                                                         as Dictionary<string, UDSProperty>;
+            string propertiesJSON = reader.ReadToEnd();
+            Dictionary<string, UDSProperty> properties 
+                = JsonConvert.DeserializeObject<Dictionary<string, UDSProperty>>(propertiesJSON);
+
             return properties;
         }
         catch (Exception e)
@@ -373,7 +382,7 @@ public class FileHandler
         }
         finally
         {
-            stream?.Close();
+            reader?.Close();
         }
     }
 
@@ -398,14 +407,16 @@ public class FileHandler
             path = Path.Combine(path, propertyPreset.id + ".udspreset");
         }
 
-        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+        StreamWriter writer = null;
 
         try
         {
             stream = new FileStream(path, FileMode.Create);
+            writer = new StreamWriter(stream);
 
-            formatter.Serialize(stream, propertyPreset);
+            string presetJSON = ToJSON(propertyPreset);
+            writer.Write(presetJSON);
         }
         catch (Exception e)
         {
@@ -419,8 +430,8 @@ public class FileHandler
         }
         finally
         {
-            stream?.Flush();
-            stream?.Close();
+            writer?.Flush();
+            writer?.Close();
         }
 
         return true;
@@ -452,17 +463,19 @@ public class FileHandler
             path = Path.Combine(path, id + ".udspreset");
         }
 
-        BinaryFormatter formatter = new BinaryFormatter();
         FileStream stream = null;
+        StreamReader reader = null;
 
         try
         {
 
             stream = new FileStream(path, FileMode.Open);
+            reader = new StreamReader(stream);
 
-            PropertyPreset preset = (PropertyPreset)formatter.Deserialize(stream);
+            string presetJSON = reader.ReadToEnd();
+            PropertyPreset preset = JsonConvert.DeserializeObject<PropertyPreset>(presetJSON);
+
             return preset;
-
         }
         catch (Exception e)
         {
@@ -475,7 +488,7 @@ public class FileHandler
         }
         finally
         {
-            stream?.Close();
+            reader?.Close();
         }
     }
 
@@ -539,6 +552,15 @@ public class FileHandler
         }
     }
 
+    private static string ToJSON(object obj)
+    {
+        return JsonConvert.SerializeObject(obj, Formatting.Indented,
+            new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+    }
+
     private static bool CreateDirectoriesIfNotThere()
     {
         bool directoryCreated = false;
@@ -557,145 +579,4 @@ public class FileHandler
 
         return directoryCreated;
     }
-
-    /// <summary>
-    /// Saves the current Dialog to the path from the save input field.
-    /// Calls EditorManager.ConstructDialog() and handles all kinds of 
-    /// errors and exceptions internally. The name of the file will be
-    /// the dialogID + ".bytes"
-    /// </summary>
-    /*public void SaveDialog()
-    {
-        bool successfulBuild = EditorManager.instance.ConstructDialog();
-
-        if (!successfulBuild)
-            return;
-
-        DialogOld dialog = EditorManager.instance.dialog;
-
-        BinaryFormatter formatter = new BinaryFormatter();
-        string path = savePathInputField.text;
-
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            ErrorMessage.instance.ShowErrorMessage("Bitte gib einen Pfad an, du Gurke!");
-            return;
-        }
-
-        FileStream stream = null;
-
-        try
-        {
-            DirectoryInfo parent = Directory.GetParent(path);
-            if (!parent.Exists)
-            {
-                ErrorMessage.instance.ShowErrorMessage("Der angegebene Ordner existiert nicht!");
-                return;
-            }
-
-            //if (!path.EndsWith(".bytes"))
-                //path += ".bytes"; // Important for reading in CoT
-
-            // Force filename (= dialogID)
-            string filename = "\\" + EditorManager.instance.dialog.id + ".bytes";
-            string filenameVar = "/" + EditorManager.instance.dialog.id + ".bytes";
-            if (!path.EndsWith(filename) && !path.EndsWith(filenameVar))
-            {
-                //path = path.Remove(path.LastIndexOf("/") + 1);
-                path += filename;
-            }
-
-            stream = new FileStream(path, FileMode.Create);
-
-        } 
-        catch (DirectoryNotFoundException e)
-        {
-            ErrorMessage.instance.ShowErrorMessage("Der Ordner wurde nicht gefunden! Überprüfe " +
-                "den Pfad nochmal und schau nach, ob er zu einem Ordner führt!");
-            Debug.Log(e.ToString());
-            return;
-        }
-        catch (Exception e)
-        {
-            ErrorMessage.instance.ShowErrorMessage("Der Pfad ist böse! Wahrscheinlich hat das" +
-                " Programm keine Permission in diesen Ordner zu schreiben! Nimm einen anderen!");
-            Debug.Log(e.ToString());
-            return;
-        }
-        
-        try
-        {
-            formatter.Serialize(stream, dialog);
-            ErrorMessage.instance.ShowErrorMessage("Gespeichert!", true);
-        }
-        catch (Exception e)
-        {
-            ErrorMessage.instance.ShowErrorMessage(e.ToString());
-            Debug.Log(e.ToString());
-        }
-        finally
-        {
-            stream.Close();
-        }
-    }
-
-    /// <summary>
-    /// Loads a new dialog from the path from the load input field.
-    /// Handles all kinds of errors and exceptions internally. The
-    /// file path does not have to end in ".bytes", the method will
-    /// account for that internally.
-    /// </summary>
-    public void LoadDialog ()
-    {
-        string path = loadPathInputField.text;
-
-        path.Trim();
-
-        if (!path.EndsWith(".bytes"))
-            path += ".bytes";
-
-        if (File.Exists(path))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
-
-            try
-            {
-                DialogOld data = formatter.Deserialize(stream) as DialogOld;
-                EditorManager.instance.LoadDialog(data);
-
-                savePathInputField.text = path.Trim();
-                loadPathInputField.text = "";
-            }
-            finally
-            {
-                stream.Close();
-            }
-        }
-        else
-        {
-            ErrorMessage.instance.ShowErrorMessage("Pfad nicht gefunden! " +
-                "Bitte nochmal überprüfen!");
-        }
-    }
-
-    /// <summary>
-    /// Checks whether or not a file already exists 
-    /// at the save path from the save input field.
-    /// Does not return anything but shows the 
-    /// "Do you want to override" dialog if true and
-    /// just directly saves the dialog if false.
-    /// </summary>
-    public void CheckIfFileExists()
-    {
-        string path = savePathInputField.text;
-
-        if (!path.EndsWith(".bytes"))
-            path += ".bytes";
-
-        if (File.Exists(path))
-            EditorManager.instance.ShowSaveDialog();
-        else
-            SaveDialog();
-    }*/
 }

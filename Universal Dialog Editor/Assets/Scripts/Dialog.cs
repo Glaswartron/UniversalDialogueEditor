@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Newtonsoft.Json;
 
 [Serializable]
 public struct UDSProperty
@@ -23,6 +24,9 @@ public sealed class Dialog : DialogComponent, ICloneable
 {
     public DialogPart[] dialogParts;
     public string startDialogPartID;
+
+    [JsonConstructor]
+    public Dialog() { }
 
     internal Dialog(string dialogID)
         : base(dialogID)
@@ -56,21 +60,24 @@ public sealed class Dialog : DialogComponent, ICloneable
     public sealed class DialogPart : DialogComponent
     {
         public Answer[] answers;
-        [SerializeReference] public Dialog dialog;
+        //[SerializeReference] public Dialog dialog;
 
         public string nextDialogPartID;
 
-        [SerializeField] internal int visualX;
-        [SerializeField] internal int visualY;
+        [JsonProperty] internal int visualX;
+        [JsonProperty] internal int visualY;
 
-        internal DialogPart(string dialogPartID, Vector2 visualPos, Dialog dialog)
+        [JsonConstructor]
+        public DialogPart() { }
+
+        internal DialogPart(string dialogPartID, Vector2 visualPos)
             : base(dialogPartID) 
         { 
             answers = new Answer[0];
             visualX = (int) visualPos.x;
             visualY = (int) visualPos.y;
 
-            this.dialog = dialog;
+            //this.dialog = dialog;
 
             SetProperty("Text", "", required: true);
             SetProperty("Text speed", 1, required: true);
@@ -79,7 +86,7 @@ public sealed class Dialog : DialogComponent, ICloneable
         internal DialogPart Copy(Dialog dialog)
         {
             DialogPart copy = new DialogPart
-                (this.id, new Vector2(this.visualX, this.visualY), dialog);
+                (this.id, new Vector2(this.visualX, this.visualY));
 
             foreach (string key in this.GetPropertyKeys())
             {
@@ -102,22 +109,23 @@ public sealed class Dialog : DialogComponent, ICloneable
         public sealed class Answer : DialogComponent
         {
             int index;
-            [SerializeReference] public DialogPart dialogPart;
+            //[SerializeReference] public DialogPart dialogPart;
 
             public string nextDialogPartID;
 
             public bool conditional;
             public UDSCondition? condition;
 
-            [SerializeField] internal float angle; 
+            [JsonProperty] internal float angle;
+
+            [JsonConstructor]
+            public Answer() { }
 
             internal Answer(string answerID, int answerIndex, 
-                DialogPart dialogPart, float angle, 
-                bool conditional = false, UDSCondition? condition = null)
+                 float angle, bool conditional = false, UDSCondition? condition = null)
                 : base(answerID) 
             { 
                 index = answerIndex;
-                this.dialogPart = dialogPart;
 
                 this.conditional = conditional;
                 this.condition = condition;
@@ -129,7 +137,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             internal Answer Copy(DialogPart dialogPart)
             {
-                Answer copy = new Answer(this.id, this.index, dialogPart,
+                Answer copy = new Answer(this.id, this.index,
                     this.angle, this.conditional, this.condition);
 
                 foreach (string key in this.GetPropertyKeys())
@@ -152,9 +160,12 @@ public class DialogComponent
 {
     public string id;
 
-    [SerializeField] private readonly Dictionary<string, UDSProperty> properties;
+    [JsonProperty] private readonly Dictionary<string, UDSProperty> properties;
 
-    public DialogComponent(string dialogComponentID)
+    [JsonConstructor]
+    public DialogComponent () { }
+
+    internal DialogComponent(string dialogComponentID)
     {
         id = dialogComponentID;
         properties = new Dictionary<string, UDSProperty>();
