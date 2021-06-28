@@ -69,8 +69,9 @@ public class DialogUI : MonoBehaviour
                 "Yes",
                 "No",
                 onYes: () => {
-                    Save();
-                    EditorManager.instance.ClearEverything();
+                    bool success = Save();
+                    if (success) 
+                        EditorManager.instance.ClearEverything();
                 },
                 onNo: () => { }
             )
@@ -101,15 +102,19 @@ public class DialogUI : MonoBehaviour
             infoText.SetText(newInfo);
     }
 
-    private void Save()
+    private bool Save()
     {
-        bool success =
-            FileHandler.SaveDialog(EditorManager.instance.ConstructDialog(),
-                                   EditorManager.instance.pathToDialog);
+        Dialog dialog = EditorManager.instance.ConstructDialog();
+
+        bool success = dialog != null;
+        if (success)
+            success &= FileHandler.SaveDialog(dialog, EditorManager.instance.pathToDialog);
 
         if (success)
             ErrorMessage.instance.ShowErrorMessage("Saved", true);
-        // Error message for else case handled by FileHandler.SaveDialog
+        // Error message for else case handled by ConstructDialog and FileHandler.SaveDialog
+
+        return success;
     }
 
     private void ShowWarnings()

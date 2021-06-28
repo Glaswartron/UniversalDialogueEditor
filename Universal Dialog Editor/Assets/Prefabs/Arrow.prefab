@@ -126,7 +126,7 @@ LineRenderer:
       m_NumAlphaKeys: 2
     numCornerVertices: 2
     numCapVertices: 0
-    alignment: 0
+    alignment: 1
     textureMode: 0
     shadowBias: 0.5
     generateLightingData: 0
@@ -160,6 +160,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3388451437331582222}
   - component: {fileID: 3891063464330729665}
+  - component: {fileID: 563319182185390158}
   m_Layer: 0
   m_Name: Coll
   m_TagString: Connection
@@ -197,6 +198,18 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &563319182185390158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4365639732570946782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b383030b35b9e3643b1338b91cf4f385, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7168002674679693119
 GameObject:
   m_ObjectHideFlags: 0

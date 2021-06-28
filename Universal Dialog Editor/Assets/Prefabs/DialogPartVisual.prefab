@@ -100,8 +100,6 @@ MonoBehaviour:
   dialogPart:
     id: 
     answers: []
-    dialog:
-      id: 0
     nextDialogPartID: 
   answers: []
   idText: {fileID: 8252622724407111819}
@@ -110,10 +108,6 @@ MonoBehaviour:
   startColor: {r: 1, g: 0.6034083, b: 0, a: 1}
   startSelectedColor: {r: 0.65882355, g: 0.4025919, b: 0, a: 1}
   dpConnection: {fileID: 0}
-  references:
-    version: 1
-    00000000:
-      type: {class: , ns: , asm: }
 --- !u!58 &8252622723369243649
 CircleCollider2D:
   m_ObjectHideFlags: 0

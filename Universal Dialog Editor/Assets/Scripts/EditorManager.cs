@@ -22,7 +22,6 @@ public class EditorManager : MonoBehaviour
     /// HideInInspector extremely important because Dialog 
     /// has recursive references which break the Editor
     /// </summary>
-    [HideInInspector]
     public Dialog dialog; // This dialog is actually being edited
     public Dialog dialogBackup; // This dialog is loaded once and stays the same
 
@@ -158,15 +157,24 @@ public class EditorManager : MonoBehaviour
     {
         set
         {
-            // Previous one not start anymore
-            if (startDialogPartVisual != null)
-                startDialogPartVisual.IsStart = false; 
+            if (value != null)
+            {
+                // Previous one not start anymore
+                if (startDialogPartVisual != null)
+                    startDialogPartVisual.IsStart = false;
 
-            value.IsStart = true;
+                value.IsStart = true;
 
-            startDialogPartVisual = value;
+                startDialogPartVisual = value;
 
-            dialog.startDialogPartID = value.dialogPart.id;
+                dialog.startDialogPartID = value.dialogPart.id;
+            } 
+            else // In case the startDialogPartVisual is destroyed
+            {
+                startDialogPartVisual = null;
+
+                dialog.startDialogPartID = null;
+            }
         }
 
         get { return startDialogPartVisual; }
@@ -177,6 +185,8 @@ public class EditorManager : MonoBehaviour
 
     public int noOfAnswers;
     public int noOfConnections;
+
+    private LineRenderer connectionHologram;
 
     // Start is called before the first frame update
     void Start()
@@ -244,6 +254,34 @@ public class EditorManager : MonoBehaviour
             && Input.GetKeyDown(KeyCode.D))
         {
             CopySelectedDialogPart();
+        }
+
+        // Show to the user that he is inConnectMode and where he is pointing
+        if (inConnectMode)
+        {
+            if (connectionHologram == null)
+            {
+                connectionHologram = Instantiate(arrow).GetComponent<LineRenderer>();
+
+                // Deactivate the arrow tip
+                connectionHologram.transform.GetChild(1).gameObject.SetActive(false);
+            }
+
+            if (SelectedDialogPartVisual != null)
+            {
+                connectionHologram.SetPosition(0, SelectedDialogPartVisual.transform.position);
+                connectionHologram.SetPosition(1, mainCam.ScreenToWorldPoint(Input.mousePosition));
+            } 
+            else if (SelectedAnswerVisual != null)
+            {
+                connectionHologram.SetPosition(0, SelectedAnswerVisual.transform.position);
+                connectionHologram.SetPosition(1, mainCam.ScreenToWorldPoint(Input.mousePosition));
+            }
+        }
+        else if (connectionHologram != null)
+        {
+            // Happens after the user connected two visuals
+            Destroy(connectionHologram.gameObject);
         }
     }
 
@@ -355,6 +393,8 @@ public class EditorManager : MonoBehaviour
                     return false;
                 }
 
+                answerIDs.Add(answer.answer.id);
+
                 diapartIDs.Add(diapart.dialogPart.id);
             }
         }
@@ -368,7 +408,7 @@ public class EditorManager : MonoBehaviour
     /// and allows the user to edit the dialog.
     /// </summary>
     /// <param name="dia">The dialog to load</param>
-    /// <param name="path">The path to the .udsdialog file where the dialog is stored</param>
+    /// <param name="path">The path to the .udsdialog.json file where the dialog is stored</param>
     public void LoadDialog(Dialog dialog, string path)
     {
         ClearEverything();
@@ -553,6 +593,7 @@ public class EditorManager : MonoBehaviour
                     warningFlags[4] = true;
                 }
             }
+
             diapartIDs.Add(diapart.dialogPart.id);
 
             HashSet<string> answerIDs = new HashSet<string>();
@@ -582,16 +623,15 @@ public class EditorManager : MonoBehaviour
                         warnings.Add(new DialogUI.Warning
                         {
                             text = string.Format(
-                            "All IDs have to be unique. Answer ID {0} appears twice",
-                            diapart.dialogPart.id),
+                            "All IDs have to be unique. Answer ID {0} appears twice within " 
+                            + diapart.dialogPart.id,
+                            answer.answer.id),
                             color = Color.red
                         });
 
                         warningFlags[6] = true;
                     }
                 }
-
-                diapartIDs.Add(diapart.dialogPart.id);
 
                 // 8
                 if (!warningFlags[7])
@@ -609,6 +649,8 @@ public class EditorManager : MonoBehaviour
                         warningFlags[7] = true;
                     }
                 }
+
+                answerIDs.Add(answer.answer.id);
             }
 
             // 9 
@@ -801,6 +843,10 @@ public class EditorManager : MonoBehaviour
     {
         if (SelectedDialogPartVisual == null)
             return;
+
+        // Important
+        if (SelectedDialogPartVisual.IsStart)
+            StartDialogPartVisual = null;
 
         dialogPartVisuals.Remove(SelectedDialogPartVisual);
 

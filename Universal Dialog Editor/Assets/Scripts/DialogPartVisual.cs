@@ -231,6 +231,8 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         answerVis.answer = new Dialog.DialogPart.Answer
             ("", answers.Count - 1, 0, conditional);
 
+        answerVis.index = answers.Count - 1;
+
         if (conditional)
             // Default values - initialized when ConditionMenu is opened at the end *
             answerVis.answer.condition = new UDSCondition(); 
@@ -329,6 +331,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
     private void OnDestroy()
     {
+        // Triggers Connection's OnDestroy, which "informs" the connected DP
         if (dpConnection != null)
             Destroy(dpConnection?.gameObject);
 

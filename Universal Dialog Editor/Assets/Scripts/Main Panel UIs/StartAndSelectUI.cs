@@ -119,8 +119,9 @@ public class StartAndSelectUI : MonoBehaviour
         {
             dialogFilePaths.Add(file);
 
-            // Dialogs are always saved in the format '.../.../nameOrID.udsdialog'
-            string dialogName = Path.GetFileNameWithoutExtension(file);
+            // Dialogs are always saved in the format '.../.../nameOrID.udsdialog.json'
+            string dialogName 
+                = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
 
             // That's where the magic happens
             InstantiateDialogSelectableText(dialogName);
@@ -281,7 +282,7 @@ public class StartAndSelectUI : MonoBehaviour
 
     private bool DeleteDialogFile(string path)
     {
-        if (path == null || string.IsNullOrWhiteSpace(path) || !path.EndsWith(".udsdialog"))
+        if (path == null || string.IsNullOrWhiteSpace(path) || !path.EndsWith(".udsdialog.json"))
             return false;
 
         return FileHandler.DeleteDialogFile(path);
@@ -362,13 +363,13 @@ public class StartAndSelectUI : MonoBehaviour
         FileBrowser.ShowLoadDialog(
             onSuccess: (path) =>
             {
-                if (path[0].EndsWith(".udspreset")) {
+                if (path[0].EndsWith(".udspreset.json")) {
                     FileHandler.ImportPropertyPreset(path[0]);
                     InitPresetDropdowns();
                 }
                 else
                 {
-                    ErrorMessage.instance.ShowErrorMessage("The file you selected is not a valid .udspreset file");
+                    ErrorMessage.instance.ShowErrorMessage("The file you selected is not a valid .udspreset.json file");
                 }
             },
             onCancel: () => { },

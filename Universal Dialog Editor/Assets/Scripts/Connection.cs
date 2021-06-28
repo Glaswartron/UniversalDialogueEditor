@@ -64,4 +64,5 @@ public class Connection : MonoBehaviour
 
     public void DontUpdateConnectedVisual()
         => dontUpdateConnectedVisual = true;
+
 }

@@ -24,7 +24,7 @@ public class FileHandler
     {
 #if UNITY_EDITOR
         // Generate test dialog
-        if (!File.Exists("F:/Testground/TestDialog.udsdialog"))
+        if (!File.Exists("F:/Testground/TestDialog.udsdialog.json"))
         {
             Dialog dialog = new Dialog("TestDialog");
 
@@ -47,7 +47,7 @@ public class FileHandler
 
             dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
 
-            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog", FileMode.Create);
+            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog.json", FileMode.Create);
 
             string dialogJSON = ToJSON(dialog);
 
@@ -72,10 +72,10 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Gets the paths to all dialogs (.udsdialog) in the given directory
+    /// Gets the paths to all dialogs (.udsdialog.json) in the given directory
     /// </summary>
     /// <param name="dirPath">The path to the directory</param>
-    /// <returns>A string array containing the file paths of all .udsdialog files
+    /// <returns>A string array containing the file paths of all .udsdialog.json files
     /// in the given directory or an empty array if the folder is empty
     /// or something went wrong</returns>
     public static string[] GetAllDialogPathsFromDir(string dirPath)
@@ -88,7 +88,7 @@ public class FileHandler
             try
             {
 
-                return Directory.GetFiles(dirPath, "*.udsdialog");
+                return Directory.GetFiles(dirPath, "*.udsdialog.json");
 
             }
             catch (Exception e)
@@ -109,10 +109,10 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Serializes the given dialog into a new .udsdialog 
+    /// Serializes the given dialog into a new .udsdialog.json
     /// file in the given folder path. 
     /// The name/path to the file follows the following rule:
-    /// .../.../nameOrID.udsdialog
+    /// .../.../nameOrID.udsdialog.json
     /// </summary>
     /// <param name="dialog">The dialog to be saved</param>
     /// <param name="folderPath">The path to the folder where the dialog shall be saved</param>
@@ -166,7 +166,7 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Loads/Deserializes a dialog from the .udsdialog 
+    /// Loads/Deserializes a dialog from the .udsdialog.json 
     /// bytes-file at the given path. Returns null if
     /// something went wrong.
     /// </summary>
@@ -218,14 +218,14 @@ public class FileHandler
 
 
     /// <summary>
-    /// Serializes the given dialog into an existing/its .udsdialog 
+    /// Serializes the given dialog into an existing/its .udsdialog.json 
     /// file at the given path, thus overriding the old file and saving
     /// the dialog. Also renames the file if the DialogID has changed.
     /// The name/path to the file must follow the following rule:
-    /// .../.../nameOrID.udsdialog
+    /// .../.../nameOrID.udsdialog.json
     /// </summary>
     /// <param name="dialog">The dialog to be saved</param>
-    /// <param name="folderPath">The path to the .udsdialog file which shall be overridden</param>
+    /// <param name="folderPath">The path to the .udsdialog.json file which shall be overridden</param>
     /// <returns>Successful?</returns>
     public static bool SaveDialog(Dialog dialog, string path)
     {
@@ -391,7 +391,7 @@ public class FileHandler
         if (path == null)
         {
             path = GetPropertyPresetDirectoryPath(propertyPreset.propertyPresetType);
-            path = Path.Combine(path, propertyPreset.id + ".udspreset");
+            path = Path.Combine(path, propertyPreset.id + ".udspreset.json");
         }
 
         return File.Exists(path);
@@ -404,7 +404,7 @@ public class FileHandler
         if (path == null)
         {
             path = GetPropertyPresetDirectoryPath(propertyPreset.propertyPresetType);
-            path = Path.Combine(path, propertyPreset.id + ".udspreset");
+            path = Path.Combine(path, propertyPreset.id + ".udspreset.json");
         }
 
         FileStream stream = null;
@@ -449,9 +449,9 @@ public class FileHandler
             return null;
         }
 
-        string[] paths = Directory.GetFiles(path, "*.udspreset");
+        string[] paths = Directory.GetFiles(path, "*.udspreset.json");
         
-        return Array.ConvertAll(paths, p => Path.GetFileNameWithoutExtension(p));
+        return Array.ConvertAll(paths, p => Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(p)));
     }
 
     public static PropertyPreset? LoadPropertyPreset
@@ -460,7 +460,7 @@ public class FileHandler
         if (path == null)
         {
             path = GetPropertyPresetDirectoryPath(type);
-            path = Path.Combine(path, id + ".udspreset");
+            path = Path.Combine(path, id + ".udspreset.json");
         }
 
         FileStream stream = null;
@@ -503,7 +503,7 @@ public class FileHandler
         }
 
         path = GetPropertyPresetDirectoryPath(preset.Value.propertyPresetType);
-        path = Path.Combine(path, preset.Value.id + ".udspreset");
+        path = Path.Combine(path, preset.Value.id + ".udspreset.json");
 
         SavePropertyPreset(preset.Value, path);
     }
@@ -519,7 +519,7 @@ public class FileHandler
             return;
         }
 
-        SavePropertyPreset(preset.Value, Path.Combine(path, id + ".udspreset"));
+        SavePropertyPreset(preset.Value, Path.Combine(path, id + ".udspreset.json"));
     }
 
     /// <summary>
@@ -528,13 +528,13 @@ public class FileHandler
     /// </summary>
     /// <param name="nameOrID">The ID of the dialog</param>
     /// <param name="folderPath">The path where its file should go</param>
-    /// <returns>A fitting save/load path for the dialog (ending in .udsdialog)</returns>
+    /// <returns>A fitting save/load path for the dialog (ending in .udsdialog.json)</returns>
     public static string BuildDialogFilePath(string nameOrID, string folderPath)
     {
         string path = Path.Combine(folderPath, nameOrID);
 
-        if (!nameOrID.EndsWith(".udsdialog"))
-            path += ".udsdialog";
+        if (!nameOrID.EndsWith(".udsdialog.json"))
+            path += ".udsdialog.json";
 
         return path;
     }
