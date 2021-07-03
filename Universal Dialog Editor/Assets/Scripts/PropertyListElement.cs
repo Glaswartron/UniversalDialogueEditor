@@ -162,7 +162,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
         else
         {
             if (property.HasValue && property.Value.value != null) // 2nd condition important
-                boolToggle.SetIsOnWithoutNotify((bool)property.Value.value);
+                boolToggle.isOn = ((bool)property.Value.value);
 
             // Toggle
             boolToggle.onValueChanged.AddListener(

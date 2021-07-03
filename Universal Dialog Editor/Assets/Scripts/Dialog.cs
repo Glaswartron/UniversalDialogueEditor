@@ -32,7 +32,9 @@ public sealed class Dialog : DialogComponent, ICloneable
         : base(dialogID)
     {
         dialogParts = new DialogPart[0];
-        startDialogPartID = ""; 
+        startDialogPartID = "";
+
+        SetProperty<bool>("Pause during Dialog", true, required: true);
     }
 
     public object Clone()
@@ -265,93 +267,4 @@ public class DialogComponent
         foreach (string property in GetPropertyKeys())
             DeleteProperty(property);
     }
-
-    /*public string GetStringProperty(string key)
-    {
-        (string value, Type type) value = ("", typeof(string));
-        if (properties.TryGetValue(key, out value))
-            return value.value;
-        else
-            throw new UDSException(string.Format(UDSException.msg1, id, "string", key));
-    }
-
-    public int GetIntProperty(string key)
-    {
-        (string value, Type type) valueStr = ("", typeof(string));
-        if (properties.TryGetValue(key, out valueStr))
-        {
-            if (valueStr.type != typeof(int))
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "int"));
-
-            int value = 0;
-            if (int.TryParse(valueStr.value, out value))
-            {
-                return value;
-            }
-            else
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "int"));
-        }
-        else
-            throw new UDSException(string.Format(UDSException.msg1, id, "int", key));
-    }
-
-    public float GetFloatProperty(string key)
-    {
-        (string value, Type type) valueStr = ("", typeof(string));
-        if (properties.TryGetValue(key, out valueStr))
-        {
-            if (valueStr.type != typeof(float))
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "float"));
-
-            float value = 0.0f;
-            if (float.TryParse(valueStr.value, out value))
-            {
-                return value;
-            }
-            else
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "float"));
-        }
-        else
-            throw new UDSException(string.Format(UDSException.msg1, id, "float", key));
-    }
-
-    public bool GetBoolProperty(string key)
-    {
-        (string value, Type type) valueStr = ("", typeof(string));
-        if (properties.TryGetValue(key, out valueStr))
-        {
-            if (valueStr.type != typeof(bool))
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "bool"));
-
-            bool value = false;
-            if (bool.TryParse(valueStr.value, out value))
-            {
-                return value;
-            }
-            else
-                throw new UDSException(string.Format(UDSException.msg2, key, id, "bool"));
-        }
-        else
-            throw new UDSException(string.Format(UDSException.msg1, id, "bool", key));
-    }
-
-    internal void SetStringProperty(string key, string value)
-    {
-        properties[key] = (value, typeof(string));
-    }
-
-    internal void SetIntProperty(string key, int value)
-    {
-        properties[key] = (value.ToString(), typeof(int));
-    }
-
-    internal void SetFloatProperty(string key, float value)
-    {
-        properties[key] = (value.ToString(), typeof(float));
-    }
-
-    internal void SetBoolProperty(string key, bool value)
-    {
-        properties[key] = (value.ToString(), typeof(bool));
-    } */
 }
