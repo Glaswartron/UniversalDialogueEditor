@@ -82,7 +82,7 @@ public sealed class Dialog : DialogComponent, ICloneable
             //this.dialog = dialog;
 
             SetProperty("Text", "", required: true);
-            SetProperty("Text speed", 1, required: true);
+            SetProperty("Text speed", 1f, required: true);
         }
 
         internal DialogPart Copy(Dialog dialog)

@@ -2,36 +2,42 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace UniversalDialogSystem
 {
     public class UDSDialogManager : MonoBehaviour
     {
         #region Structs and Enums
+
+        [Serializable]
         internal struct TextBox
         {
             public GameObject gameObject;
-            public Text answerText;
-            public TMP_Text answerTextTMP;
+            public Text text;
+            public TMP_Text textTMP;
         }
 
+        [Serializable]
         internal struct AnswerBox
         {
             public TextBox textBox;
             public Button button;
         }
 
+        [Serializable]
         internal enum Platform
         {
             DESKTOP, MOBILE
         }
 
+        [Serializable]
         internal enum LoadMode
         {
             LOAD_ON_START, LOAD_ON_DEMAND
@@ -46,7 +52,6 @@ namespace UniversalDialogSystem
         //public char richTextTagDelimiter;
         [Header("Important General Settings")]
         [SerializeField] internal Platform platform = Platform.DESKTOP;
-        [SerializeField] internal LoadMode loadMode = LoadMode.LOAD_ON_START;
         [SerializeField] internal bool useTextMeshPro = false;
 
         [Header("UI")]
@@ -54,11 +59,13 @@ namespace UniversalDialogSystem
         [SerializeField] internal TextBox dialogTextBox;
         [SerializeField] internal AnswerBox[] answerTextBoxes;
         [SerializeField] internal TextBox nameTextBox;
+        [SerializeField] internal GameObject[] deactivateDuringDialog;
 
         [Header("Input")]
-        [SerializeField] internal KeyCode interactionKey = KeyCode.Mouse0;
+        [SerializeField] internal KeyCode[] interactionKeys = new KeyCode[] { KeyCode.Mouse0 };
 
         [Header("Technical options - Only adjust when needed")]
+        [SerializeField] internal LoadMode loadMode = LoadMode.LOAD_ON_START;
         [SerializeField] internal float minTimeBetweenTouches = 0.35f;
         [SerializeField] internal float standardTimeScale = 1f;
 
@@ -84,25 +91,30 @@ namespace UniversalDialogSystem
 
         private float lastTouchTimestamp = Mathf.Infinity;
 
+        private bool[] deactivateDuringDialogObjectsToReactivate;
+
         // Coroutines
         private IEnumerator revealTextGraduallyCo;
         private IEnumerator revealFormattedTextGraduallyCo;
         #endregion
 
         #region Properties
-        protected string CurrentDialogText
+        protected string CurrentDialogPartText
         {
             get
             {
-                return currentDialog.GetProperty<string>("Text");
+                return currentDialogPart.GetProperty<string>("Text");
             }
         }
 
-        protected string CurrentDialogName
+        protected string CurrentDialogPartName
         {
             get
             {
-                return currentDialog.GetProperty<string>("Name");
+                if (currentDialogPart.HasProperty("Name"))
+                    return currentDialogPart.GetProperty<string>("Name");
+                else // TODO: Shouldn't happen in the final version
+                    return null;
             }
         }
         #endregion
@@ -115,7 +127,8 @@ namespace UniversalDialogSystem
             else
                 Destroy(gameObject);
 
-            LoadDialogs();
+            if (loadMode == LoadMode.LOAD_ON_START)
+                dialogs = LoadDialogs();
         }
 
         private void Update()
@@ -125,7 +138,6 @@ namespace UniversalDialogSystem
                 if (platform == Platform.DESKTOP)
                 {
                     ProcessMouseInput();
-
                 }
 
                 if (platform == Platform.MOBILE)
@@ -154,7 +166,7 @@ namespace UniversalDialogSystem
 
         private void ProcessMouseInput()
         {
-            if (Input.GetKeyDown(interactionKey))
+            if (interactionKeys.Any(k => Input.GetKeyDown(k)))
             {
                 /* Only proceed if the pointer is not above a button
                  * (ideally dialogTextBox shouldn't be a raycast target) */
@@ -181,8 +193,8 @@ namespace UniversalDialogSystem
             {
                 // Stop the effect
                 //StopAllCoroutines();
-                StopCoroutine(revealTextGraduallyCo);
-                StopCoroutine(revealFormattedTextGraduallyCo);
+                if (revealTextGraduallyCo != null) StopCoroutine(revealTextGraduallyCo);
+                if (revealFormattedTextGraduallyCo != null) StopCoroutine(revealFormattedTextGraduallyCo);
 
                 textEffectRunning = false;
 
@@ -217,13 +229,50 @@ namespace UniversalDialogSystem
         /// Starts a Dialog. Enables the dialogUI and sets Time.timeScale to 0 
         /// (= pauses the game), if the "Pause during Dialog" Property is 
         /// set to true on the Dialog.
+        /// </summary>
+        public void StartDialog(string dialogID)
+        {
+            Dialog dialog = null;
+            if (loadMode == LoadMode.LOAD_ON_START)
+                dialog = dialogs.Where(d => d.id.Equals(dialogID)).First();
+            else
+                dialog = LoadDialog(dialogID);
+
+            if (dialog != null)
+            {
+                StartDialog(dialog);
+
+                deactivateDuringDialogObjectsToReactivate = new bool[deactivateDuringDialog.Length];
+                for (int i = 0; i < deactivateDuringDialog.Length; i++)
+                {
+                    if (deactivateDuringDialog[i].activeSelf) // Only if it is active
+                    {
+                        deactivateDuringDialog[i].SetActive(false);
+
+                        // Schedule for reactivation after the Dialog
+                        deactivateDuringDialogObjectsToReactivate[i] = true;
+                    }
+                }
+            }
+            else
+                Debug.LogWarning("Dialog with ID " + dialogID + " was started but " +
+                    "couldn't be found! Try checking the spelling on the ID and " +
+                    "whether you actually imported it into Resources/Dialogs");
+        }
+
+        /// <summary>
+        /// Starts a Dialog. Enables the dialogUI and sets Time.timeScale to 0 
+        /// (= pauses the game), if the "Pause during Dialog" Property is 
+        /// set to true on the Dialog. Called by StartDialog(dialogID).
         /// This method can and should be overriden to introduce your
         /// own custom functionalities like disabling the other game UI
         /// during the Dialog!
         /// </summary>
-        public virtual void StartDialog(Dialog dialog)
+        protected virtual void StartDialog(Dialog dialog)
         {
-            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+            currentDialog = dialog; // !
+
+            if (dialog.GetProperty<bool>("Pause during Dialog"))
                 Time.timeScale = 0f;
 
             dialogRunning = true;
@@ -252,6 +301,12 @@ namespace UniversalDialogSystem
 
             dialogUI.SetActive(false);
 
+            for (int i = 0; i < deactivateDuringDialogObjectsToReactivate.Length; i++)
+            {
+                if (deactivateDuringDialogObjectsToReactivate[i])
+                    deactivateDuringDialog[i].SetActive(true);
+            }
+
             if (currentDialog.GetProperty<bool>("Pause during Dialog"))
                 Time.timeScale = standardTimeScale;
 
@@ -267,8 +322,8 @@ namespace UniversalDialogSystem
         private void GoThroughDialogPart(Dialog.DialogPart diaPart)
         {
             // To avoid "overlapping" coroutines
-            StopCoroutine(revealTextGraduallyCo);
-            StopCoroutine(revealFormattedTextGraduallyCo);
+            if (revealTextGraduallyCo != null) StopCoroutine(revealTextGraduallyCo);
+            if (revealFormattedTextGraduallyCo != null) StopCoroutine(revealFormattedTextGraduallyCo);
             textEffectRunning = false;
 
             // noAnswers is false by default
@@ -281,17 +336,16 @@ namespace UniversalDialogSystem
             currentDialogPart = diaPart; // !
 
             // Name box
-            string name = currentDialogPart.GetProperty<string>("Name");
-            if (!string.IsNullOrWhiteSpace(name))
-                SetTextOnTextBox(nameTextBox, name);
+            if (!string.IsNullOrWhiteSpace(CurrentDialogPartName))
+                SetTextOnTextBox(nameTextBox, CurrentDialogPartName);
             else
                 nameTextBox.gameObject.SetActive(false);
 
             // Show text!
             if (currentDialog.GetProperty<bool>("Pause during Dialog")) // with effect
-                StartCoroutine(RevealTextGradually(CurrentDialogText));
+                StartCoroutine(RevealTextGradually(CurrentDialogPartText));
             else // instantaneously
-                SetTextOnTextBox(dialogTextBox, CurrentDialogText);
+                SetTextOnTextBox(dialogTextBox, CurrentDialogPartText);
 
             // Answers
             int answerCount = diaPart.answers.Length;
@@ -353,9 +407,8 @@ namespace UniversalDialogSystem
             textEffectRunning = true;
 
             SetTextOnTextBox(dialogTextBox, "");
-            bool insideRichTextTag = false;
-            StringBuilder textBuffer = new StringBuilder();
-            float textRevealSpeed = currentDialogPart.GetProperty<float>("Text speed");
+            //bool insideRichTextTag = false;
+            float textRevealSpeed = (float)currentDialogPart.GetProperty<double>("Text speed");
             foreach (char letter in text.ToCharArray())
             {
                 /* Es handelt sich um den Anfang oder das Ende eines Tags zur Formattierung (z.B. <color ...> */
@@ -381,12 +434,13 @@ namespace UniversalDialogSystem
                 //if (!insideRichTextTag) // Normal
                 //{
                 string newText = useTextMeshPro
-                    ? dialogTextBox.answerTextTMP.text
-                    : dialogTextBox.answerText.text;
+                    ? dialogTextBox.textTMP.text + letter
+                    : dialogTextBox.text.text + letter;
+
                 SetTextOnTextBox(dialogTextBox, newText);
 
                 // WaitForSecondsRealtime, damit es unabhängig von der gestoppten TimeScale ist
-                yield return new WaitForSecondsRealtime(textRevealSpeed);
+                yield return new WaitForSecondsRealtime(1.1f - textRevealSpeed);
                 //}
                 //else
                 //textBuffer.Append(letter); // Der Text wird erstmal gespeichert und noch nicht angezeigt
@@ -473,27 +527,58 @@ namespace UniversalDialogSystem
         {
             List<Dialog> dialogs = new List<Dialog>();
 
-            TextAsset[] dialogAssets = Resources.LoadAll("Dialogs", typeof(TextAsset))
+            TextAsset[] dialogAssets = null;
+            try
+            {
+                dialogAssets = Resources.LoadAll("Dialogs", typeof(TextAsset))
                                         .Cast<TextAsset>().ToArray();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error while loading dialogs. Please make sure that " +
+                    "the Resources/Dialogs folder exists\n\n" + e.Message);
+            }
 
             if (dialogAssets == null)
                 return dialogs.ToArray();
 
             foreach (TextAsset dialogFile in dialogAssets)
             {
-                Dialog dialogInstance = JsonUtility.FromJson<Dialog>(dialogFile.text);
+                Dialog dialogInstance = JsonConvert.DeserializeObject<Dialog>(dialogFile.text);
                 dialogs.Add(dialogInstance);
             }
 
             return dialogs.ToArray();
         }
 
+        private Dialog LoadDialog(string dialogID)
+        {
+            TextAsset dialogAsset = null;
+            try
+            {
+                dialogAsset
+                    = (TextAsset)Resources.Load(Path.Combine("Dialogs", dialogID), typeof(TextAsset));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error while loading dialogs. Please make sure that " +
+                    "the Resources/Dialogs folder exists\n\n" + e.Message);
+            }
+
+            if (dialogAsset == null)
+                return null;
+
+            Dialog dialogInstance = JsonConvert.DeserializeObject<Dialog>(dialogAsset.text);
+
+            return dialogInstance;
+        }
+
         private void SetTextOnTextBox(TextBox textBox, string text)
         {
             if (useTextMeshPro)
-                textBox.answerTextTMP.SetText(text);
+                textBox.textTMP.SetText(text);
             else
-                textBox.answerText.text = text;
+                textBox.text.text = text;
         }
     }
 }
