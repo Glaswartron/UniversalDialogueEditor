@@ -442,7 +442,7 @@ namespace UniversalDialogSystem
 
             RichTextContext currentContext;
             while (contexts.Count > 0)
-            { 
+            {
                 currentContext = contexts.Pop();
 
                 // Advance the cursor if some tags where skipped for this context
@@ -451,10 +451,11 @@ namespace UniversalDialogSystem
                 string newText;
 
                 // Go through the text (in your context "frame")
-                string _text = baseText.Substring(cursor,
-                                                  currentContext.endIndex - cursor + 1);
+                int _textStartIndex = cursor;
+                string _text = baseText.Substring(_textStartIndex, currentContext.endIndex - cursor + 1);
+
                 // Letter by letter, increment cursor!
-                for (int i = 0; i < _text.Length; i++, cursor++) 
+                for (int i = 0; i < _text.Length; i++, cursor++)
                 {
                     char letter = _text[i];
 
@@ -470,48 +471,60 @@ namespace UniversalDialogSystem
                             // startTag = From current letter (= '<') to next '>'
                             startTag = _text.Substring(i, _text.IndexOf(">") - i + 1);
 
-                            // _text with everything before and including the startTag cut off
-                            string _textFromEndOfStartTag = _text.Substring(_text.IndexOf(">") + 1);
-
-                            // Is there a closing tag (</...>) ahead?
-                            if (_textFromEndOfStartTag.Contains("</") && _textFromEndOfStartTag.Contains('>')
-                                && _textFromEndOfStartTag.IndexOf('>') > _textFromEndOfStartTag.IndexOf("</"))
+                            if (!startTag.Contains(" "))
                             {
-                                // If so, cut out that closing tag
-                                endTag = _textFromEndOfStartTag.Substring
-                                    (_textFromEndOfStartTag.IndexOf("</"),
-                                     _textFromEndOfStartTag.IndexOf(">") - _textFromEndOfStartTag.IndexOf("</") + 1);
+                                // _text with everything before and including the startTag cut off
+                                string _textFromEndOfStartTag = _text.Substring(_text.IndexOf(">") + 1);
 
-                                // Only what's in between the "< >" and "</ >" (with whitespaces removed)
-                                string startTagContent = startTag.Replace("<", null).Replace(">", null).Replace(" ", null);
-                                string endTagContent = endTag.Replace("</", null).Replace(">", null).Replace(" ", null);
-
-                                // Just another check: If it's well-formed, startTagContent starts with endTagContent
-                                if (startTagContent.StartsWith(endTagContent))
+                                // Is there a closing tag (</...>) ahead?
+                                if (_textFromEndOfStartTag.Contains("</" + startTag[1])
+                                    && _textFromEndOfStartTag.Contains('>'))
                                 {
-                                    // Write the tags to the text box, the actual text will go in between
-                                    newText = useTextMeshPro
-                                              ? dialogTextBox.textTMP.text + startTag + endTag
-                                              : dialogTextBox.text.text + startTag + endTag;
+                                    // Sneaky workaround with +startTag[1] to get the right tag
+                                    int endTagIndex = _textFromEndOfStartTag.IndexOf("</" + startTag[1]);
+                                    string _textFromStartOfEndTag = _textFromEndOfStartTag.Substring(endTagIndex);
 
-                                    SetTextOnTextBox(dialogTextBox, newText);
-
-                                    // Very important! Push current context back onto the stack for later
-                                    contexts.Push(currentContext);
-
-                                    /* For the new RichTextContext, start after the startTag 
-                                     * (in the original text) and write till before the end tag, 
-                                     * then resume after the end tag when you leave the context */
-                                    RichTextContext newContext = new RichTextContext
+                                    if (_textFromStartOfEndTag.Contains('>'))
                                     {
-                                        startIndex = cursor + startTag.Length,
-                                        endIndex = baseText.IndexOf(_text) + _text.IndexOf(endTag) - 1,
-                                        resumeOffset = endTag.Length
-                                    };
+                                        // Cut out the closing tag
+                                        endTag = _textFromStartOfEndTag.Substring
+                                            (0, _textFromStartOfEndTag.IndexOf(">") + 1);
 
-                                    contexts.Push(newContext);
+                                        if (!endTag.Contains(" "))
+                                        {
+                                            // Only what's in between the "< >" and "</ >"
+                                            string startTagContent = startTag.Replace("<", null).Replace(">", null);
+                                            string endTagContent = endTag.Replace("</", null).Replace(">", null);
 
-                                    break; // Very important! We're heading to a new loop now
+                                            // Just another check: If it's well-formed, startTagContent starts with endTagContent
+                                            if (startTagContent.StartsWith(endTagContent))
+                                            {
+                                                // Write the tags to the text box, the actual text will go in between
+                                                newText = useTextMeshPro
+                                                          ? dialogTextBox.textTMP.text.Insert(cursor, startTag + endTag)
+                                                          : dialogTextBox.text.text.Insert(cursor, startTag + endTag);
+
+                                                SetTextOnTextBox(dialogTextBox, newText);
+
+                                                // Very important! Push current context back onto the stack for later
+                                                contexts.Push(currentContext);
+
+                                                /* For the new RichTextContext, start after the startTag 
+                                                 * (in the original text) and write till before the end tag, 
+                                                 * then resume after the end tag when you leave the context */
+                                                RichTextContext newContext = new RichTextContext
+                                                {
+                                                    startIndex = cursor + startTag.Length,
+                                                    endIndex = _textStartIndex + _text.IndexOf(endTag) - 1,
+                                                    resumeOffset = endTag.Length + 1
+                                                };
+
+                                                contexts.Push(newContext);
+
+                                                break; // Very important! We're heading to a new loop now
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -529,40 +542,16 @@ namespace UniversalDialogSystem
                         yield return new WaitForSeconds(1.035f - textRevealSpeed);
                 }
 
+                // Decrement cursor because it has been incremented once too often by the loop
+                cursor--;
+
                 // Add the resumeOffset to the cursor when leaving the context
                 if (cursor == currentContext.endIndex)
-                    cursor += currentContext.resumeOffset + 1;
+                    cursor += currentContext.resumeOffset;
             }
 
             textEffectRunning = false;
         }
-
-        /// <summary>
-        /// Coroutine. Gibt ein Stück Text mit Rich-Text-Formatierung darin Stück 
-        /// für Stück aus ohne dem Spieler die Tags zu zeigen.
-        /// Frag mich nie wie das funktioniert, aber es funktioniert... :D
-        /// </summary>
-        /// <param name="text">Das Textstück, das ausgegeben werden soll</param>
-        /*private IEnumerator RevealFormattedTextGradually(string text)
-        {
-            /* Zuerst werden die Tags "geschrieben"; 
-             * dabei wird der Index in der Mitte gespeichert (wo der Text hinkommt) 
-            int cursor = text.IndexOf(">") + 1;
-            int dialogTextCursor = 0;
-            dialogText.text += text.Substring(0, cursor);
-            dialogTextCursor = dialogText.text.Length - 1;
-            dialogText.text += text.Substring(text.LastIndexOf('<'),
-                                                  text.Length - text.LastIndexOf('<'));
-
-            // Dann wird der Text Stück für Stück zwischen die Tags geschrieben
-            string textContentSection = text.Substring(cursor,
-                                                    text.LastIndexOf('<') - 1 - text.IndexOf('>'));
-            foreach (char _letter in textContentSection)
-            {
-                dialogText.SetText(dialogText.text.Insert(++dialogTextCursor, _letter.ToString()));
-                yield return new WaitForSecondsRealtime(textRevealSpeed);
-            }
-        }*/
 
         /// <summary>
         /// Bestimmt rekursiv, ob ein Branch des Dialogs ohne weitere 
@@ -590,26 +579,6 @@ namespace UniversalDialogSystem
                 return IsEndBranch(followingPart); // Nächsten überprüfen
             }
         }
-
-        //public static void FormatDialogs()
-        //{
-        //    foreach (Dialog dialog in GameStuffHolder.instance.dialogs)
-        //        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
-        //        {
-        //            if (diaPart.text.Contains("<color") && !diaPart.text.Contains("|<color"))
-        //            {
-        //                diaPart.text = diaPart.text.Replace("<color", "|<color");
-        //                diaPart.text = diaPart.text.Replace("</color>", "</color>|");
-        //            }
-        //
-        //            if (diaPart.textDE.Contains("<color") && !diaPart.textDE.Contains("|<color"))
-        //            {
-        //                diaPart.textDE = diaPart.textDE.Replace("<color", "|<color");
-        //                diaPart.textDE = diaPart.textDE.Replace("</color>", "</color>|");
-        //            }
-        //        }
-        //}
-
         private Dialog[] LoadDialogs()
         {
             List<Dialog> dialogs = new List<Dialog>();
