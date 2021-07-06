@@ -451,8 +451,8 @@ namespace UniversalDialogSystem
                 string newText;
 
                 // Go through the text (in your context "frame")
-                string _text = baseText.Substring(currentContext.startIndex,
-                                                  currentContext.endIndex - currentContext.startIndex + 1);
+                string _text = baseText.Substring(cursor,
+                                                  currentContext.endIndex - cursor + 1);
                 // Letter by letter, increment cursor!
                 for (int i = 0; i < _text.Length; i++, cursor++) 
                 {
@@ -480,7 +480,7 @@ namespace UniversalDialogSystem
                                 // If so, cut out that closing tag
                                 endTag = _textFromEndOfStartTag.Substring
                                     (_textFromEndOfStartTag.IndexOf("</"),
-                                     _textFromEndOfStartTag.IndexOf(">") - _textFromEndOfStartTag.IndexOf("</") - 1);
+                                     _textFromEndOfStartTag.IndexOf(">") - _textFromEndOfStartTag.IndexOf("</") + 1);
 
                                 // Only what's in between the "< >" and "</ >" (with whitespaces removed)
                                 string startTagContent = startTag.Replace("<", null).Replace(">", null).Replace(" ", null);
@@ -496,15 +496,17 @@ namespace UniversalDialogSystem
 
                                     SetTextOnTextBox(dialogTextBox, newText);
 
+                                    // Very important! Push current context back onto the stack for later
+                                    contexts.Push(currentContext);
+
                                     /* For the new RichTextContext, start after the startTag 
                                      * (in the original text) and write till before the end tag, 
                                      * then resume after the end tag when you leave the context */
                                     RichTextContext newContext = new RichTextContext
                                     {
                                         startIndex = cursor + startTag.Length,
-                                        endIndex = baseText.IndexOf(_text) + _text.IndexOf(endTag)
-                                                                           - 1,
-                                        resumeOffset = endTag.Length + 1
+                                        endIndex = baseText.IndexOf(_text) + _text.IndexOf(endTag) - 1,
+                                        resumeOffset = endTag.Length
                                     };
 
                                     contexts.Push(newContext);
@@ -516,8 +518,8 @@ namespace UniversalDialogSystem
                     }
 
                     newText = useTextMeshPro
-                        ? dialogTextBox.textTMP.text + baseText[cursor]
-                        : dialogTextBox.text.text + baseText[cursor];
+                        ? dialogTextBox.textTMP.text.Insert(cursor, baseText[cursor].ToString())
+                        : dialogTextBox.text.text.Insert(cursor, baseText[cursor].ToString());
 
                     SetTextOnTextBox(dialogTextBox, newText);
 
@@ -529,7 +531,7 @@ namespace UniversalDialogSystem
 
                 // Add the resumeOffset to the cursor when leaving the context
                 if (cursor == currentContext.endIndex)
-                    cursor += currentContext.resumeOffset;
+                    cursor += currentContext.resumeOffset + 1;
             }
 
             textEffectRunning = false;
