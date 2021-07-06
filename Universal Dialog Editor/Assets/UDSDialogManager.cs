@@ -31,6 +31,14 @@ namespace UniversalDialogSystem
             public Button button;
         }
 
+        private struct RichTextContext
+        {
+            //public int writeIndex;
+            public int startIndex;
+            public int endIndex;
+            public int resumeOffset;
+        }
+
         [Serializable]
         internal enum Platform
         {
@@ -47,9 +55,6 @@ namespace UniversalDialogSystem
         #region Variables
         [HideInInspector] public static UDSDialogManager instance; // Singleton
 
-        [HideInInspector] public bool dialogRunning;
-
-        //public char richTextTagDelimiter;
         [Header("Important General Settings")]
         [SerializeField] internal Platform platform = Platform.DESKTOP;
         [SerializeField] internal bool useTextMeshPro = false;
@@ -68,6 +73,8 @@ namespace UniversalDialogSystem
         [SerializeField] internal LoadMode loadMode = LoadMode.LOAD_ON_START;
         [SerializeField] internal float minTimeBetweenTouches = 0.35f;
         [SerializeField] internal float standardTimeScale = 1f;
+
+        [HideInInspector] public bool dialogRunning;
 
         internal Dialog currentDialog = null;
         internal string currentName;
@@ -90,12 +97,13 @@ namespace UniversalDialogSystem
         private bool textEffectRunning = false;
 
         private float lastTouchTimestamp = Mathf.Infinity;
+        private bool justStarted = false;
 
         private bool[] deactivateDuringDialogObjectsToReactivate;
 
         // Coroutines
-        private IEnumerator revealTextGraduallyCo;
-        private IEnumerator revealFormattedTextGraduallyCo;
+        private Coroutine revealTextGraduallyCo;
+        private Coroutine revealFormattedTextGraduallyCo;
         #endregion
 
         #region Properties
@@ -135,17 +143,21 @@ namespace UniversalDialogSystem
         {
             if (dialogRunning)
             {
-                if (platform == Platform.DESKTOP)
+                if (!justStarted)
                 {
-                    ProcessMouseInput();
-                }
+                    if (platform == Platform.DESKTOP)
+                    {
+                        ProcessMouseInput();
+                    }
 
-                if (platform == Platform.MOBILE)
-                {
-                    // To avoid registering a touch more than once
-                    if (Time.realtimeSinceStartup - lastTouchTimestamp > minTimeBetweenTouches)
-                        ProcessTouchInput();
+                    if (platform == Platform.MOBILE)
+                    {
+                        // To avoid registering a touch more than once
+                        if (Time.realtimeSinceStartup - lastTouchTimestamp > minTimeBetweenTouches)
+                            ProcessTouchInput();
+                    }
                 }
+                else justStarted = false;
             }
         }
 
@@ -242,6 +254,8 @@ namespace UniversalDialogSystem
             {
                 StartDialog(dialog);
 
+                justStarted = true;
+
                 deactivateDuringDialogObjectsToReactivate = new bool[deactivateDuringDialog.Length];
                 for (int i = 0; i < deactivateDuringDialog.Length; i++)
                 {
@@ -294,6 +308,8 @@ namespace UniversalDialogSystem
             {
                 SetTextOnTextBox(answerBox.textBox, "");
 
+                answerBox.button.onClick.RemoveAllListeners(); // !
+
                 answerBox.textBox.gameObject.SetActive(false);
             }
 
@@ -342,8 +358,8 @@ namespace UniversalDialogSystem
                 nameTextBox.gameObject.SetActive(false);
 
             // Show text!
-            if (currentDialog.GetProperty<bool>("Pause during Dialog")) // with effect
-                StartCoroutine(RevealTextGradually(CurrentDialogPartText));
+            if (currentDialogPart.GetProperty<float>("Text speed") > 0) // with effect
+                revealTextGraduallyCo = StartCoroutine(RevealTextGradually(CurrentDialogPartText));
             else // instantaneously
                 SetTextOnTextBox(dialogTextBox, CurrentDialogPartText);
 
@@ -360,10 +376,12 @@ namespace UniversalDialogSystem
 
                     SetTextOnTextBox(answerBox.textBox, answer.GetProperty<string>("Text"));
 
+                    answerBox.button.onClick.RemoveAllListeners(); // !
+
+                    int _i = i; // Important
                     answerBox.button.onClick.AddListener(
                         () =>
                         {
-                            int _i = i;
                             TakeAnswer(_i);
                         }
                     );
@@ -401,50 +419,117 @@ namespace UniversalDialogSystem
         /// Der Text wird nach und nach mit Effekt aufgedeckt
         /// Enthält auch die Sonderbehandlung für Tags wie z.B. <color ...>
         /// </summary>
-        /// <param name="text">Der Text der aufgedeckt werden soll</param>
-        private IEnumerator RevealTextGradually(string text)
+        /// <param name="baseText">Der Text der aufgedeckt werden soll</param>
+        private IEnumerator RevealTextGradually(string baseText)
         {
-            textEffectRunning = true;
+            textEffectRunning = true; // !
 
             SetTextOnTextBox(dialogTextBox, "");
-            //bool insideRichTextTag = false;
-            float textRevealSpeed = (float)currentDialogPart.GetProperty<double>("Text speed");
-            foreach (char letter in text.ToCharArray())
+            float textRevealSpeed = currentDialogPart.GetProperty<float>("Text speed");
+
+            // Global cursor that points to the index in the baseText where we're currently at
+            int cursor = 0;
+
+            Stack<RichTextContext> contexts = new Stack<RichTextContext>();
+
+            RichTextContext baseContext = new RichTextContext
             {
-                /* Es handelt sich um den Anfang oder das Ende eines Tags zur Formattierung (z.B. <color ...> */
-                /*if (letter == richTextTagDelimiter)
+                startIndex = 0,
+                endIndex = baseText.Length - 1,
+                resumeOffset = 0
+            };
+            contexts.Push(baseContext);
+
+            RichTextContext currentContext;
+            while (contexts.Count > 0)
+            { 
+                currentContext = contexts.Pop();
+
+                // Advance the cursor if some tags where skipped for this context
+                cursor = Mathf.Max(cursor, currentContext.startIndex);
+
+                string newText;
+
+                // Go through the text (in your context "frame")
+                string _text = baseText.Substring(currentContext.startIndex,
+                                                  currentContext.endIndex - currentContext.startIndex + 1);
+                // Letter by letter, increment cursor!
+                for (int i = 0; i < _text.Length; i++, cursor++) 
                 {
-                    insideRichTextTag = !insideRichTextTag;
-                    if (!insideRichTextTag) // Die durch Tags abgetrennte Region ist zuende
+                    char letter = _text[i];
+
+                    if (letter == '<') // Might be the start of a tag
                     {
-                        // Der End-Delimiter kommt auch noch in den TextBuffer rein
-                        textBuffer.Append(letter);
-                        // Die Delimiter werden entfernt
-                        textBuffer = new StringBuilder(Regex.Replace(textBuffer.ToString(),
-                                                                     "\\" + richTextTagDelimiter.ToString(), ""));
+                        // Is there a '>' ahead to close the tag?
+                        if (_text.Contains('>') && _text.IndexOf('>') > i)
+                        {
+                            // If so, identify the startTag (<...>) and endTag (</...>)
 
-                        // Der formattierte Text wird ausgegeben (Synchronisierte Coroutine)
-                        yield return RevealFormattedTextGradually(textBuffer.ToString());
+                            string startTag, endTag;
 
-                        textBuffer.Clear(); // WICHTIG
-                        continue; // WICHTIG
+                            // startTag = From current letter (= '<') to next '>'
+                            startTag = _text.Substring(i, _text.IndexOf(">") - i + 1);
+
+                            // _text with everything before and including the startTag cut off
+                            string _textFromEndOfStartTag = _text.Substring(_text.IndexOf(">") + 1);
+
+                            // Is there a closing tag (</...>) ahead?
+                            if (_textFromEndOfStartTag.Contains("</") && _textFromEndOfStartTag.Contains('>')
+                                && _textFromEndOfStartTag.IndexOf('>') > _textFromEndOfStartTag.IndexOf("</"))
+                            {
+                                // If so, cut out that closing tag
+                                endTag = _textFromEndOfStartTag.Substring
+                                    (_textFromEndOfStartTag.IndexOf("</"),
+                                     _textFromEndOfStartTag.IndexOf(">") - _textFromEndOfStartTag.IndexOf("</") - 1);
+
+                                // Only what's in between the "< >" and "</ >" (with whitespaces removed)
+                                string startTagContent = startTag.Replace("<", null).Replace(">", null).Replace(" ", null);
+                                string endTagContent = endTag.Replace("</", null).Replace(">", null).Replace(" ", null);
+
+                                // Just another check: If it's well-formed, startTagContent starts with endTagContent
+                                if (startTagContent.StartsWith(endTagContent))
+                                {
+                                    // Write the tags to the text box, the actual text will go in between
+                                    newText = useTextMeshPro
+                                              ? dialogTextBox.textTMP.text + startTag + endTag
+                                              : dialogTextBox.text.text + startTag + endTag;
+
+                                    SetTextOnTextBox(dialogTextBox, newText);
+
+                                    /* For the new RichTextContext, start after the startTag 
+                                     * (in the original text) and write till before the end tag, 
+                                     * then resume after the end tag when you leave the context */
+                                    RichTextContext newContext = new RichTextContext
+                                    {
+                                        startIndex = cursor + startTag.Length,
+                                        endIndex = baseText.IndexOf(_text) + _text.IndexOf(endTag)
+                                                                           - 1,
+                                        resumeOffset = endTag.Length + 1
+                                    };
+
+                                    contexts.Push(newContext);
+
+                                    break; // Very important! We're heading to a new loop now
+                                }
+                            }
+                        }
                     }
-                }*/
 
-                //if (!insideRichTextTag) // Normal
-                //{
-                string newText = useTextMeshPro
-                    ? dialogTextBox.textTMP.text + letter
-                    : dialogTextBox.text.text + letter;
+                    newText = useTextMeshPro
+                        ? dialogTextBox.textTMP.text + baseText[cursor]
+                        : dialogTextBox.text.text + baseText[cursor];
 
-                SetTextOnTextBox(dialogTextBox, newText);
+                    SetTextOnTextBox(dialogTextBox, newText);
 
-                // WaitForSecondsRealtime, damit es unabhängig von der gestoppten TimeScale ist
-                yield return new WaitForSecondsRealtime(1.1f - textRevealSpeed);
-                //}
-                //else
-                //textBuffer.Append(letter); // Der Text wird erstmal gespeichert und noch nicht angezeigt
+                    if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+                        yield return new WaitForSecondsRealtime(1.035f - textRevealSpeed);
+                    else
+                        yield return new WaitForSeconds(1.035f - textRevealSpeed);
+                }
 
+                // Add the resumeOffset to the cursor when leaving the context
+                if (cursor == currentContext.endIndex)
+                    cursor += currentContext.resumeOffset;
             }
 
             textEffectRunning = false;
