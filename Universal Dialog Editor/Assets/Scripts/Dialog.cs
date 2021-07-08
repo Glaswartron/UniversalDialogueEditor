@@ -20,6 +20,14 @@ public struct UDSProperty
 }
 
 [Serializable]
+public struct UDSCondition
+{
+    public string globalPropertyKey;
+    public string operation;
+    public object compareTo;
+}
+
+[Serializable]
 public sealed class Dialog : DialogComponent, ICloneable
 {
     public DialogPart[] dialogParts;
@@ -81,8 +89,9 @@ public sealed class Dialog : DialogComponent, ICloneable
 
             //this.dialog = dialog;
 
-            SetProperty("Text", "", required: true);
-            SetProperty("Text speed", 1f, required: true);
+            SetProperty<string>("Text", "", required: true);
+            SetProperty<string>("Name", "", required: true);
+            SetProperty<float>("Text speed", 1f, required: true);
         }
 
         internal DialogPart Copy(Dialog dialog)
@@ -134,7 +143,7 @@ public sealed class Dialog : DialogComponent, ICloneable
 
                 this.angle = angle;
 
-                SetProperty("Text", "", required: true);
+                SetProperty<string>("Text", "", required: true);
             }
 
             internal Answer Copy(DialogPart dialogPart)

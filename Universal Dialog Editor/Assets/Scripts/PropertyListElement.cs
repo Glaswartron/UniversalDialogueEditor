@@ -44,6 +44,9 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 {
                     if (dialogComponent.HasProperty(input))
                     {
+                        if (input.Equals(id))
+                            return; // ID hasn't been edited
+
                         ErrorMessage.instance.ShowErrorMessage
                             ("The Dialog Component already contains a Property with that ID");
 
@@ -67,12 +70,8 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                     }
 
                     // Invalid input or ID already taken
-                    if (string.IsNullOrWhiteSpace(input) || dialogComponent.HasProperty(input)
-                            || containsInvalidCharacter)
+                    if (string.IsNullOrWhiteSpace(input) || containsInvalidCharacter)
                     {
-                        if (dialogComponent.HasProperty(input) && !input.Equals(id))
-                            return; // ID hasn't been edited
-
                         // Go back to previous id
                         idInputField.SetTextWithoutNotify(id);
                         idInputField.caretPosition = id.Length - 1;
@@ -170,8 +169,12 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                 {
                     DialogComponent localDC = dialogComponent;
                     string localKey = id;
+                    UDSProperty? localProperty = property;
 
-                    localDC.SetProperty(localKey, state);
+                    if (!localProperty.HasValue)
+                        localDC.SetProperty(localKey, state, type);
+                    else
+                        localDC.SetProperty(localKey, state, type, localProperty.Value.required);
                 }
             );
         }
