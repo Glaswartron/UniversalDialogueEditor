@@ -70,6 +70,7 @@ namespace UniversalDialogSystem
 
         [Header("Animation and Delays")]
         [SerializeField] protected float delayBtwUIEnableAndDialogStart;
+        [SerializeField] protected float delayBtwDialogEndAndUIDisable;
 
         [Header("Technical options - Only adjust when needed")]
         [SerializeField] protected LoadMode loadMode = LoadMode.LOAD_ON_START;
@@ -100,37 +101,53 @@ namespace UniversalDialogSystem
 
         private Dialog.DialogPart.Answer answerBeforePause;
 
+        private string overridenText;
+
         private float lastTouchTimestamp = Mathf.Infinity;
         private bool justStarted = false;
 
         private bool[] deactivateDuringDialogObjectsToReactivate;
 
         // Coroutines
+        private Coroutine startCoroutine;
+        private Coroutine stopCoroutine;
         private Coroutine revealTextGraduallyCo;
         #endregion
 
         #region Properties
         /// <summary>
-        /// The 'Text' Property of the currentDialogPart
+        /// The 'Text' Property of the currentDialogPart or
+        /// alternatively the text set by a method overriding
+        /// or calling ShowDialogPartText. Null if currentDialogPart
+        /// is null (e.g. outside a dialog)
         /// </summary>
         protected string CurrentDialogPartText
         {
             get
             {
-                return currentDialogPart.GetProperty<string>("Text");
+                if (currentDialogPart == null)
+                    return null;
+
+                return overridenText == null ?
+                       currentDialogPart.GetProperty<string>("Text") 
+                       : overridenText;
             }
         }
 
         /// <summary>
-        /// The 'Name' Property of the currentDialogPart
+        /// The 'Name' Property of the currentDialogPart or
+        /// Null if currentDialogPart is null (e.g. outside a dialog)
         /// </summary>
         protected string CurrentDialogPartName
         {
             get
             {
+                if (currentDialogPart == null)
+                    return null;
+
                 if (currentDialogPart.HasProperty("Name"))
                     return currentDialogPart.GetProperty<string>("Name");
-                else // TODO: Shouldn't happen in the final version
+                else // Shouldn't happen
                     return null;
             }
         }
@@ -317,57 +334,12 @@ namespace UniversalDialogSystem
         }
         #endregion
 
-        /// <summary>
-        /// Called as part of the Update loop whenever the player 
-        /// touches the screen or presses the interactionKey during
-        /// a dialog. Moves the dialog into it's next state, which
-        /// means either
-        /// going to the next DialogPart,
-        /// showing the entirety of the text at once (stopping revealing),
-        /// or ending the dialog.
-        /// </summary>
-        private void UpdateDialog()
-        {
-            // Text is currently being shown gradually (effect is running)
-            if (textEffectRunning)
-            {
-                // Stop the effect
-                if (revealTextGraduallyCo != null) StopCoroutine(revealTextGraduallyCo);
 
-                textEffectRunning = false;
-
-                // Show text instantly
-                string text = currentDialogPart.GetProperty<string>("Text");
-                SetTextOnTextBox(dialogTextBox, text);
-
-                return;
-            }
-
-            /* No answers -> Go to next dialog part OR finish dialog 
-             * (otherwise done by clicking on answers) */
-            if (noAnswers)
-            {
-                var allDiaParts = currentDialog.dialogParts;
-
-                // Check whether this is the last DialogPart
-                if (string.IsNullOrWhiteSpace(currentDialogPart.nextDialogPartID))
-                {
-                    FinishDialog();
-                    return;
-                }
-
-                // Continue to the next DialogPart
-                GoThroughDialogPart(
-                    currentDialog.dialogParts.Where(
-                        dp => dp.id.Equals(currentDialogPart.nextDialogPartID)).First());
-            }
-        }
-
+        #region Dialog Playback
         /// <summary>
         /// Starts a Dialog. Enables the dialogUI and sets Time.timeScale to 0 
         /// (= pauses the game), if the "Pause during Dialog" Property is 
-        /// set to true on the Dialog. Takes care of some internal functionality
-        /// before calling StartDialog(Dialog), which you can override.
+        /// set to true on the Dialog. Then starts playing the start DialogPart
         /// </summary>
         /// <seealso cref="StartDialog(Dialog)"/>
         public void StartDialog(string dialogID)
@@ -419,7 +391,17 @@ namespace UniversalDialogSystem
 
             EnableDialogUI(); // !
 
-            OnDialogStart(dialog); // !
+            StartCoroutine(StartDialogDelayed());
+        }
+
+        private IEnumerator StartDialogDelayed()
+        {
+            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+                yield return new WaitForSecondsRealtime(delayBtwUIEnableAndDialogStart);
+            else
+                yield return new WaitForSeconds(delayBtwUIEnableAndDialogStart);
+
+            OnDialogStart(currentDialog); // !
 
             // The start DialogPart is being played
             GoThroughDialogPart(
@@ -428,173 +410,52 @@ namespace UniversalDialogSystem
         }
 
         /// <summary>
-        /// Starts the playback of the current DialogParts text
-        /// in the UI. If it's Text Speed Property is set to 0,
-        /// this will just instantly show the text, otherwise it
-        /// will be played gradually (= inside a coroutine with 
-        /// delay between the letters and using an algorithm to
-        /// deal with Rich Text). 
-        /// Called by ShowDialogPartText(Dialog.DialogPart, string),
-        /// which you can override.
+        /// Called as part of the Update loop whenever the player 
+        /// touches the screen or presses the interactionKey during
+        /// a dialog. Moves the dialog into it's next state, which
+        /// means either
+        /// going to the next DialogPart,
+        /// showing the entirety of the text at once (stopping revealing),
+        /// or ending the dialog.
         /// </summary>
-        /// <seealso cref="ShowDialogPartText(in Dialog.DialogPart, string)"/>
-        /// <param name="text">Optional parameter. If it is null or
-        /// not given at all, the text of the current DialogPart will
-        /// be played. Otherwise the given text will be played instead. 
-        /// Can be used for making changes to the text or for localization</param>
-        protected void ShowDialogPartText(string text = null)
+        private void UpdateDialog()
         {
-            if (text == null)
-                text = CurrentDialogPartText;
-
-            // Show text!
-            if (currentDialogPart.GetProperty<float>("Text speed") > 0) // with effect
-                revealTextGraduallyCo = StartCoroutine(RevealTextGradually(text));
-            else // instantaneously
-                SetTextOnTextBox(dialogTextBox, text);
-        }
-
-        /// <summary>
-        /// Pauses/Interrupts the currently running Dialog. You can start other
-        /// things (e.g. a shop screen) now. 
-        /// The Dialog will continue when ContinueDialog() is being called
-        /// </summary>
-        /// <seealso cref="ContinueDialog"/>
-        /// <param name="disableDialogUI">Whether or not the dialogUI shall be 
-        /// disabled during the pause</param>
-        /// <param name="resetTimescale">Whether or not the Time.timeScale shall 
-        /// be reset to standardTimeScale during the pause (only applies when 
-        /// the Dialog's 'Pause during Dialog' is set to true)</param>
-        public void PauseDialog(bool disableDialogUI, bool resetTimescale)
-        {
-            if (currentDialog == null)
-                return;
-
-            dialogPaused = true; // !
-
-            StopCoroutine(revealTextGraduallyCo);
-
-            if (disableDialogUI)
-                DisableDialogUI(true);
-
-            if (resetTimescale && currentDialog.GetProperty<bool>("Pause during Dialog"))
-                Time.timeScale = standardTimeScale;
-
-            OnDialogPause(); // !
-        }
-
-        /// <summary>
-        /// Continues the currently running Dialog after a pause/interrupt 
-        /// triggered by PauseDialog(bool, bool). Continues the Dialog by 
-        /// either 1) instantly taking the answer which was clicked right before
-        /// the pause, 2) playing the current DialogPart (again) or
-        /// 3) (re)starting the current Dialog. One of these is being chosen 
-        /// based on when PauseDialog was called.
-        /// </summary>
-        /// <seealso cref="PauseDialog(bool, bool)"/>
-        public void ContinueDialog()
-        {
-            if (!dialogPaused || currentDialog == null)
-                return;
-
-            if (dialogUI.activeSelf == false)
-                EnableDialogUI(true);
-
-            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
-                Time.timeScale = 0;
-
-            OnDialogContinue(); // !
-
-            // Find the right way to continue after a pause/interrupt
-            if (answerBeforePause != null)
-                TakeAnswer(answerBeforePause.index);
-            else if (currentDialogPart != null)
-                GoThroughDialogPart(currentDialogPart);
-            else
-                StartDialog(currentDialog);
-        }
-
-        /// <summary>
-        /// Finishes the current Dialog and resets all the UI
-        /// </summary>
-        protected void FinishDialog()
-        {
-            foreach (AnswerBox answerBox in answerTextBoxes)
+            // Text is currently being shown gradually (effect is running)
+            if (textEffectRunning)
             {
-                SetTextOnTextBox(answerBox.textBox, "");
+                StopDialogPlaybackCoroutines();
 
-                answerBox.button.onClick.RemoveAllListeners(); // !
+                textEffectRunning = false;
 
-                answerBox.textBox.gameObject.SetActive(false);
+                // Show text instantly
+                SetTextOnTextBox(dialogTextBox, CurrentDialogPartText);
+
+                return;
             }
 
-            OnDialogEnd(currentDialog); // !
-
-            dialogRunning = false;
-
-            DisableDialogUI();
-
-            for (int i = 0; i < deactivateDuringDialogObjectsToReactivate.Length; i++)
+            /* No answers -> Go to next dialog part OR finish dialog 
+             * (otherwise done by clicking on answers) */
+            if (noAnswers)
             {
-                if (deactivateDuringDialogObjectsToReactivate[i])
-                    deactivateDuringDialog[i].SetActive(true);
-            }
+                var allDiaParts = currentDialog.dialogParts;
 
-            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
-                Time.timeScale = standardTimeScale;
-
-            currentDialog = null;
-        }
-
-        /// <summary>
-        /// Determines whether a dialogPart leads directly to the end
-        /// of the Dialog. That is, it has no answers, all parts that
-        /// come after it have no answers and one of the following
-        /// parts is a end of the Dialog, which also means that there
-        /// are no cycles "beyond" that dialogPart.
-        /// 
-        /// (works iteratively to avoid StackOverflows and
-        /// excessive memory usage)
-        /// </summary>
-        /// <param name="dialogPart">The dialogPart to be evaluated</param>
-        /// <returns>Whether or not this dialogPart leads directly to the end of the dialog</returns>
-        protected bool IsEndBranch(Dialog.DialogPart dialogPart)
-        {
-            // The start of the branch doesn't exist
-            if (dialogPart == null)
-                return true;
-
-            // The part that is currently being evaluated
-            Dialog.DialogPart currentPart = dialogPart;
-
-            // HashSet for loop detection
-            HashSet<Dialog.DialogPart> alreadyVisited = new HashSet<Dialog.DialogPart>();
-
-            while (!alreadyVisited.Contains(currentPart))
-            {
-                alreadyVisited.Add(currentPart);
-
-                // There are answers in the currentPart
-                if (currentPart.answers.Length > 0)
-                    return false;
-                else if (string.IsNullOrWhiteSpace(currentPart.nextDialogPartID)) // End reached
-                    return true;
-                else // Find and check next part
+                // Check whether this is the last DialogPart
+                if (string.IsNullOrWhiteSpace(currentDialogPart.nextDialogPartID))
                 {
-                    var followingPart = Array.Find(currentDialog.dialogParts,
-                                                   dp => dp.id.Equals(dialogPart.nextDialogPartID));
-
-                    currentPart = followingPart;
+                    FinishDialog();
+                    return;
                 }
-            }
 
-            return false; // Loop was detected
+                // Continue to the next DialogPart
+                GoThroughDialogPart(
+                    currentDialog.dialogParts.Where(
+                        dp => dp.id.Equals(currentDialogPart.nextDialogPartID)).First());
+            }
         }
 
         /// <summary>
         /// Actually plays back a DialogPart 
-        /// => Handles the text and answer boxes, sets all the
-        ///    variables and provides interfaces (TODO)
+        /// => Handles the text and answer boxes
         /// </summary>
         /// <param name="diaPart">The DialogPart to be played</param>
         protected void GoThroughDialogPart(Dialog.DialogPart diaPart)
@@ -654,25 +515,42 @@ namespace UniversalDialogSystem
         }
 
         /// <summary>
-        /// Writes a text to a textBox based on whether TMP is
-        /// being used or not
+        /// Starts the playback of the current DialogParts text
+        /// in the UI. If it's Text Speed Property is set to 0,
+        /// this will just instantly show the text, otherwise it
+        /// will be played gradually (= inside a coroutine with 
+        /// delay between the letters and using an algorithm to
+        /// deal with Rich Text). 
+        /// Called by ShowDialogPartText(Dialog.DialogPart, string),
+        /// which you can override.
         /// </summary>
-        /// <param name="textBox">The textBox to write to</param>
-        /// <param name="text">The text to be written</param>
-        protected void SetTextOnTextBox(TextBox textBox, string text)
+        /// <seealso cref="ShowDialogPartText(in Dialog.DialogPart, string)"/>
+        /// <param name="text">Optional parameter. If it is null or
+        /// not given at all, the text of the current DialogPart will
+        /// be played. Otherwise the given text will be played instead. 
+        /// Can be used for making changes to the text or for localization</param>
+        protected void ShowDialogPartText(string text = null)
         {
-            if (useTextMeshPro)
-                textBox.textTMP.SetText(text);
-            else
-                textBox.text.text = text;
+            if (text == null)
+                text = CurrentDialogPartText;
+            else 
+                overridenText = text;
+
+            // Show text!
+            if (currentDialogPart.GetProperty<float>("Text speed") > 0) // with effect
+                revealTextGraduallyCo = StartCoroutine(RevealTextGradually(text));
+            else // instantaneously
+                SetTextOnTextBox(dialogTextBox, text);
         }
 
         /// <summary>
-        /// Called by the Answer buttons whenever one is clicked.
+        /// Called by the Answer buttons whenever one is clicked
         /// </summary>
         /// <param name="index">The index of the Answer that was chosen</param>
         private void TakeAnswer(int index)
         {
+            StopCoroutine(revealTextGraduallyCo);
+
             Dialog.DialogPart.Answer answer = currentDialogPart.answers[index];
 
             OnAnswer(answer, answerTextBoxes[index]);
@@ -691,6 +569,112 @@ namespace UniversalDialogSystem
                     dp => dp.id.Equals(currentDialog.startDialogPartID)).First());
         }
 
+        /// <summary>
+        /// Pauses/Interrupts the currently running Dialog. You can start other
+        /// things (e.g. a shop screen) now. 
+        /// The Dialog will continue when ContinueDialog() is being called
+        /// </summary>
+        /// <seealso cref="ContinueDialog"/>
+        /// <param name="disableDialogUI">Whether or not the dialogUI shall be 
+        /// disabled during the pause</param>
+        /// <param name="resetTimescale">Whether or not the Time.timeScale shall 
+        /// be reset to standardTimeScale during the pause (only applies when 
+        /// the Dialog's 'Pause during Dialog' is set to true)</param>
+        public void PauseDialog(bool disableDialogUI, bool resetTimescale)
+        {
+            if (currentDialog == null)
+                return;
+
+            dialogPaused = true; // !
+
+            StopDialogPlaybackCoroutines();
+
+            if (disableDialogUI)
+                DisableDialogUI(true);
+
+            if (resetTimescale && currentDialog.GetProperty<bool>("Pause during Dialog"))
+                Time.timeScale = standardTimeScale;
+
+            OnDialogPause(); // !
+        }
+
+        /// <summary>
+        /// Continues the currently running Dialog after a pause/interrupt 
+        /// triggered by PauseDialog(bool, bool). Continues the Dialog by 
+        /// either 1) instantly taking the answer which was clicked right before
+        /// the pause, 2) playing the current DialogPart (again) or
+        /// 3) (re)starting the current Dialog. One of these is being chosen 
+        /// based on when PauseDialog was called.
+        /// </summary>
+        /// <seealso cref="PauseDialog(bool, bool)"/>
+        public void ContinueDialog()
+        {
+            if (!dialogPaused || currentDialog == null)
+                return;
+
+            if (dialogUI.activeSelf == false)
+                EnableDialogUI(true);
+
+            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+                Time.timeScale = 0;
+
+            OnDialogContinue(); // !
+
+            // Find the right way to continue after a pause/interrupt
+            if (answerBeforePause != null)
+                TakeAnswer(answerBeforePause.index);
+            else if (currentDialogPart != null)
+                GoThroughDialogPart(currentDialogPart);
+            else
+                StartDialog(currentDialog);
+        }
+
+        /// <summary>
+        /// Finishes the current Dialog and resets all the UI
+        /// </summary>
+        protected void FinishDialog()
+        {
+            foreach (AnswerBox answerBox in answerTextBoxes)
+            {
+                SetTextOnTextBox(answerBox.textBox, "");
+
+                answerBox.button.onClick.RemoveAllListeners(); // !
+
+                answerBox.textBox.gameObject.SetActive(false);
+            }
+
+            OnDialogEnd(currentDialog); // !
+
+            dialogRunning = false;
+
+            StartCoroutine(FinishDialogDelayed());
+        }
+
+        private IEnumerator FinishDialogDelayed()
+        {
+            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+                yield return new WaitForSecondsRealtime(delayBtwDialogEndAndUIDisable);
+            else
+                yield return new WaitForSeconds(delayBtwDialogEndAndUIDisable);
+
+            DisableDialogUI();
+
+            for (int i = 0; i < deactivateDuringDialogObjectsToReactivate.Length; i++)
+            {
+                if (deactivateDuringDialogObjectsToReactivate[i])
+                    deactivateDuringDialog[i].SetActive(true);
+            }
+
+            if (currentDialog.GetProperty<bool>("Pause during Dialog"))
+                Time.timeScale = standardTimeScale;
+
+            currentDialog = null;
+            currentDialogPart = null;
+            overridenText = null;
+        }
+        #endregion
+
+        #region Text effect
         /// <summary>
         /// The text is being revealed gradually, meaning one
         /// char at a time. Also includes the algorithm to
@@ -830,7 +814,9 @@ namespace UniversalDialogSystem
 
             textEffectRunning = false;
         }
+        #endregion
 
+        #region Loading and Utility
         private Dialog[] LoadDialogs()
         {
             List<Dialog> dialogs = new List<Dialog>();
@@ -844,7 +830,7 @@ namespace UniversalDialogSystem
             catch (Exception e)
             {
                 Debug.LogError("Error while loading dialogs. Please make sure that " +
-                    "the Resources/Dialogs folder exists\n\n" + e.Message);
+                    "the Resources\\Dialogs folder exists\n\n" + e.Message);
             }
 
             if (dialogAssets == null)
@@ -864,13 +850,12 @@ namespace UniversalDialogSystem
             TextAsset dialogAsset = null;
             try
             {
-                dialogAsset
-                    = (TextAsset)Resources.Load(Path.Combine("Dialogs", dialogID), typeof(TextAsset));
+                dialogAsset = Resources.Load<TextAsset>(Path.Combine("Dialogs", dialogID) + ".udsdialog"); 
             }
             catch (Exception e)
             {
-                Debug.LogError("Error while loading dialogs. Please make sure that " +
-                    "the Resources/Dialogs folder exists\n\n" + e.Message);
+                Debug.LogError("Error while loading a dialog. Please make sure that " +
+                    "the Resources\\Dialogs\\" + dialogID +  ".udsdialog.json asset exists and is valid\n\n" + e.Message);
             }
 
             if (dialogAsset == null)
@@ -880,5 +865,78 @@ namespace UniversalDialogSystem
 
             return dialogInstance;
         }
+
+        /// <summary>
+        /// Determines whether a dialogPart leads directly to the end
+        /// of the Dialog. That is, it has no answers, all parts that
+        /// come after it have no answers and one of the following
+        /// parts is a end of the Dialog, which also means that there
+        /// are no cycles "beyond" that dialogPart.
+        /// 
+        /// (works iteratively to avoid StackOverflows and
+        /// excessive memory usage)
+        /// </summary>
+        /// <param name="dialogPart">The dialogPart to be evaluated</param>
+        /// <returns>Whether or not this dialogPart leads directly to the end of the dialog</returns>
+        protected bool IsEndBranch(Dialog.DialogPart dialogPart)
+        {
+            // The start of the branch doesn't exist
+            if (dialogPart == null)
+                return true;
+
+            // The part that is currently being evaluated
+            Dialog.DialogPart currentPart = dialogPart;
+
+            // HashSet for loop detection
+            HashSet<Dialog.DialogPart> alreadyVisited = new HashSet<Dialog.DialogPart>();
+
+            while (!alreadyVisited.Contains(currentPart))
+            {
+                alreadyVisited.Add(currentPart);
+
+                // There are answers in the currentPart
+                if (currentPart.answers.Length > 0)
+                    return false;
+                else if (string.IsNullOrWhiteSpace(currentPart.nextDialogPartID)) // End reached
+                    return true;
+                else // Find and check next part
+                {
+                    var followingPart = Array.Find(currentDialog.dialogParts,
+                                                   dp => dp.id.Equals(dialogPart.nextDialogPartID));
+
+                    currentPart = followingPart;
+                }
+            }
+
+            return false; // Loop was detected
+        }
+
+        /// <summary>
+        /// Writes a text to a textBox based on whether TMP is
+        /// being used or not
+        /// </summary>
+        /// <param name="textBox">The textBox to write to</param>
+        /// <param name="text">The text to be written</param>
+        protected void SetTextOnTextBox(TextBox textBox, string text)
+        {
+            if (useTextMeshPro)
+                textBox.textTMP.SetText(text);
+            else
+                textBox.text.text = text;
+        }
+
+        /// <summary>
+        /// Stops all coroutines that are possibly being started internally by
+        /// the UDSDialogManager. These are the coroutines for gradually revealing 
+        /// and formatting the text, the dialog start coroutine and the dialog 
+        /// end coroutine
+        /// </summary>
+        protected void StopDialogPlaybackCoroutines()
+        {
+            if (revealTextGraduallyCo != null) StopCoroutine(revealTextGraduallyCo);
+            if (startCoroutine != null) StopCoroutine(startCoroutine);
+            if (stopCoroutine != null) StopCoroutine(stopCoroutine);
+        }
+        #endregion
     }
 }

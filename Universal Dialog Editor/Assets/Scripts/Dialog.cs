@@ -3,101 +3,56 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
-[Serializable]
-public struct UDSProperty
+namespace UniversalDialogSystem
 {
-    public object value;
-    public Type type;
-    public bool required;
 
-    public UDSProperty(object value, Type type, bool required = false)
+    [Serializable]
+    public struct UDSProperty
     {
-        this.value = value;
-        this.type = type;
-        this.required = required;
-    }
-}
+        [JsonProperty] public object value { get; private set; }
+        [JsonProperty] public Type type { get; private set; }
+        [JsonProperty] public bool required { get; private set; }
 
-[Serializable]
-public struct UDSCondition
-{
-    public string globalPropertyKey;
-    public string operation;
-    public object compareTo;
-}
-
-[Serializable]
-public sealed class Dialog : DialogComponent, ICloneable
-{
-    public DialogPart[] dialogParts;
-    public string startDialogPartID;
-
-    [JsonConstructor]
-    public Dialog() { }
-
-    internal Dialog(string dialogID)
-        : base(dialogID)
-    {
-        dialogParts = new DialogPart[0];
-        startDialogPartID = "";
-
-        SetProperty<bool>("Pause during Dialog", true, required: true);
-    }
-
-    public object Clone()
-    {
-        Dialog copy = new Dialog(this.id);
-
-        foreach (string key in this.GetPropertyKeys())
+        public UDSProperty(object value, Type type, bool required = false)
         {
-            UDSProperty val = this.GetProperty(key);
-
-            copy.SetProperty(key, val.value, val.type);
+            this.value = value;
+            this.type = type;
+            this.required = required;
         }
-
-        List<DialogPart> diaParts = new List<DialogPart>();
-        foreach (DialogPart dp in this.dialogParts)
-            diaParts.Add(dp.Copy(copy));
-        copy.dialogParts = diaParts.ToArray();
-
-        copy.startDialogPartID = this.startDialogPartID;
-
-        return copy;
     }
 
     [Serializable]
-    public sealed class DialogPart : DialogComponent
+    public struct UDSCondition
     {
-        public Answer[] answers;
-        //[SerializeReference] public Dialog dialog;
+        [JsonProperty] public string globalPropertyKey { get; private set; }
+        [JsonProperty] public string operation { get; private set; }
+        [JsonProperty] public object compareTo { get; private set; }
+    }
 
-        public string nextDialogPartID;
 
-        [JsonProperty] internal int visualX;
-        [JsonProperty] internal int visualY;
+    [Serializable]
+    public sealed class Dialog : DialogComponent, ICloneable
+    {
+        [JsonProperty] public DialogPart[] dialogParts { get; private set; }
+        [JsonProperty] public string startDialogPartID { get; private set; }
 
         [JsonConstructor]
-        public DialogPart() { }
+        public Dialog() { }
 
-        internal DialogPart(string dialogPartID, Vector2 visualPos)
-            : base(dialogPartID) 
-        { 
-            answers = new Answer[0];
-            visualX = (int) visualPos.x;
-            visualY = (int) visualPos.y;
+        internal Dialog(string dialogID)
+            : base(dialogID)
+        {
+            dialogParts = new DialogPart[0];
+            startDialogPartID = "";
 
-            //this.dialog = dialog;
-
-            SetProperty<string>("Text", "", required: true);
-            SetProperty<string>("Name", "", required: true);
-            SetProperty<float>("Text speed", 1f, required: true);
+            SetProperty<bool>("Pause during Dialog", true, required: true);
         }
 
-        internal DialogPart Copy(Dialog dialog)
+        public object Clone()
         {
-            DialogPart copy = new DialogPart
-                (this.id, new Vector2(this.visualX, this.visualY));
+            Dialog copy = new Dialog(this.id);
 
             foreach (string key in this.GetPropertyKeys())
             {
@@ -106,50 +61,44 @@ public sealed class Dialog : DialogComponent, ICloneable
                 copy.SetProperty(key, val.value, val.type);
             }
 
-            List<Answer> ans = new List<Answer>();
-            foreach (Answer a in this.answers)
-                ans.Add(a.Copy(this));
-            copy.answers = ans.ToArray();
+            List<DialogPart> diaParts = new List<DialogPart>();
+            foreach (DialogPart dp in this.dialogParts)
+                diaParts.Add(dp.Copy(copy));
+            copy.dialogParts = diaParts.ToArray();
 
-            copy.nextDialogPartID = this.nextDialogPartID;
+            copy.startDialogPartID = this.startDialogPartID;
 
             return copy;
         }
 
         [Serializable]
-        public sealed class Answer : DialogComponent
+        public sealed class DialogPart : DialogComponent
         {
-            int index;
-            //[SerializeReference] public DialogPart dialogPart;
+            [JsonProperty] public Answer[] answers { get; private set; }
 
-            public string nextDialogPartID;
+            [JsonProperty] public string nextDialogPartID { get; private set; }
 
-            public bool conditional;
-            public UDSCondition? condition;
-
-            [JsonProperty] internal float angle;
+            [JsonProperty] internal int visualX;
+            [JsonProperty] internal int visualY;
 
             [JsonConstructor]
-            public Answer() { }
+            public DialogPart() { }
 
-            internal Answer(string answerID, int answerIndex, 
-                 float angle, bool conditional = false, UDSCondition? condition = null)
-                : base(answerID) 
-            { 
-                index = answerIndex;
+            internal DialogPart(string dialogPartID, Vector2 visualPos)
+                : base(dialogPartID)
+            {
+                answers = new Answer[0];
+                visualX = (int)visualPos.x;
+                visualY = (int)visualPos.y;
 
-                this.conditional = conditional;
-                this.condition = condition;
-
-                this.angle = angle;
-
-                SetProperty<string>("Text", "", required: true);
+                SetProperty("Text", "", required: true);
+                SetProperty("Text speed", 1, required: true);
             }
 
-            internal Answer Copy(DialogPart dialogPart)
+            internal DialogPart Copy(Dialog dialog)
             {
-                Answer copy = new Answer(this.id, this.index,
-                    this.angle, this.conditional, this.condition);
+                DialogPart copy = new DialogPart
+                    (this.id, new Vector2(this.visualX, this.visualY));
 
                 foreach (string key in this.GetPropertyKeys())
                 {
@@ -158,122 +107,178 @@ public sealed class Dialog : DialogComponent, ICloneable
                     copy.SetProperty(key, val.value, val.type);
                 }
 
+                List<Answer> ans = new List<Answer>();
+                foreach (Answer a in this.answers)
+                    ans.Add(a.Copy(this));
+                copy.answers = ans.ToArray();
+
                 copy.nextDialogPartID = this.nextDialogPartID;
 
                 return copy;
             }
+
+            [Serializable]
+            public sealed class Answer : DialogComponent
+            {
+                [JsonProperty] public int index { get; private set; }
+
+                [JsonProperty] public string nextDialogPartID { get; private set; }
+
+                [JsonProperty] public bool conditional { get; private set; }
+                [JsonProperty] public UDSCondition? condition { get; private set; }
+
+                [JsonProperty] internal float angle;
+
+                [JsonConstructor]
+                public Answer() { }
+
+                internal Answer(string answerID, int answerIndex,
+                     float angle, bool conditional = false, UDSCondition? condition = null)
+                    : base(answerID)
+                {
+                    index = answerIndex;
+
+                    this.conditional = conditional;
+                    this.condition = condition;
+
+                    this.angle = angle;
+
+                    SetProperty("Text", "", required: true);
+                }
+
+                internal Answer Copy(DialogPart dialogPart)
+                {
+                    Answer copy = new Answer(this.id, this.index,
+                        this.angle, this.conditional, this.condition);
+
+                    foreach (string key in this.GetPropertyKeys())
+                    {
+                        UDSProperty val = this.GetProperty(key);
+
+                        copy.SetProperty(key, val.value, val.type);
+                    }
+
+                    copy.nextDialogPartID = this.nextDialogPartID;
+
+                    return copy;
+                }
+            }
         }
     }
-}
 
-[Serializable]
-public class DialogComponent
-{
-    public string id;
-
-    [JsonProperty] private readonly Dictionary<string, UDSProperty> properties;
-
-    [JsonConstructor]
-    public DialogComponent () { }
-
-    internal DialogComponent(string dialogComponentID)
+    [Serializable]
+    public class DialogComponent
     {
-        id = dialogComponentID;
-        properties = new Dictionary<string, UDSProperty>();
-    }
+        [JsonProperty] public string id { get; private set; }
 
-    public bool HasProperty(string key)
-        => properties.ContainsKey(key);
+        [JsonProperty] private readonly Dictionary<string, UDSProperty> properties;
 
-    public bool HasProperty(string key, Type type)
-        => properties.ContainsKey(key) && properties[key].type == type;
+        [JsonConstructor]
+        public DialogComponent() { }
 
-    public T GetProperty<T>(string key)
-    {
-        UDSProperty valueRaw = default;
-        if (properties.TryGetValue(key, out valueRaw))
+        internal DialogComponent(string dialogComponentID)
         {
-            if (valueRaw.type != typeof(T))
+            id = dialogComponentID;
+            properties = new Dictionary<string, UDSProperty>();
+        }
+
+        public bool HasProperty(string key)
+            => properties.ContainsKey(key);
+
+        public bool HasProperty<T>(string key)
+        => properties.ContainsKey(key) && properties[key].type == typeof(T);
+
+        public bool HasProperty(string key, Type type)
+            => properties.ContainsKey(key) && properties[key].type == type;
+
+        public T GetProperty<T>(string key)
+        {
+            UDSProperty valueRaw = default;
+            if (properties.TryGetValue(key, out valueRaw))
+            {
+                if (valueRaw.type != typeof(T))
+                    throw new UDSException
+                        (string.Format(UDSException.msg3, key, id, typeof(T).ToString()));
+
+                
+                T value = (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(valueRaw.value.ToString());
+
+                return value;
+            }
+            else
                 throw new UDSException
-                    (string.Format(UDSException.msg2, key, id, typeof(T).ToString()));
-
-            T value = (T)valueRaw.value;
-
-            return value;
+                    (string.Format(UDSException.msg1, id, typeof(T).ToString(), key));
         }
-        else
-            throw new UDSException
-                (string.Format(UDSException.msg1, id, typeof(T).ToString(), key));
-    }
 
-    public UDSProperty GetProperty(string key)
-    {
-        UDSProperty value;
-        if (properties.TryGetValue(key, out value))
+        public UDSProperty GetProperty(string key)
         {
-            return value;
+            UDSProperty value;
+            if (properties.TryGetValue(key, out value))
+            {
+                return value;
+            }
+            else
+                throw new UDSException(string.Format(UDSException.msg2, id, key));
         }
-        else
-            throw new UDSException(string.Format(UDSException.msg2, id, key));
-    }
 
-    public string[] GetPropertyKeys()
-    {
-        return properties.Keys.ToArray();
-    }
-
-    internal Dictionary<string, UDSProperty> GetProperties()
-    {
-        return properties;
-    }
-
-    internal bool SetProperty<T>(string key, T value, bool required = false)
-    {
-        bool alreadyThere = HasProperty(key, typeof(T));
-
-        properties[key] = new UDSProperty(value, typeof(T), required);
-
-        return alreadyThere;
-    }
-
-    internal bool SetProperty(string key, object value, Type type, bool required = false)
-    {
-        bool alreadyThere = HasProperty(key, type);
-
-        properties[key] = new UDSProperty(value, type, required);
-
-        return alreadyThere;
-    }
-
-    internal bool UpdateProperty(string previousKey, string newKey, object newValue, Type type)
-    {
-        bool alreadyThere = !DeleteProperty(previousKey);
-
-        if (alreadyThere)
+        public string[] GetPropertyKeys()
         {
-            Debug.LogWarning("Called UpdateProperty with key " + previousKey + " although that " +
-                "property doesn't exist");
+            return properties.Keys.ToArray();
         }
 
-        SetProperty(newKey, newValue, type);
-
-        return alreadyThere;
-    }
-
-    internal bool DeleteProperty(string key)
-    {
-        if (!GetProperty(key).required)
-            return properties.Remove(key);
-        else
+        internal Dictionary<string, UDSProperty> GetProperties()
         {
-            Debug.LogWarning("Called DeleteProperty on a required Property");
-            return false;
+            return properties;
         }
-    }
 
-    internal void DeleteAllProperties()
-    {
-        foreach (string property in GetPropertyKeys())
-            DeleteProperty(property);
+        internal bool SetProperty<T>(string key, T value, bool required = false)
+        {
+            bool alreadyThere = HasProperty(key, typeof(T));
+
+            properties[key] = new UDSProperty(value, typeof(T), required);
+
+            return alreadyThere;
+        }
+
+        internal bool SetProperty(string key, object value, Type type, bool required = false)
+        {
+            bool alreadyThere = HasProperty(key, type);
+
+            properties[key] = new UDSProperty(value, type, required);
+
+            return alreadyThere;
+        }
+
+        internal bool UpdateProperty(string previousKey, string newKey, object newValue, Type type)
+        {
+            bool alreadyThere = !DeleteProperty(previousKey);
+
+            if (alreadyThere)
+            {
+                Debug.LogWarning("Called UpdateProperty with key " + previousKey + " although that " +
+                    "property doesn't exist");
+            }
+
+            SetProperty(newKey, newValue, type);
+
+            return alreadyThere;
+        }
+
+        internal bool DeleteProperty(string key)
+        {
+            if (!GetProperty(key).required)
+                return properties.Remove(key);
+            else
+            {
+                Debug.LogWarning("Called DeleteProperty on a required Property");
+                return false;
+            }
+        }
+
+        internal void DeleteAllProperties()
+        {
+            foreach (string property in GetPropertyKeys())
+                DeleteProperty(property);
+        }
     }
 }
