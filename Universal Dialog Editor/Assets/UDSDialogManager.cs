@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 using Newtonsoft.Json;
 using System.IO;
+using System.ComponentModel;
 
 namespace UniversalDialogSystem
 {
@@ -51,9 +52,9 @@ namespace UniversalDialogSystem
         }
         #endregion
 
-        #region Variables
         [HideInInspector] public static UDSDialogManager instance; // Singleton
 
+        #region Settings
         [Header("Important General Settings")]
         [SerializeField] protected Platform platform = Platform.DESKTOP;
         [SerializeField] protected bool useTextMeshPro = false;
@@ -68,6 +69,9 @@ namespace UniversalDialogSystem
         [Header("Input")]
         [SerializeField] protected KeyCode[] interactionKeys = new KeyCode[] { KeyCode.Mouse0 };
 
+        [Header("Global Properties")]
+        [SerializeField] protected bool saveGlobalProperties = false;
+
         [Header("Animation and Delays")]
         [SerializeField] protected float delayBtwUIEnableAndDialogStart;
         [SerializeField] protected float delayBtwDialogEndAndUIDisable;
@@ -80,12 +84,18 @@ namespace UniversalDialogSystem
         [HideInInspector] public bool dialogRunning;
         [HideInInspector] public bool dialogPaused;
 
+        private string GLOBAL_PROPERTIES_PATH; 
+        #endregion
+
+        #region Variables
         protected Dialog currentDialog = null;
 
         /// <summary>
         /// Very important! Stores all the dialogs loaded from Resources
         /// </summary>
         private Dialog[] dialogs;
+
+        private Dictionary<string, UDSProperty> globalProperties;
 
         protected Dialog.DialogPart currentDialogPart;
 
@@ -129,7 +139,7 @@ namespace UniversalDialogSystem
                     return null;
 
                 return overridenText == null ?
-                       currentDialogPart.GetProperty<string>("Text") 
+                       currentDialogPart.GetProperty<string>("Text")
                        : overridenText;
             }
         }
@@ -153,7 +163,7 @@ namespace UniversalDialogSystem
         }
         #endregion
 
-        #region Start and Update
+        #region Start, Update, OnDisable 
         protected virtual void Start()
         {
             // Singleton - Only one instance at a time
@@ -162,8 +172,18 @@ namespace UniversalDialogSystem
             else
                 Destroy(gameObject);
 
+            // Load the Dialogs from the Resources folder
             if (loadMode == LoadMode.LOAD_ON_START)
                 dialogs = LoadDialogs();
+
+            // Load the globalProperties from their file
+            if (saveGlobalProperties)
+            {
+                GLOBAL_PROPERTIES_PATH 
+                    = Path.Combine(Application.persistentDataPath, "UDSGlobalProperties.json");
+
+                globalProperties = LoadGlobalProperties();
+            }
         }
 
         protected virtual void Update()
@@ -186,6 +206,13 @@ namespace UniversalDialogSystem
                 }
                 else justStarted = false;
             }
+        }
+
+        private void OnDisable()
+        {
+            // Save the globalProperties to their file
+            if (saveGlobalProperties)
+                SaveGlobalProperties();
         }
         #endregion
 
@@ -333,7 +360,6 @@ namespace UniversalDialogSystem
             }
         }
         #endregion
-
 
         #region Dialog Playback
         /// <summary>
@@ -533,7 +559,7 @@ namespace UniversalDialogSystem
         {
             if (text == null)
                 text = CurrentDialogPartText;
-            else 
+            else
                 overridenText = text;
 
             // Show text!
@@ -671,6 +697,143 @@ namespace UniversalDialogSystem
             currentDialog = null;
             currentDialogPart = null;
             overridenText = null;
+        }
+        #endregion
+
+        #region Global Properties
+        public bool SetGlobalProperty<T>(string key, T value)
+        {
+            if (globalProperties == null)
+                globalProperties = new Dictionary<string, UDSProperty>();
+
+            bool alreadyThere = globalProperties.ContainsKey(key);
+
+            globalProperties[key] = new UDSProperty(value, typeof(T));
+
+            return alreadyThere;
+        }
+
+        public T GetGlobalProperty<T>(string key)
+        {
+            UDSProperty valueRaw = default;
+            if (globalProperties.TryGetValue(key, out valueRaw))
+            {
+                if (valueRaw.type != typeof(T))
+                    throw new UDSException
+                        (string.Format(UDSException.msg5, key, typeof(T).ToString()));
+
+
+                T value = (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFrom(valueRaw.value.ToString());
+
+                return value;
+            }
+            else
+                throw new UDSException
+                    (string.Format(UDSException.msg4, key, typeof(T).ToString()));
+        }
+
+        public UDSProperty GetGlobalProperty(string key)
+        {
+            UDSProperty value;
+            if (globalProperties.TryGetValue(key, out value))
+            {
+                return value;
+            }
+            else
+                throw new UDSException(string.Format(UDSException.msg6, key));
+        }
+
+        public string[] GetGlobalPropertyKeys()
+        {
+            return globalProperties.Keys.ToArray();
+        }
+
+        public bool DeleteGlobalProperty(string key)
+        {
+            return globalProperties.Remove(key);
+        }
+
+        public void DeleteAllGlobalProperties()
+        {
+            foreach (string property in GetGlobalPropertyKeys())
+                DeleteGlobalProperty(property);
+        }
+
+        public bool HasGlobalProperty(string key)
+        => globalProperties.ContainsKey(key);
+
+        public bool HasGlobalProperty<T>(string key)
+        => globalProperties.ContainsKey(key) && globalProperties[key].type == typeof(T);
+
+        public bool HasGlobalProperty(string key, Type type)
+            => globalProperties.ContainsKey(key) && globalProperties[key].type == type;
+
+        protected virtual bool SaveGlobalProperties()
+        {
+            if (globalProperties == null)
+                return false;
+
+            FileStream stream = null;
+            StreamWriter writer = null;
+
+            try
+            {
+                stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
+                writer = new StreamWriter(stream);
+
+                string propertiesJSON = JsonConvert.SerializeObject
+                    (globalProperties, Formatting.Indented,
+                    new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    });
+
+                writer.Write(propertiesJSON);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+
+                return false;
+            }
+            finally
+            {
+                writer?.Flush();
+                writer?.Close();
+            }
+
+            return true;
+        }
+
+        protected virtual Dictionary<string, UDSProperty> LoadGlobalProperties()
+        {
+            if (!File.Exists(GLOBAL_PROPERTIES_PATH))
+                return null;
+
+            FileStream stream = null;
+            StreamReader reader = null;
+
+            try
+            {
+                stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+                reader = new StreamReader(stream);
+
+                string propertiesJSON = reader.ReadToEnd();
+                Dictionary<string, UDSProperty> properties
+                    = JsonConvert.DeserializeObject<Dictionary<string, UDSProperty>>(propertiesJSON);
+
+                return properties;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Path: " + GLOBAL_PROPERTIES_PATH + " -- " + e.Message);
+
+                return null;
+            }
+            finally
+            {
+                reader?.Close();
+            }
         }
         #endregion
 
@@ -850,12 +1013,12 @@ namespace UniversalDialogSystem
             TextAsset dialogAsset = null;
             try
             {
-                dialogAsset = Resources.Load<TextAsset>(Path.Combine("Dialogs", dialogID) + ".udsdialog"); 
+                dialogAsset = Resources.Load<TextAsset>(Path.Combine("Dialogs", dialogID) + ".udsdialog");
             }
             catch (Exception e)
             {
                 Debug.LogError("Error while loading a dialog. Please make sure that " +
-                    "the Resources\\Dialogs\\" + dialogID +  ".udsdialog.json asset exists and is valid\n\n" + e.Message);
+                    "the Resources\\Dialogs\\" + dialogID + ".udsdialog.json asset exists and is valid\n\n" + e.Message);
             }
 
             if (dialogAsset == null)
