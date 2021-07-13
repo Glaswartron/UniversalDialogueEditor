@@ -361,7 +361,7 @@ namespace UniversalDialogSystem
         }
         #endregion
 
-        #region Dialog Playback
+        #region Dialog Playback (The important part)
         /// <summary>
         /// Starts a Dialog. Enables the dialogUI and sets Time.timeScale to 0 
         /// (= pauses the game), if the "Pause during Dialog" Property is 
@@ -517,6 +517,19 @@ namespace UniversalDialogSystem
                 for (int i = 0; i < answerCount; i++)
                 {
                     Dialog.DialogPart.Answer answer = diaPart.answers[i];
+
+                    // If this is a conditional answer, check the condition
+                    if (answer.conditional)
+                    {
+                        if (!answer.condition.HasValue)
+                            Debug.LogWarning("Encountered an answer that is set to " +
+                                "conditional but does not have a condition. " +
+                                "This might indicate that the Dialog is corrupted");
+                        /* Only show the answer if the condition is 
+                         * met, otherwise continue to the next answer */
+                        else if (!answer.condition.Value.IsMet())
+                            continue;
+                    }
 
                     // Activate an AnswerBox for each Answer
                     var answerBox = answerTextBoxes[i];

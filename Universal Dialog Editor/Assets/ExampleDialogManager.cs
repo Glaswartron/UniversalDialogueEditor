@@ -18,7 +18,7 @@ public class ExampleDialogManager : UDSDialogManager
             if (dialogPartnerName.Equals("Bill"))
                 text = "Hi, I'm Bill!";
         }
-        else if (text.Length > 50)
+        else if (text.Length > 160)
         {
             text = "I don't usually say long things";
         }
