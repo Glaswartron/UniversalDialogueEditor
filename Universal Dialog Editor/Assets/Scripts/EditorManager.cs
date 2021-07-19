@@ -854,26 +854,6 @@ public class EditorManager : MonoBehaviour
         SelectedDialogPartVisual = null;
     }
 
-    public void DestroyConnection()
-    {
-        Destroy(selectedConnection.gameObject);
-        noOfConnections--;
-    }
-
-    public void AddAnswerToSelectedPart()
-    {
-        bool success = selectedDialogPartVisual.AddAnswer();
-
-        if (success) 
-            noOfAnswers++;
-    }
-
-    public void RemoveAnswerFromSelectedPart()
-    {
-        //noOfAnswers--;
-        //selectedDialogPartVisual.DeleteAnswer();
-    }
-
     private void DeselectPreviouslySelectedVisual()
     {
         if (selectedDialogPartVisual != null)

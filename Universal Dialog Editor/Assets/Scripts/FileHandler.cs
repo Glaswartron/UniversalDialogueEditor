@@ -12,7 +12,7 @@ public class FileHandler
     public TMP_InputField loadPathInputField;
 
     private static readonly string GLOBAL_PROPERTIES_PATH
-        = Path.Combine(Application.persistentDataPath, "globalProperties.udsgp");
+        = Path.Combine(Application.persistentDataPath, "globalProperties.udsgp.json");
 
     private static readonly string DIALOG_PART_PROPERTY_PRESET_PATH
         = Path.Combine(Application.persistentDataPath, "PropertyPresets", "DialogPartPropertyPresets");

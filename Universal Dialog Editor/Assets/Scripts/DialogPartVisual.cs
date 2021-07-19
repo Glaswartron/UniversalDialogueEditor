@@ -262,6 +262,8 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
                 answerVis.answer.SetProperty
                     (p, properties[p].value, properties[p].type, properties[p].required);
             }
+
+            EditorManager.instance.noOfAnswers++;
         }
 
         if (conditional)
@@ -282,6 +284,9 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         // Update the answer array on the Dialog Part
         dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
+
+        EditorManager.instance.noOfAnswers--;
+        EditorManager.instance.ActiveUI = EditorManager.instance.dialogUI;
     }
 
     /// <summary>

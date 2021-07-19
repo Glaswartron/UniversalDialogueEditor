@@ -67,8 +67,8 @@ public sealed class Dialog : DialogComponent, ICloneable
 
         [JsonProperty] public string nextDialogPartID { get; set; }
 
-        [JsonProperty] internal int visualX;
-        [JsonProperty] internal int visualY;
+        [JsonProperty] internal float visualX;
+        [JsonProperty] internal float visualY;
 
         [JsonConstructor]
         public DialogPart() { }
@@ -77,11 +77,12 @@ public sealed class Dialog : DialogComponent, ICloneable
             : base(dialogPartID)
         {
             answers = new Answer[0];
-            visualX = (int)visualPos.x;
-            visualY = (int)visualPos.y;
+            visualX = visualPos.x;
+            visualY = visualPos.y;
 
             SetProperty("Text", "", required: true);
-            SetProperty("Text speed", 1, required: true);
+            SetProperty("Name", "", required: true);
+            SetProperty("Text speed", 1.0f, required: true);
         }
 
         internal DialogPart Copy(Dialog dialog)
