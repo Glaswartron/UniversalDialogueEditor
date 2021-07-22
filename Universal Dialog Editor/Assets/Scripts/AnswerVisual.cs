@@ -256,7 +256,7 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         }
 
         var a = Instantiate(EditorManager.instance.arrow, 
-                            transform.position, Quaternion.identity);
+                            new Vector3(0, 0, 0), Quaternion.identity);
         connection = a.GetComponent<Connection>();
         connectionRenderer = a.GetComponent<LineRenderer>();
 

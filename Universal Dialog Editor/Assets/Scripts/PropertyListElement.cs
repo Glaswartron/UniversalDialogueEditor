@@ -10,6 +10,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
     [Header("Main UI")]
     public TMP_InputField idInputField;
     public Button deleteButton;
+    public TMP_Text typeText;
 
     [Header("Input Fields")]
     public TMP_InputField stringIntFloatInputField;
@@ -115,6 +116,10 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                     TypeDescriptor.GetConverter(property.Value.type).ConvertToString(property.Value.value)
                 );
             }
+
+            // Type text
+            if (typeText != null)
+                typeText.SetText(type.Name);
 
             // Input Field
             stringIntFloatInputField.onValueChanged.AddListener(

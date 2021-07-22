@@ -8,7 +8,6 @@ ScriptsOnlyBuild:
     - BottomButtonUI
     - ConditionMenu
     - Connection
-    - ConnectionCollider
     - ContextMenuManager
     - DialogPartUI
     - DialogPartVisual
@@ -103,6 +102,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 58
       Script: {instanceID: 0}
+    - Class: 60
+      Script: {instanceID: 0}
     - Class: 74
       Script: {instanceID: 0}
     - Class: 81
@@ -188,37 +189,37 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 2840}
     - Class: 114
-      Script: {instanceID: 2984}
+      Script: {instanceID: 2986}
     - Class: 114
-      Script: {instanceID: 3000}
+      Script: {instanceID: 3002}
     - Class: 114
-      Script: {instanceID: 3042}
+      Script: {instanceID: 3044}
     - Class: 114
-      Script: {instanceID: 3060}
+      Script: {instanceID: 3062}
     - Class: 114
-      Script: {instanceID: 3090}
+      Script: {instanceID: 3092}
     - Class: 114
-      Script: {instanceID: 3140}
+      Script: {instanceID: 3142}
     - Class: 114
-      Script: {instanceID: 3154}
+      Script: {instanceID: 3156}
     - Class: 114
-      Script: {instanceID: 3160}
+      Script: {instanceID: 3162}
     - Class: 114
-      Script: {instanceID: 3216}
+      Script: {instanceID: 3218}
     - Class: 114
-      Script: {instanceID: 3244}
+      Script: {instanceID: 3246}
     - Class: 114
-      Script: {instanceID: 3322}
+      Script: {instanceID: 3324}
     - Class: 114
-      Script: {instanceID: 3374}
+      Script: {instanceID: 3376}
     - Class: 114
-      Script: {instanceID: 3528}
+      Script: {instanceID: 3530}
     - Class: 114
-      Script: {instanceID: 3584}
+      Script: {instanceID: 3586}
     - Class: 114
-      Script: {instanceID: 3602}
+      Script: {instanceID: 3604}
     - Class: 114
-      Script: {instanceID: 3616}
+      Script: {instanceID: 3618}
     - Class: 114
       Script: {instanceID: 3730}
     - Class: 114
@@ -227,8 +228,6 @@ ScriptsOnlyBuild:
       Script: {instanceID: 3798}
     - Class: 114
       Script: {instanceID: 3806}
-    - Class: 114
-      Script: {instanceID: 3846}
     - Class: 114
       Script: {instanceID: 3906}
     - Class: 115
@@ -292,7 +291,7 @@ ScriptsOnlyBuild:
     className: TMP_InputField
   - hash:
       serializedVersion: 2
-      Hash: 0384da4d4dc7991b6e3ca8dfc710ee52
+      Hash: 070f132ca17b3d27db6a02f8362f2317
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: PropertyListElement
@@ -304,7 +303,7 @@ ScriptsOnlyBuild:
     className: Outline
   - hash:
       serializedVersion: 2
-      Hash: 0384da4d4dc7991b6e3ca8dfc710ee52
+      Hash: 070f132ca17b3d27db6a02f8362f2317
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GlobalPropertyListElement

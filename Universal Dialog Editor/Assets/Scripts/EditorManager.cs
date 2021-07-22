@@ -319,6 +319,7 @@ public class EditorManager : MonoBehaviour
     /// - All Dialog Part IDs are unique (5)
     /// - All Answers have an ID (6)
     /// - All Answer IDs are unique (7)
+    /// - The Dialog has an end (8)
     /// Displays an error message if at least one criterion is not met!
     /// </summary>
     /// <returns>Whether or not the dialog is valid</returns>
@@ -346,6 +347,9 @@ public class EditorManager : MonoBehaviour
             return false;
         }
 
+        // 8
+        bool hasEnd = false;
+
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
         {
@@ -367,6 +371,9 @@ public class EditorManager : MonoBehaviour
                 return false;
             }
             diapartIDs.Add(diapart.dialogPart.id);
+
+            if (string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
+                hasEnd = true;
 
             HashSet<string> answerIDs = new HashSet<string>();
             foreach (AnswerVisual answer in diapart.answers)
@@ -393,11 +400,18 @@ public class EditorManager : MonoBehaviour
                     return false;
                 }
 
+                if (string.IsNullOrWhiteSpace(answer.answer.nextDialogPartID))
+                    hasEnd = true;
+
                 answerIDs.Add(answer.answer.id);
 
                 diapartIDs.Add(diapart.dialogPart.id);
             }
         }
+
+        // 8
+        if (!hasEnd)
+            return false;
 
         return true;
     }
@@ -512,16 +526,17 @@ public class EditorManager : MonoBehaviour
     /// - All Dialog Part IDs are unique (5) - red
     /// - All Answers have an ID (6) - red
     /// - All Answer IDs are unique (7) - red
-    /// - There is no empty Text Property on an Answer (8) - yellow
-    /// - All Dialog Parts are reachable (9) - yellow
-    /// - There is no empty Text Property on a Dialog Part (10) - yellow
+    /// - The Dialog has an end (8) - red
+    /// - There is no empty Text Property on an Answer (9) - yellow
+    /// - All Dialog Parts are reachable (10) - yellow
+    /// - There is no empty Text Property on a Dialog Part (11) - yellow
     /// </summary>
     /// <returns>A list with warnings for the warning field in the DialogUI</returns>
     public List<DialogUI.Warning> GenerateWarnings()
     {
         List<DialogUI.Warning> warnings = new List<DialogUI.Warning>();
 
-        bool[] warningFlags = new bool[10];
+        bool[] warningFlags = new bool[11];
 
         // 1
         if (dialogPartVisuals.Count == 0)
@@ -559,6 +574,9 @@ public class EditorManager : MonoBehaviour
             warningFlags[2] = true;
         }
 
+        // 8
+        bool hasEnd = false;
+
         HashSet<string> diapartIDs = new HashSet<string>();
         foreach (var diapart in dialogPartVisuals)
         {
@@ -593,6 +611,10 @@ public class EditorManager : MonoBehaviour
                     warningFlags[4] = true;
                 }
             }
+
+            if (diapart.answers.Count == 0 && 
+                string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
+                hasEnd = true;
 
             diapartIDs.Add(diapart.dialogPart.id);
 
@@ -633,8 +655,8 @@ public class EditorManager : MonoBehaviour
                     }
                 }
 
-                // 8
-                if (!warningFlags[7])
+                // 9
+                if (!warningFlags[8])
                 {
                     if (string.IsNullOrWhiteSpace(answer.answer.GetProperty<string>("Text")))
                     {
@@ -646,15 +668,18 @@ public class EditorManager : MonoBehaviour
                             color = Color.yellow
                         });
 
-                        warningFlags[7] = true;
+                        warningFlags[8] = true;
                     }
                 }
+
+                if (string.IsNullOrWhiteSpace(answer.answer.nextDialogPartID))
+                    hasEnd = true;
 
                 answerIDs.Add(answer.answer.id);
             }
 
-            // 9 
-            if (!warningFlags[8])
+            // 10 
+            if (!warningFlags[9])
             {
                 if (!diapart.IsStart)
                 {
@@ -693,12 +718,12 @@ public class EditorManager : MonoBehaviour
                             color = Color.yellow
                         });
 
-                        warningFlags[8] = true;
+                        warningFlags[9] = true;
                     }
                 }
             }
 
-            // 10
+            // 11
             if (!warningFlags[9])
             {
                 if (string.IsNullOrWhiteSpace(diapart.dialogPart.GetProperty<string>("Text")))
@@ -711,9 +736,20 @@ public class EditorManager : MonoBehaviour
                         color = Color.yellow
                     });
 
-                    warningFlags[9] = true;
+                    warningFlags[10] = true;
                 }
             }
+        }
+
+        if (!hasEnd)
+        {
+            warningFlags[7] = true;
+
+            warnings.Add(new DialogUI.Warning
+            {
+                text = string.Format("The Dialog doesn't have an end"),
+                color = Color.red
+            });
         }
 
         return warnings;
@@ -765,7 +801,7 @@ public class EditorManager : MonoBehaviour
 
         // If it's the first part in the Dialog
         if (dialogPartVisuals.Count == 1)
-            dpVisual.IsStart = true;
+            StartDialogPartVisual = dpVisual;
 
         // If a Property Preset for new Dialog Parts is selected
         if (globalDialogPartPropertyPreset != null)

@@ -10,6 +10,18 @@ public class GlobalPropertyListElement : PropertyListElement
         if (dialogComponent != null)
             Debug.LogWarning("GlobalPropertyListElement.Init is called with dialogComponent != null");
 
+        // Type text
+        if (typeText != null) {
+            if (type == typeof(string))
+                typeText.SetText("String");
+            else if (type == typeof(int))
+                typeText.SetText("Int");
+            else if (type == typeof(bool))
+                typeText.SetText("Bool");
+            else if (type == typeof(float))
+                typeText.SetText("Float");
+        }
+
         // ID Input Field
         idInputField.onEndEdit.AddListener(
             (input) =>
@@ -48,64 +60,5 @@ public class GlobalPropertyListElement : PropertyListElement
                 id = input;
             }
         );
-
-        // String/Int/Float => InputField, Bool => Toggle
-        if (type != typeof(bool))
-        {
-            // Input Field
-            stringIntFloatInputField.onValueChanged.AddListener(
-                (input) =>
-                {
-                    string localKey = id;
-
-                    try
-                    {
-                        if (!string.IsNullOrWhiteSpace(input))
-                        {
-                            object val = null;
-                            if (type != typeof(float))
-                                val = TypeDescriptor.GetConverter(type).ConvertFromString(input);
-                            else
-                                val = float.Parse(input, CultureInfo.CurrentCulture);
-
-                            SetGlobalProperty(localKey, val, type);
-                        }
-                        else
-                        {
-                            var defaultValue = Activator.CreateInstance(type);
-
-                            SetGlobalProperty(localKey, defaultValue, type);
-
-                            stringIntFloatInputField.SetTextWithoutNotify(defaultValue.ToString());
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("Couldn't convert " + input + " to " + type.ToString() + " -- " + e.Message);
-                    }
-                }
-            );
-        }
-        else
-        {
-            // Toggle
-            boolToggle.onValueChanged.AddListener(
-                (state) =>
-                {
-                    string localKey = id;
-
-                    SetGlobalProperty(localKey, state, typeof(bool));
-                }
-            );
-        }
     }
-
-    private void SetGlobalProperty(string key, object newValue, Type type)
-    {
-        if (!EditorManager.globalProperties.ContainsKey(key))
-            EditorManager.globalProperties.Add(key, new UDSProperty(newValue, type));
-        else
-            EditorManager.globalProperties[key] = new UDSProperty(newValue, type);
-    }
-
 }

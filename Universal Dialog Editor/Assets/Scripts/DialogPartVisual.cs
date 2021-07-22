@@ -27,6 +27,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     public Color startColor;
     public Color startSelectedColor;
 
+    // Unused
     public int Size
     {
         set
@@ -319,7 +320,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         }
 
         var a = Instantiate(EditorManager.instance.arrow,
-                            transform.position, Quaternion.identity);
+                            new Vector3(0, 0, 0), Quaternion.identity);
         var lineRenderer = a.GetComponent<LineRenderer>();
         var conn = a.GetComponent<Connection>();
 

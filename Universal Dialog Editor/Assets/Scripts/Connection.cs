@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class Connection : MonoBehaviour
+public class Connection : MonoBehaviour, IContextMenu
 {
     [Header("Connection")]
     public DialogPartVisual fromDP;
@@ -16,12 +17,12 @@ public class Connection : MonoBehaviour
     [HideInInspector] public bool dontUpdateConnectedVisual;
 
     private LineRenderer lineRenderer;
-    private CircleCollider2D coll;
+    private PolygonCollider2D polygonCollider;
 
     private void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
-        coll = transform.GetChild(0).GetComponent<CircleCollider2D>();
+        polygonCollider = GetComponent<PolygonCollider2D>();
     }
 
     private void FixedUpdate()
@@ -31,20 +32,48 @@ public class Connection : MonoBehaviour
             var firstPos = lineRenderer.GetPosition(0);
             var secondPos = lineRenderer.GetPosition(1);
 
-            coll.transform.position =
-                0.5f * (firstPos + secondPos);
-
-            coll.radius = Vector2.Distance(secondPos, firstPos) / 4;
+            // Calculate and set the points for the polygon collider
+            polygonCollider.SetPath(0, CalculateColliderPoints(new Vector2[] { firstPos, secondPos }));
 
             // Place tip triangle
             Vector2 firstPosToSecondPos = secondPos - firstPos;
             float angle = Mathf.Atan2(firstPosToSecondPos.y, firstPosToSecondPos.x) * Mathf.Rad2Deg;
-            Vector2 newPos = (Vector2)secondPos - firstPosToSecondPos.normalized * 0.6f;
-            arrowTip.transform.position = newPos;
-            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            Vector2 newPos = (Vector2)secondPos - firstPosToSecondPos.normalized * 0.61f;
+
+            Quaternion rotation = Quaternion.AngleAxis(angle - 90, Vector3.forward);
+
+            arrowTip.transform.SetPositionAndRotation(newPos, rotation);
 
             collSet = true;
         }
+    }
+
+    /// <summary>
+    /// https://www.youtube.com/watch?v=BfP0KyOxVWs
+    /// </summary>
+    private Vector2[] CalculateColliderPoints(Vector2[] positions)
+    {
+        // Get The Width of the Line
+        float width = lineRenderer.startWidth;
+
+        // m = (y2 - y1) / (x2 - x1)
+        float m = (positions[1].y - positions[0].y) / (positions[1].x - positions[0].x);
+        float deltaX = (width / 2f) * (m / Mathf.Pow(m * m + 1, 0.5f));
+        float deltaY = (width / 2f) * (1 / Mathf.Pow(1 + m * m, 0.5f));
+        
+        // Calculate Vertex Offset from Line Point
+        Vector2[] offsets = new Vector2[2];
+        offsets[0] = new Vector2(-deltaX, deltaY);
+        offsets[1] = new Vector2(deltaX, -deltaY);
+
+        List<Vector2> colliderPoints = new List<Vector2> {
+            positions[0] + offsets[0],
+            positions[1] + offsets[0],
+            positions[1] + offsets[1],
+            positions[0] + offsets[1]
+        };
+
+        return colliderPoints.ToArray();
     }
 
     private void OnDestroy()
@@ -60,6 +89,16 @@ public class Connection : MonoBehaviour
 
         if (fromA != null)
             fromA.ConnectedDP = null;
+    }
+
+    public void ShowContextMenu(ContextMenuManager menuManager)
+    {
+        menuManager.AddButton("Delete Connection",
+            () =>
+            {
+                // Triggers Connection's OnDestroy, where cleanup is done
+                Destroy(transform.parent.gameObject);
+            });
     }
 
     public void DontUpdateConnectedVisual()

@@ -212,6 +212,7 @@ public class ConditionMenu : MonoBehaviour
             compareToInputField.gameObject.SetActive(false);
             return;
         }
+        else compareToInputField.gameObject.SetActive(true);
 
         // Set content type of input field based on type of condition/Global Property
         if (currentType == typeof(string))

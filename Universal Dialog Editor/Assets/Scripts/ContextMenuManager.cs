@@ -73,41 +73,6 @@ public class ContextMenuManager : MonoBehaviour
                 {
                     OpenContextMenu(target);
                 }
-
-                /*if (hit.collider.CompareTag("DialogPart"))
-                {
-                    // Select dialog part
-                    var diaPart = hit.collider.GetComponent<DialogPartVisual>();
-                    editorManager.SelectedDialogPartVisual = diaPart;
-                    diaPart.Selected = true; // See DialogPartVisual.Selected
-
-                    dialogPartVisual = diaPart;
-
-                    OpenContextMenu(dialogPartContextMenu);
-                }
-                else if (hit.collider.CompareTag("Answer"))
-                {
-                    // Select answer
-                    var answer = hit.collider.GetComponent<AnswerVisual>();
-                    editorManager.SelectedAnswerVisual = answer;
-                    answer.Selected = true; // See AnswerVisual.Selected
-
-                    answerVisual = answer;
-
-                    OpenContextMenu(answerContextMenu);
-                }
-                else if (hit.collider.CompareTag("Connection"))
-                {
-                    editorManager.selectedConnection
-                        = hit.collider.transform.parent.gameObject;
-
-                    OpenContextMenu(connectionContextMenu);
-                }
-                else
-                    return;
-            }
-            else
-                OpenContextMenu(editorContextMenu);*/
             }
             else
                 ShowEditorContextMenu(); // !
