@@ -96,8 +96,8 @@ public class Connection : MonoBehaviour, IContextMenu
         menuManager.AddButton("Delete Connection",
             () =>
             {
-                // Triggers Connection's OnDestroy, where cleanup is done
-                Destroy(transform.parent.gameObject);
+                // Triggers OnDestroy, where cleanup is done
+                Destroy(this.gameObject);
             });
     }
 

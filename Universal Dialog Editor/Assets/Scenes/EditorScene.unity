@@ -9497,6 +9497,7 @@ MonoBehaviour:
   loadButton: {fileID: 98752150}
   deleteButton: {fileID: 952829391}
   dialogsScrollViewContent: {fileID: 216778595}
+  dialogsScrollRect: {fileID: 1390214710}
   dialogsScrollViewToggleGroup: {fileID: 216778599}
   dialogPartPresetDropdown: {fileID: 1695225580}
   answerPresetDropdown: {fileID: 1586023104}

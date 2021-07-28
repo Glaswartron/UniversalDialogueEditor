@@ -264,7 +264,7 @@ public class EditorManager : MonoBehaviour
                 connectionHologram = Instantiate(arrow).GetComponent<LineRenderer>();
 
                 // Deactivate the arrow tip
-                connectionHologram.transform.GetChild(1).gameObject.SetActive(false);
+                connectionHologram.transform.GetChild(0).gameObject.SetActive(false);
             }
 
             if (SelectedDialogPartVisual != null)
@@ -372,7 +372,8 @@ public class EditorManager : MonoBehaviour
             }
             diapartIDs.Add(diapart.dialogPart.id);
 
-            if (string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
+            if (diapart.answers.Count == 0 && 
+                string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
                 hasEnd = true;
 
             HashSet<string> answerIDs = new HashSet<string>();
@@ -411,7 +412,10 @@ public class EditorManager : MonoBehaviour
 
         // 8
         if (!hasEnd)
+        {
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialogs doesn't have an end");
             return false;
+        }
 
         return true;
     }
@@ -853,11 +857,13 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Connects a dialog part (visual) directly to the currently selected dialog part
+    /// Connects a Dialog Part (visual) directly to the currently selected Dialog Part (visual)
+    /// (if it has no no non-conditional Answers)
     /// </summary>
     public void ConnectToSelectedDP(DialogPartVisual dp)
     {
-        if (SelectedDialogPartVisual.dialogPart.answers.Length > 0)
+        if (SelectedDialogPartVisual.dialogPart.answers.Length > 0 &&
+            !Array.TrueForAll(SelectedDialogPartVisual.dialogPart.answers, a => a.conditional))
         {
             ErrorMessage.instance.ShowErrorMessage("Only Dialog Parts without an (non-conditional) Answer + " +
                 "can be connected directly to other Dialog Parts");

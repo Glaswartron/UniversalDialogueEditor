@@ -15,6 +15,7 @@ public class StartAndSelectUI : MonoBehaviour
     public Button loadButton;
     public Button deleteButton;
     public GameObject dialogsScrollViewContent;
+    public ScrollRect dialogsScrollRect;
     public ToggleGroup dialogsScrollViewToggleGroup;
     public TMP_Dropdown dialogPartPresetDropdown;
     public TMP_Dropdown answerPresetDropdown;
@@ -49,8 +50,9 @@ public class StartAndSelectUI : MonoBehaviour
         fileBrowserButton.onClick.AddListener(OpenFolderFileBrowser);
 
         submitButton.onClick.AddListener(
-            () => {
-                LoadFolder(pathInputField.text); 
+            () =>
+            {
+                LoadFolder(pathInputField.text);
             }
         );
 
@@ -120,7 +122,7 @@ public class StartAndSelectUI : MonoBehaviour
             dialogFilePaths.Add(file);
 
             // Dialogs are always saved in the format '.../.../nameOrID.udsdialog.json'
-            string dialogName 
+            string dialogName
                 = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
 
             // That's where the magic happens
@@ -140,7 +142,7 @@ public class StartAndSelectUI : MonoBehaviour
         toggleGO.GetComponentInChildren<TMP_Text>().SetText(text);
 
         ExtendedToggle toggle = toggleGO.GetComponent<ExtendedToggle>();
-        dialogSelectables.Add(toggle); // !
+        dialogSelectables.Add(toggle);
 
         int index = dialogSelectables.Count - 1; // Important
 
@@ -150,20 +152,26 @@ public class StartAndSelectUI : MonoBehaviour
             {
                 if (value)
                 {
+                    int localIndex = index;
+
                     // Selected => Activate loadButton, deleteButton + store index
                     loadButton.interactable = true;
                     deleteButton.interactable = true;
-                    selectedDialogIndex = index;
+                    selectedDialogIndex = localIndex;
                 }
                 // Deselected => Deactivate loadButton and deleteButton
-                else { loadButton.interactable = false; deleteButton.interactable = false; }
+                else
+                {
+                    loadButton.interactable = false; deleteButton.interactable = false;
+                    selectedDialogIndex = -1;
+                }
             }
             );
 
         // Load on submit / when Enter key is pressed
         toggle.onSubmit.AddListener(
             () => LoadSelectedDialog()
-        ); 
+        );
 
         // Set toggle/selectable text up to "deselect itself" correctly
         toggle.group = dialogsScrollViewToggleGroup;
@@ -181,9 +189,11 @@ public class StartAndSelectUI : MonoBehaviour
             ErrorMessage.instance.ShowErrorMessage
                 ("Please first load a folder by entering a path " +
                  "and clicking the submit button (green arrow)!");
+
             return;
         }
 
+        // Create the input field for inputting a name
         GameObject inputFieldGO = Instantiate(newDialogInputField,
                                               dialogsScrollViewContent.transform);
 
@@ -191,6 +201,7 @@ public class StartAndSelectUI : MonoBehaviour
 
         inputField.Select();
 
+        // Continue when inputField is either deselected or submit (enter) is hit
         inputField.onDeselect.AddListener(
             (input) =>
             {
@@ -204,6 +215,9 @@ public class StartAndSelectUI : MonoBehaviour
                 CreateDialogFileAndSelectable(input, inputField);
             }
         );
+
+        // Scroll to bottom where the input field is (important if there are many Dialogs)
+        dialogsScrollRect.verticalNormalizedPosition = -1;
     }
 
     private void LoadSelectedDialog()
@@ -224,7 +238,7 @@ public class StartAndSelectUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(input))
             success = false;
         else
-            success = CreateNewDialogFile(input);;
+            success = CreateNewDialogFile(input);
 
         if (!success)
         {
@@ -233,9 +247,7 @@ public class StartAndSelectUI : MonoBehaviour
             return;
         }
 
-        GameObject dst = InstantiateDialogSelectableText(input);
-
-        dialogSelectables.Add(dst.GetComponent<ExtendedToggle>());
+        InstantiateDialogSelectableText(input);
 
         Destroy(inputField.gameObject);
     }
@@ -245,11 +257,19 @@ public class StartAndSelectUI : MonoBehaviour
         bool success = DeleteDialogFile(dialogFilePaths[selectedDialogIndex]);
 
         if (!success)
+        {
             ErrorMessage.instance.ShowErrorMessage
                 ("Something went wrong. The dialog was not deleted. Try deleting it " +
                 "directly from the file browser/folder");
 
-        Destroy(dialogSelectables[selectedDialogIndex].gameObject);
+            return;
+        }
+
+        var selectableToDestroy = dialogSelectables[selectedDialogIndex];
+
+        dialogSelectables.RemoveAt(selectedDialogIndex);
+
+        Destroy(selectableToDestroy.gameObject);
 
         loadButton.interactable = false;
         deleteButton.interactable = false;
@@ -264,6 +284,7 @@ public class StartAndSelectUI : MonoBehaviour
             ErrorMessage.instance.ShowErrorMessage
                 ("The folder path you entered is either blank or not valid. " +
                  "Try to use the file chooser to get a valid path.");
+
             return false;
         }
 
@@ -275,7 +296,7 @@ public class StartAndSelectUI : MonoBehaviour
         if (!string.IsNullOrEmpty(newFilePath))
             dialogFilePaths.Add(newFilePath); // !
         else return false; // Error message already handled by FileHandler
-        
+
         // Final Validation
         return File.Exists(newFilePath);
     }
@@ -297,7 +318,8 @@ public class StartAndSelectUI : MonoBehaviour
     {
         foreach (ExtendedToggle selectable in dialogSelectables)
         {
-            Destroy(selectable.gameObject);
+            if (selectable != null)
+                Destroy(selectable.gameObject);
         }
 
         dialogSelectables.Clear();
@@ -342,7 +364,7 @@ public class StartAndSelectUI : MonoBehaviour
         dialogPartPresetDropdown.ClearOptions();
         answerPresetDropdown.ClearOptions();
 
-        string[] dialogPartPresets = 
+        string[] dialogPartPresets =
             FileHandler.GetAllPropertyPresetIDs(PropertyPreset.PropertyPresetType.DIALOG_PART);
 
         string[] answerPresets =
@@ -363,7 +385,8 @@ public class StartAndSelectUI : MonoBehaviour
         FileBrowser.ShowLoadDialog(
             onSuccess: (path) =>
             {
-                if (path[0].EndsWith(".udspreset.json")) {
+                if (path[0].EndsWith(".udspreset.json"))
+                {
                     FileHandler.ImportPropertyPreset(path[0]);
                     InitPresetDropdowns();
                 }
