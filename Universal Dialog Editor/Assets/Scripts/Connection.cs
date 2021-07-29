@@ -24,9 +24,7 @@ public class Connection : MonoBehaviour, IContextMenu
         lineRenderer = GetComponent<LineRenderer>();
         polygonCollider = GetComponent<PolygonCollider2D>();
 
-        arrowTip.GetComponent<SpriteRenderer>().color= EditorManager.instance.ActiveColorTheme.arrowColor;
-        lineRenderer.startColor = EditorManager.instance.ActiveColorTheme.arrowColor;
-        lineRenderer.endColor = EditorManager.instance.ActiveColorTheme.arrowColor;
+        UpdateColor();
     }
 
     private void FixedUpdate()
@@ -103,6 +101,13 @@ public class Connection : MonoBehaviour, IContextMenu
                 // Triggers OnDestroy, where cleanup is done
                 Destroy(this.gameObject);
             });
+    }
+
+    public void UpdateColor()
+    {
+        arrowTip.GetComponent<SpriteRenderer>().color = EditorManager.instance.ActiveColorTheme.arrowColor;
+        lineRenderer.startColor = EditorManager.instance.ActiveColorTheme.arrowColor;
+        lineRenderer.endColor = EditorManager.instance.ActiveColorTheme.arrowColor;
     }
 
     public void DontUpdateConnectedVisual()

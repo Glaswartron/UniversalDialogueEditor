@@ -309,6 +309,13 @@ public class EditorManager : MonoBehaviour
         Array.ForEach(elements, e => e.ChangeTheme(newTheme));
 
         Camera.main.backgroundColor = newTheme.cameraBackgroundColor;
+
+        Connection[] connections 
+            = Array.ConvertAll(GameObject.FindGameObjectsWithTag("Connection"),
+                               go => go.GetComponent<Connection>());
+
+        Array.ForEach(connections, c => c.UpdateColor()); 
+
     }
 
     /// <summary>
