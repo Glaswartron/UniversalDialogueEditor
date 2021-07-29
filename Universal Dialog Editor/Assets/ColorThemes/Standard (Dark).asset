@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6a6a2eca9ca0b74da48c1f847dc8349, type: 3}
+  m_Name: Standard (Dark)
+  m_EditorClassIdentifier: 
+  themeName: Standard (Dark)
+  cameraBackgroundColor: {r: 0.2784314, g: 0.2784314, b: 0.2784314, a: 1}
+  backgroundPanelColor: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 0.7764706}
+  menuPanelColor: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 0.7764706}
+  menuBackgroundPanelColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 0.39215687}
+  arrowColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}

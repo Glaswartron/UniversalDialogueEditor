@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 public class EditorManager : MonoBehaviour
 {
@@ -65,6 +66,7 @@ public class EditorManager : MonoBehaviour
     private GameObject activeMenu;
 
     [Header("Main UI")]
+    public Canvas mainCanvas;
     public RectTransform editorPanel;
     public GameObject startAndSelectUI;
     public GameObject dialogUI;
@@ -76,6 +78,7 @@ public class EditorManager : MonoBehaviour
     public ConditionMenu conditionMenu;
     public SavePresetMenu savePresetMenu;
     public LoadPresetMenu loadPresetMenu;
+    public SettingsMenu settingsMenu;
 
     [Header("Prefabs")]
     public GameObject dialogPartVisual;
@@ -88,6 +91,9 @@ public class EditorManager : MonoBehaviour
     public Camera mainCam;
 
     [Space(7)]
+    public ColorTheme[] colorThemes;
+
+    [Space(7)]
     public Vector2 menuOffsetFromMouse;
 
     [Space(7)]
@@ -96,7 +102,12 @@ public class EditorManager : MonoBehaviour
 
     public bool inConnectMode;
 
-    //public DialogInfoInputField[] inputFields;
+    public ColorTheme ActiveColorTheme
+    {
+        set => ChangeColorTheme(value);
+        get => activeColorTheme;
+    }
+    private ColorTheme activeColorTheme;
 
     /// <summary>
     /// The currently selected Dialog Part (visual)
@@ -215,6 +226,9 @@ public class EditorManager : MonoBehaviour
         mainCam = Camera.main;
         dialogPartVisuals = new List<DialogPartVisual>();
         ActiveUI = startAndSelectUI;
+
+        if (PlayerPrefs.HasKey("ColorTheme"))
+            ChangeColorTheme(colorThemes.Where(ct => ct.themeName.Equals(PlayerPrefs.GetString("ColorTheme"))).First());
     }
 
     private void Update()
@@ -285,6 +299,18 @@ public class EditorManager : MonoBehaviour
         }
     }
 
+    public void ChangeColorTheme(ColorTheme newTheme)
+    {
+        activeColorTheme = newTheme;
+
+        IColorThemed[] elements 
+            = mainCanvas.transform.GetComponentsInChildren<IColorThemed>(true);
+
+        Array.ForEach(elements, e => e.ChangeTheme(newTheme));
+
+        Camera.main.backgroundColor = newTheme.cameraBackgroundColor;
+    }
+
     /// <summary>
     /// Updates the currently open Dialog (EditorManager.instance.dialog)
     /// based on the Dialog Parts, Answers, ... created in the editor and
@@ -329,7 +355,7 @@ public class EditorManager : MonoBehaviour
         if (dialogPartVisuals.Count == 0)
         {
             ErrorMessage.instance.ShowErrorMessage
-                ("Failed. A dialog has to include at least one Dialog Part");
+                ("Failed. A Dialog has to include at least one Dialog Part");
             return false;
         }
 
@@ -547,7 +573,7 @@ public class EditorManager : MonoBehaviour
         {
             warnings.Add(new DialogUI.Warning
             {
-                text = "A dialog has to contain at least one Dialog Part",
+                text = "A Dialog has to contain at least one Dialog Part",
                 color = Color.red
             });
 

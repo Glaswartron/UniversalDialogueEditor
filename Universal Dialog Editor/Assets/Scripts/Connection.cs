@@ -23,6 +23,10 @@ public class Connection : MonoBehaviour, IContextMenu
     {
         lineRenderer = GetComponent<LineRenderer>();
         polygonCollider = GetComponent<PolygonCollider2D>();
+
+        arrowTip.GetComponent<SpriteRenderer>().color= EditorManager.instance.ActiveColorTheme.arrowColor;
+        lineRenderer.startColor = EditorManager.instance.ActiveColorTheme.arrowColor;
+        lineRenderer.endColor = EditorManager.instance.ActiveColorTheme.arrowColor;
     }
 
     private void FixedUpdate()

@@ -94,8 +94,8 @@ public class StartAndSelectUI : MonoBehaviour
 
     private void OnDisable()
     {
-        // Deselect selected Dialog when UI is disabled
-        if (dialogSelectables.Count > 0)
+        // Deselect selected Dialog when UI is disabled (-1 check necessary to avoid exception)
+        if (dialogSelectables.Count > 0 && selectedDialogIndex != -1)
             dialogSelectables[selectedDialogIndex].isOn = false;
     }
 
@@ -144,20 +144,18 @@ public class StartAndSelectUI : MonoBehaviour
         ExtendedToggle toggle = toggleGO.GetComponent<ExtendedToggle>();
         dialogSelectables.Add(toggle);
 
-        int index = dialogSelectables.Count - 1; // Important
-
         // Set the onValueChanged event for the toggle/selectable text
         toggle.onValueChanged.AddListener(
             (value) =>
             {
                 if (value)
                 {
-                    int localIndex = index;
+                    ExtendedToggle me = toggle;
 
                     // Selected => Activate loadButton, deleteButton + store index
                     loadButton.interactable = true;
                     deleteButton.interactable = true;
-                    selectedDialogIndex = localIndex;
+                    selectedDialogIndex = dialogSelectables.IndexOf(me);
                 }
                 // Deselected => Deactivate loadButton and deleteButton
                 else
@@ -268,6 +266,7 @@ public class StartAndSelectUI : MonoBehaviour
         var selectableToDestroy = dialogSelectables[selectedDialogIndex];
 
         dialogSelectables.RemoveAt(selectedDialogIndex);
+        dialogFilePaths.RemoveAt(selectedDialogIndex);
 
         Destroy(selectableToDestroy.gameObject);
 
@@ -283,7 +282,7 @@ public class StartAndSelectUI : MonoBehaviour
         {
             ErrorMessage.instance.ShowErrorMessage
                 ("The folder path you entered is either blank or not valid. " +
-                 "Try to use the file chooser to get a valid path.");
+                 "Try to use the file browser to get a valid path.");
 
             return false;
         }

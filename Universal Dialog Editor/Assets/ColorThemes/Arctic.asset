@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6a6a2eca9ca0b74da48c1f847dc8349, type: 3}
+  m_Name: Arctic
+  m_EditorClassIdentifier: 
+  themeName: Arctic
+  cameraBackgroundColor: {r: 0.4965468, g: 0.67853326, b: 0.8301887, a: 1}
+  backgroundPanelColor: {r: 0.68301886, g: 0.86132073, b: 1, a: 1}
+  menuPanelColor: {r: 0.56037736, g: 0.80610055, b: 1, a: 1}
+  menuBackgroundPanelColor: {r: 0.28515488, g: 0.4431515, b: 0.5660378, a: 1}
+  arrowColor: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 1}

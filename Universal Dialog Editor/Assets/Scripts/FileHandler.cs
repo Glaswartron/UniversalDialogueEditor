@@ -11,14 +11,23 @@ public class FileHandler
     public TMP_InputField savePathInputField;
     public TMP_InputField loadPathInputField;
 
-    private static readonly string GLOBAL_PROPERTIES_PATH
-        = Path.Combine(Application.persistentDataPath, "globalProperties.udsgp.json");
+    private static string GlobalPropertiesPath
+    {
+        get =>  PlayerPrefs.GetString ("GlobalPropertiesPath",
+                Path.Combine(Application.persistentDataPath, "globalProperties.udsgp.json"));
+    }
 
-    private static readonly string DIALOG_PART_PROPERTY_PRESET_PATH
-        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "DialogPartPropertyPresets");
+    private static string DialogPartPropertyPresetPath
+    {
+        get => Path.Combine(PlayerPrefs.GetString("PropertyPresetPath", Application.persistentDataPath),
+            "DialogPartPropertyPresets");
+    }
 
-    private static readonly string ANSWER_PROPERTY_PRESET_PATH
-        = Path.Combine(Application.persistentDataPath, "PropertyPresets", "AnswerPropertyPresets");
+    private static string AnswerPropertyPresetPath
+    {
+        get => Path.Combine(PlayerPrefs.GetString("PropertyPresetPath", Application.persistentDataPath),
+            "AnswerPropertyPresets");
+    }
 
     public static void CreateTestDialog()
     {
@@ -327,7 +336,7 @@ public class FileHandler
 
         try
         {
-            stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Create);
+            stream = new FileStream(GlobalPropertiesPath, FileMode.Create);
             writer = new StreamWriter(stream);
 
             string propertiesJSON = ToJSON(properties);
@@ -337,7 +346,7 @@ public class FileHandler
         {
             ErrorMessage.instance.ShowErrorMessage
                 ("Something went wrong while saving the Global Properties under " +
-                GLOBAL_PROPERTIES_PATH + ". " +
+                GlobalPropertiesPath + ". " +
                 "Please check if the path still exists and if there is enough disk space");
 
             Debug.LogError(e.Message);
@@ -355,7 +364,7 @@ public class FileHandler
 
     public static Dictionary<string, UDSProperty> LoadGlobalProperties()
     {
-        if (!File.Exists(GLOBAL_PROPERTIES_PATH))
+        if (!File.Exists(GlobalPropertiesPath))
             return null;
 
         FileStream stream = null;
@@ -363,7 +372,7 @@ public class FileHandler
 
         try
         {
-            stream = new FileStream(GLOBAL_PROPERTIES_PATH, FileMode.Open);
+            stream = new FileStream(GlobalPropertiesPath, FileMode.Open);
             reader = new StreamReader(stream);
 
             string propertiesJSON = reader.ReadToEnd();
@@ -375,9 +384,9 @@ public class FileHandler
         catch (Exception e)
         {
             ErrorMessage.instance.ShowErrorMessage("An error occured while loading the " +
-                "Global Properties from " + GLOBAL_PROPERTIES_PATH + ". Please check " +
+                "Global Properties from " + GlobalPropertiesPath + ". Please check " +
                 "if the path is still valid");
-            Debug.LogError("Path: " + GLOBAL_PROPERTIES_PATH + " -- " + e.Message);
+            Debug.LogError("Path: " + GlobalPropertiesPath + " -- " + e.Message);
             return null;
         }
         finally
@@ -544,9 +553,9 @@ public class FileHandler
         switch (type)
         {
             case PropertyPreset.PropertyPresetType.DIALOG_PART:
-                return DIALOG_PART_PROPERTY_PRESET_PATH;
+                return DialogPartPropertyPresetPath;
             case PropertyPreset.PropertyPresetType.ANSWER:
-                return ANSWER_PROPERTY_PRESET_PATH;
+                return AnswerPropertyPresetPath;
             default:
                 return null;
         }
@@ -565,15 +574,15 @@ public class FileHandler
     {
         bool directoryCreated = false;
 
-        if (!Directory.Exists(DIALOG_PART_PROPERTY_PRESET_PATH))
+        if (!Directory.Exists(DialogPartPropertyPresetPath))
         {
-            Directory.CreateDirectory(DIALOG_PART_PROPERTY_PRESET_PATH);
+            Directory.CreateDirectory(DialogPartPropertyPresetPath);
             directoryCreated = true;
         }
 
-        if (!Directory.Exists(ANSWER_PROPERTY_PRESET_PATH))
+        if (!Directory.Exists(AnswerPropertyPresetPath))
         {
-            Directory.CreateDirectory(ANSWER_PROPERTY_PRESET_PATH);
+            Directory.CreateDirectory(AnswerPropertyPresetPath);
             directoryCreated = true;
         }
 
