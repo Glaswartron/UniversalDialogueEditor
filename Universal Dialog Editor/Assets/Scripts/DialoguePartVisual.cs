@@ -5,15 +5,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DialogPartVisual : MonoBehaviour, IContextMenu
+public class DialoguePartVisual : MonoBehaviour, IContextMenu
 {
     /// <summary>
-    /// The Dialog Part this visual encapsulates. Very important!
-    /// HideInInspector extremely important because Dialog.DialogPart 
+    /// The Dialogue Part this visual encapsulates. Very important!
+    /// HideInInspector extremely important because Dialogue.DialoguePart 
     /// has recursive references which break the Editor
     /// </summary>
     [HideInInspector] 
-    public Dialog.DialogPart dialogPart;
+    public Dialogue.DialoguePart dialoguePart;
 
     [HideInInspector]
     public List<AnswerVisual> answers;
@@ -43,21 +43,21 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     private SpriteRenderer spriteRenderer;
     private Camera mainCam;
 
-    public DialogPartVisual ConnectedDP
+    public DialoguePartVisual ConnectedDP
     {
         set
         {
             connectedDP = value;
 
             if (value != null)
-                dialogPart.nextDialogPartID = value.dialogPart.id;
+                dialoguePart.nextDialoguePartID = value.dialoguePart.id;
             else
-                dialogPart.nextDialogPartID = string.Empty;
+                dialoguePart.nextDialoguePartID = string.Empty;
         }
 
         get { return connectedDP; }
     }
-    private DialogPartVisual connectedDP;
+    private DialoguePartVisual connectedDP;
     
     public Connection dpConnection;
     private LineRenderer connectionLineRenderer;
@@ -108,7 +108,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     void Update()
     {
         // Constantly updates the idText
-        idText.SetText(dialogPart.id);
+        idText.SetText(dialoguePart.id);
 
         if (ConnectedDP == null && dpConnection != null)
             Destroy(dpConnection.gameObject);
@@ -121,7 +121,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         }
 
         if (ConnectedDP != null)
-            dialogPart.nextDialogPartID = connectedDP.dialogPart.id;
+            dialoguePart.nextDialoguePartID = connectedDP.dialoguePart.id;
     }
 
     public void OnMouseDrag()
@@ -140,8 +140,8 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
                    .graphEditorBounds).Contains(Input.mousePosition)) // 3
             {
                 transform.position = mousePos;
-                dialogPart.visualX = (int) mousePos.x; 
-                dialogPart.visualY = (int) mousePos.y;
+                dialoguePart.visualX = (int) mousePos.x; 
+                dialoguePart.visualY = (int) mousePos.y;
             }
         }
     }
@@ -156,24 +156,24 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         if (!EditorManager.instance.inConnectMode)
             // Give the EditorManager the currently selected visual
-            EditorManager.instance.SelectedDialogPartVisual = Selected ? this : null;
+            EditorManager.instance.SelectedDialoguePartVisual = Selected ? this : null;
         else if (EditorManager.instance.SelectedAnswerVisual != null)
         {
-            // Answer selected + inConnectMode => Connect Answer to DialogPart
+            // Answer selected + inConnectMode => Connect Answer to DialoguePart
             EditorManager.instance.ConnectToSelectedAnswer(this);
-            EditorManager.instance.SelectedDialogPartVisual = this;
+            EditorManager.instance.SelectedDialoguePartVisual = this;
         }
-        else if (EditorManager.instance.SelectedDialogPartVisual != null)
+        else if (EditorManager.instance.SelectedDialoguePartVisual != null)
         {
-            // DialogPart selected + inConnectMode => Connect DialogPart to DialogPart
+            // DialoguePart selected + inConnectMode => Connect DialoguePart to DialoguePart
             EditorManager.instance.ConnectToSelectedDP(this);
-            EditorManager.instance.SelectedDialogPartVisual = this;
+            EditorManager.instance.SelectedDialoguePartVisual = this;
         }
     }
 
     public void ShowContextMenu(ContextMenuManager menuManager)
     {
-        EditorManager.instance.SelectedDialogPartVisual = this;
+        EditorManager.instance.SelectedDialoguePartVisual = this;
 
         ContextMenuManager.instance.AddButton(
             "Add answer",
@@ -192,17 +192,17 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         ContextMenuManager.instance.AddButton(
             "Set as start",
-            () => { EditorManager.instance.StartDialogPartVisual = this; }
+            () => { EditorManager.instance.StartDialoguePartVisual = this; }
         );
 
         ContextMenuManager.instance.AddButton(
             "Delete",
-            EditorManager.instance.DestroyDialogPart // Destroys currently selected(!) DP
+            EditorManager.instance.DestroyDialoguePart // Destroys currently selected(!) DP
         );
     }
 
     /// <summary>
-    /// Adds a new blank answer to the Dialog Part (Visual)
+    /// Adds a new blank answer to the Dialogue Part (Visual)
     /// </summary>
     /// <param name="conditional">Whether or not the answer shall be 
     /// conditional = require a Global Property based condition to show up</param>
@@ -212,7 +212,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
         if (connectedDP != null)
         {
             ErrorMessage.instance.ShowErrorMessage("Answers can only be added " +
-                "to a DialogPart if it has no direct connection to another dialog " +
+                "to a DialoguePart if it has no direct connection to another dialogue " +
                 "part");
             return false;
         }
@@ -229,7 +229,7 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
 
         answers.Add(answerVis);
 
-        answerVis.answer = new Dialog.DialogPart.Answer
+        answerVis.answer = new Dialogue.DialoguePart.Answer
             ("", answers.Count - 1, 0, conditional);
 
         answerVis.index = answers.Count - 1;
@@ -239,12 +239,12 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
             answerVis.answer.condition = new UDSCondition(); 
 
         answerVis.Conditional = conditional;
-        answerVis.parentDialogPart = this;
+        answerVis.parentDialoguePart = this;
 
-        // Update the answer array on the Dialog Part
-        dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
+        // Update the answer array on the Dialogue Part
+        dialoguePart.answers = answers.ConvertAll(av => av.answer).ToArray();
 
-        // If a Property Preset for new Dialog Parts is selected
+        // If a Property Preset for new Dialogue Parts is selected
         if (EditorManager.globalAnswerPropertyPreset != null)
         {
             PropertyPreset? preset =
@@ -283,32 +283,32 @@ public class DialogPartVisual : MonoBehaviour, IContextMenu
     {
         answers.Remove(answer);
 
-        // Update the answer array on the Dialog Part
-        dialogPart.answers = answers.ConvertAll(av => av.answer).ToArray();
+        // Update the answer array on the Dialogue Part
+        dialoguePart.answers = answers.ConvertAll(av => av.answer).ToArray();
 
         EditorManager.instance.noOfAnswers--;
-        EditorManager.instance.ActiveUI = EditorManager.instance.dialogUI;
+        EditorManager.instance.ActiveUI = EditorManager.instance.dialogueUI;
     }
 
     /// <summary>
-    /// Connects the DialogPartVisual to another one and 
+    /// Connects the DialoguePartVisual to another one and 
     /// sets all necessary references accordingly. Also
     /// shows the connection to the user using a line renderer.
     /// </summary>
-    /// <param name="dp">The other DialogPart(Visual) which this one
+    /// <param name="dp">The other DialoguePart(Visual) which this one
     /// shall be connected to</param>
-    public void SetConnection(DialogPartVisual dp)
+    public void SetConnection(DialoguePartVisual dp)
     {
-        if (string.IsNullOrWhiteSpace(dp.dialogPart.id))
+        if (string.IsNullOrWhiteSpace(dp.dialoguePart.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("The Dialog Part needs an ID in " +
+            ErrorMessage.instance.ShowErrorMessage("The Dialogue Part needs an ID in " +
                 "order to be connected");
             return;
         }
 
         if (dp == this)
         {
-            ErrorMessage.instance.ShowErrorMessage("Connecting a Dialog Part to itself is " +
+            ErrorMessage.instance.ShowErrorMessage("Connecting a Dialogue Part to itself is " +
                 "(currently) not possible. Sorry!");
             return;
         }

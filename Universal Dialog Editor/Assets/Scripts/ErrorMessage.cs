@@ -7,7 +7,7 @@ public class ErrorMessage : MonoBehaviour
 {
     public static ErrorMessage instance;
 
-    public float messageLength;
+    public float messageDuration;
 
     private TextMeshProUGUI text;
     private Animator anim;
@@ -15,6 +15,7 @@ public class ErrorMessage : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Singleton
         if (instance == null)
             instance = this;
         else
@@ -46,7 +47,7 @@ public class ErrorMessage : MonoBehaviour
     private IEnumerator ErrorMessageCo()
     {
         anim.SetBool("messageShowing", true);
-        yield return new WaitForSeconds(messageLength);
+        yield return new WaitForSeconds(messageDuration);
         anim.SetBool("messageShowing", false);
     }
 }

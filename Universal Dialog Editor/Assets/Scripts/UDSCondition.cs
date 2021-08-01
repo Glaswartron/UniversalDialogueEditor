@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using UniversalDialogSystem;
+using UniversalDialogueSystem;
 
 
 [Serializable]
@@ -13,10 +13,10 @@ public struct UDSCondition
 
     public bool IsMet()
     {
-        if (!UDSDialogManager.instance.HasGlobalProperty(globalPropertyKey))
+        if (!UDSDialogueManager.instance.HasGlobalProperty(globalPropertyKey))
             return false;
 
-        UDSProperty globalProperty = UDSDialogManager.instance.GetGlobalProperty(globalPropertyKey);
+        UDSProperty globalProperty = UDSDialogueManager.instance.GetGlobalProperty(globalPropertyKey);
 
         return typeToOperators[globalProperty.type][operation]
             .Invoke(globalProperty.value, compareTo);

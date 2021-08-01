@@ -13,14 +13,15 @@ public class FileHandler
 
     private static string GlobalPropertiesPath
     {
-        get =>  PlayerPrefs.GetString ("GlobalPropertiesPath",
-                Path.Combine(Application.persistentDataPath, "globalProperties.udsgp.json"));
+        get =>  Path.Combine(
+            PlayerPrefs.GetString ("GlobalPropertiesPath", Application.persistentDataPath),
+            "globalProperties.udsgp.json");
     }
 
-    private static string DialogPartPropertyPresetPath
+    private static string DialoguePartPropertyPresetPath
     {
         get => Path.Combine(PlayerPrefs.GetString("PropertyPresetPath", Application.persistentDataPath),
-            "DialogPartPropertyPresets");
+            "DialoguePartPropertyPresets");
     }
 
     private static string AnswerPropertyPresetPath
@@ -29,43 +30,43 @@ public class FileHandler
             "AnswerPropertyPresets");
     }
 
-    public static void CreateTestDialog()
+    public static void CreateTestDialogue()
     {
 #if UNITY_EDITOR
-        // Generate test dialog
-        if (!File.Exists("F:/Testground/TestDialog.udsdialog.json"))
+        // Generate test dialogue
+        if (!File.Exists("F:/Testground/TestDialogue.udsdialogue.json"))
         {
-            Dialog dialog = new Dialog("TestDialog");
+            Dialogue dialogue = new Dialogue("TestDialogue");
 
-            Dialog.DialogPart diaPart1 = new Dialog.DialogPart("TestID", new Vector2(0, 0));
-            Dialog.DialogPart diaPart2 = new Dialog.DialogPart("Tester2", new Vector2(0, 1));
-            Dialog.DialogPart diaPart3 = new Dialog.DialogPart("TestPart3", new Vector2(1, 0));
+            Dialogue.DialoguePart diaPart1 = new Dialogue.DialoguePart("TestID", new Vector2(0, 0));
+            Dialogue.DialoguePart diaPart2 = new Dialogue.DialoguePart("Tester2", new Vector2(0, 1));
+            Dialogue.DialoguePart diaPart3 = new Dialogue.DialoguePart("TestPart3", new Vector2(1, 0));
 
-            diaPart2.answers = new Dialog.DialogPart.Answer[]
+            diaPart2.answers = new Dialogue.DialoguePart.Answer[]
             {
-                new Dialog.DialogPart.Answer("Yes", 0, Mathf.PI),
-                new Dialog.DialogPart.Answer("No", 1, Mathf.PI/2)
+                new Dialogue.DialoguePart.Answer("Yes", 0, Mathf.PI),
+                new Dialogue.DialoguePart.Answer("No", 1, Mathf.PI/2)
             };
 
-            dialog.startDialogPartID = "TestID";
-            diaPart1.nextDialogPartID = "Tester2";
-            diaPart2.answers[0].nextDialogPartID = "TestPart3";
+            dialogue.startDialoguePartID = "TestID";
+            diaPart1.nextDialoguePartID = "Tester2";
+            diaPart2.answers[0].nextDialoguePartID = "TestPart3";
 
             diaPart1.SetProperty("tollerSchluessel", "Hier koennte ihre Werbung");
             diaPart2.SetProperty("jetztAuchMitZahlenLol", 42);
 
-            dialog.dialogParts = new Dialog.DialogPart[] { diaPart1, diaPart2, diaPart3 };
+            dialogue.dialogueParts = new Dialogue.DialoguePart[] { diaPart1, diaPart2, diaPart3 };
 
-            FileStream stream = new FileStream("F:/Testground/TestDialog.udsdialog.json", FileMode.Create);
+            FileStream stream = new FileStream("F:/Testground/TestDialogue.udsdialogue.json", FileMode.Create);
 
-            string dialogJSON = ToJSON(dialog);
+            string dialogueJSON = ToJSON(dialogue);
 
             StreamWriter writer = null;
 
             try
             {
                 writer = new StreamWriter(stream);
-                writer.Write(dialogJSON);
+                writer.Write(dialogueJSON);
             }
             catch (Exception e)
             {
@@ -81,13 +82,13 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Gets the paths to all dialogs (.udsdialog.json) in the given directory
+    /// Gets the paths to all dialogues (.udsdialogue.json) in the given directory
     /// </summary>
     /// <param name="dirPath">The path to the directory</param>
-    /// <returns>A string array containing the file paths of all .udsdialog.json files
+    /// <returns>A string array containing the file paths of all .udsdialogue.json files
     /// in the given directory or an empty array if the folder is empty
     /// or something went wrong</returns>
-    public static string[] GetAllDialogPathsFromDir(string dirPath)
+    public static string[] GetAllDialoguePathsFromDir(string dirPath)
     {
         if (string.IsNullOrWhiteSpace(dirPath))
             return new string[0];
@@ -97,13 +98,13 @@ public class FileHandler
             try
             {
 
-                return Directory.GetFiles(dirPath, "*.udsdialog.json");
+                return Directory.GetFiles(dirPath, "*.udsdialogue.json");
 
             }
             catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage
-                    ("An error occured while loading dialogs from a directory.");
+                    ("An error occured while loading dialogues from a directory.");
 
                 Debug.LogError(e.Message);
 
@@ -118,17 +119,17 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Serializes the given dialog into a new .udsdialog.json
+    /// Serializes the given dialogue into a new .udsdialogue.json
     /// file in the given folder path. 
     /// The name/path to the file follows the following rule:
-    /// .../.../nameOrID.udsdialog.json
+    /// .../.../nameOrID.udsdialogue.json
     /// </summary>
-    /// <param name="dialog">The dialog to be saved</param>
-    /// <param name="folderPath">The path to the folder where the dialog shall be saved</param>
+    /// <param name="dialogue">The dialogue to be saved</param>
+    /// <param name="folderPath">The path to the folder where the dialogue shall be saved</param>
     /// <returns>The path to the newly created file - null if something went wrong</returns>
-    public static string CreateNewDialogFile(Dialog dialog, string folderPath)
+    public static string CreateNewDialogueFile(Dialogue dialogue, string folderPath)
     {
-        string path = BuildDialogFilePath(dialog.id, folderPath);
+        string path = BuildDialogueFilePath(dialogue.id, folderPath);
 
         if (!File.Exists(path))
         {
@@ -141,14 +142,14 @@ public class FileHandler
 
                 writer = new StreamWriter(stream);
 
-                string dialogJSON = ToJSON(dialog);
-                writer.Write(dialogJSON);
+                string dialogueJSON = ToJSON(dialogue);
+                writer.Write(dialogueJSON);
             }
             catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage
                     ("Something went wrong while creating the file. Please " +
-                    "check the dialog id you entered. " +
+                    "check the dialogue id you entered. " +
                     "Also check if you/the editor have/has " +
                     "writing permission for the selected folder. " +
                     "Try changing the folder");
@@ -166,7 +167,7 @@ public class FileHandler
         else
         {
             ErrorMessage.instance.ShowErrorMessage
-                ("A dialog with this id/name (path!) already exists in this folder!");
+                ("A dialogue with this id/name (path!) already exists in this folder!");
 
             return null;
         }
@@ -175,18 +176,18 @@ public class FileHandler
     }
 
     /// <summary>
-    /// Loads/Deserializes a dialog from the .udsdialog.json 
+    /// Loads/Deserializes a dialogue from the .udsdialogue.json 
     /// bytes-file at the given path. Returns null if
     /// something went wrong.
     /// </summary>
-    /// <param name="path">The path to the dialog file</param>
-    /// <returns>The deserialized Dialog as a dialog object - null if
+    /// <param name="path">The path to the dialogue file</param>
+    /// <returns>The deserialized Dialogue as a dialogue object - null if
     /// something went wrong</returns>
-    public static Dialog LoadDialogFile(string path)
+    public static Dialogue LoadDialogueFile(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) // Shouldn't happen
         {
-            Debug.LogError("The path passed to FileHandler.LoadDialogFile " +
+            Debug.LogError("The path passed to FileHandler.LoadDialogueFile " +
                 "was either null or white space");
             return null;
         }
@@ -201,14 +202,14 @@ public class FileHandler
                 stream = new FileStream(path, FileMode.Open);
 
                 reader = new StreamReader(stream);
-                string dialogJSON = reader.ReadToEnd();
+                string dialogueJSON = reader.ReadToEnd();
 
-                return JsonConvert.DeserializeObject<Dialog>(dialogJSON);
+                return JsonConvert.DeserializeObject<Dialogue>(dialogueJSON);
             }
             catch (Exception e)
             {
                 ErrorMessage.instance.ShowErrorMessage("An error occured while loading " +
-                    "the dialog. The file might be corrupted or the JSON cannot be parsed");
+                    "the dialogue. The file might be corrupted or the JSON cannot be parsed");
                 Debug.LogError("Path: " + path + " -- " + e.Message);
                 return null;
             }
@@ -227,28 +228,28 @@ public class FileHandler
 
 
     /// <summary>
-    /// Serializes the given dialog into an existing/its .udsdialog.json 
+    /// Serializes the given dialogue into an existing/its .udsdialogue.json 
     /// file at the given path, thus overriding the old file and saving
-    /// the dialog. Also renames the file if the DialogID has changed.
+    /// the dialogue. Also renames the file if the DialogueID has changed.
     /// The name/path to the file must follow the following rule:
-    /// .../.../nameOrID.udsdialog.json
+    /// .../.../nameOrID.udsdialogue.json
     /// </summary>
-    /// <param name="dialog">The dialog to be saved</param>
-    /// <param name="folderPath">The path to the .udsdialog.json file which shall be overridden</param>
+    /// <param name="dialogue">The dialogue to be saved</param>
+    /// <param name="folderPath">The path to the .udsdialogue.json file which shall be overridden</param>
     /// <returns>Successful?</returns>
-    public static bool SaveDialog(Dialog dialog, string path)
+    public static bool SaveDialogue(Dialogue dialogue, string path)
     {
-        //string path = BuildDialogFilePath(dialog.id, folderPath);
+        //string path = BuildDialogueFilePath(dialogue.id, folderPath);
 
         if (!File.Exists(path))
         {
-            // Shouldn't happen - use FileHandler.CreateNewDialogFile instead
-            Debug.LogWarning("FileHandler.SaveDialogFile was called with path " +
-                path + " although there is not yet an existing dialog file in that location");
+            // Shouldn't happen - use FileHandler.CreateNewDialogueFile instead
+            Debug.LogWarning("FileHandler.SaveDialogueFile was called with path " +
+                path + " although there is not yet an existing dialogue file in that location");
         }
 
         string dir = Path.GetDirectoryName(path);
-        string newPath = BuildDialogFilePath(dialog.id, dir);
+        string newPath = BuildDialogueFilePath(dialogue.id, dir);
 
         bool useNewPath = false;
         bool pathsEqualExceptForCase = false;
@@ -258,7 +259,7 @@ public class FileHandler
            (on MacOS they are?) */
         if (!newPath.Equals(path))
         {
-            useNewPath = true; // DialogID has changed
+            useNewPath = true; // DialogueID has changed
             if (newPath.ToLower().Equals(path.ToLower()))
                 pathsEqualExceptForCase = true;
         }
@@ -273,16 +274,16 @@ public class FileHandler
         {
             stream = new FileStream(actualPath, FileMode.Create);
 
-            string dialogJSON = ToJSON(dialog);
+            string dialogueJSON = ToJSON(dialogue);
 
             writer = new StreamWriter(stream);
-            writer.Write(dialogJSON);
+            writer.Write(dialogueJSON);
         }
         catch (Exception e)
         {
             ErrorMessage.instance.ShowErrorMessage
                 ("Something went wrong while saving the file. Please " +
-                "check if the dialog name/id you entered contains any " +
+                "check if the dialogue name/id you entered contains any " +
                 "invalid characters. Also check if you/the editor has " +
                 "writing permission for the folder you selected. " +
                 "Try changing it to a different folder");
@@ -302,7 +303,7 @@ public class FileHandler
          * (where paths are case insensitive) */
         if (useNewPath &&
             (!pathsEqualExceptForCase || Application.platform == RuntimePlatform.LinuxPlayer))
-            DeleteDialogFile(path);
+            DeleteDialogueFile(path);
 
         return true;
     }
@@ -313,7 +314,7 @@ public class FileHandler
     /// </summary>
     /// <param name="path">The path to the file that shall be deleted</param>
     /// <returns>Successful?</returns>
-    public static bool DeleteDialogFile(string path)
+    public static bool DeleteDialogueFile(string path)
     {
         try
         {
@@ -533,17 +534,17 @@ public class FileHandler
 
     /// <summary>
     /// Builds and returns the (hypothetical) path to a
-    /// dialog with ID nameOrID in directory folderPath
+    /// dialogue with ID nameOrID in directory folderPath
     /// </summary>
-    /// <param name="nameOrID">The ID of the dialog</param>
+    /// <param name="nameOrID">The ID of the dialogue</param>
     /// <param name="folderPath">The path where its file should go</param>
-    /// <returns>A fitting save/load path for the dialog (ending in .udsdialog.json)</returns>
-    public static string BuildDialogFilePath(string nameOrID, string folderPath)
+    /// <returns>A fitting save/load path for the dialogue (ending in .udsdialogue.json)</returns>
+    public static string BuildDialogueFilePath(string nameOrID, string folderPath)
     {
         string path = Path.Combine(folderPath, nameOrID);
 
-        if (!nameOrID.EndsWith(".udsdialog.json"))
-            path += ".udsdialog.json";
+        if (!nameOrID.EndsWith(".udsdialogue.json"))
+            path += ".udsdialogue.json";
 
         return path;
     }
@@ -553,7 +554,7 @@ public class FileHandler
         switch (type)
         {
             case PropertyPreset.PropertyPresetType.DIALOG_PART:
-                return DialogPartPropertyPresetPath;
+                return DialoguePartPropertyPresetPath;
             case PropertyPreset.PropertyPresetType.ANSWER:
                 return AnswerPropertyPresetPath;
             default:
@@ -574,9 +575,9 @@ public class FileHandler
     {
         bool directoryCreated = false;
 
-        if (!Directory.Exists(DialogPartPropertyPresetPath))
+        if (!Directory.Exists(DialoguePartPropertyPresetPath))
         {
-            Directory.CreateDirectory(DialogPartPropertyPresetPath);
+            Directory.CreateDirectory(DialoguePartPropertyPresetPath);
             directoryCreated = true;
         }
 

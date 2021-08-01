@@ -27,17 +27,17 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     private bool conditional;
 
     public SpriteRenderer indicator;
-    public Sprite dialogEndIndicator;
+    public Sprite dialogueEndIndicator;
 
-    public DialogPartVisual parentDialogPart;
+    public DialoguePartVisual parentDialoguePart;
 
     /// <summary>
     /// The answer this visual encapsulates. Very important!
-    /// HideInInspector extremely important because Dialog.DialogPart.Answer 
+    /// HideInInspector extremely important because Dialogue.DialoguePart.Answer 
     /// has recursive references which break the Editor
     /// </summary>
     [HideInInspector]
-    public Dialog.DialogPart.Answer answer;
+    public Dialogue.DialoguePart.Answer answer;
 
     [Header("Colors")]
     public Color normalColor;
@@ -60,21 +60,21 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     }
     private float angle; // Position
 
-    public DialogPartVisual ConnectedDP
+    public DialoguePartVisual ConnectedDP
     {
         set
         {
             connectedDP = value;
 
             if (value != null)
-                answer.nextDialogPartID = value.dialogPart.id;
+                answer.nextDialoguePartID = value.dialoguePart.id;
             else
-                answer.nextDialogPartID = string.Empty;
+                answer.nextDialoguePartID = string.Empty;
         }
 
         get { return connectedDP; }
     }
-    private DialogPartVisual connectedDP;
+    private DialoguePartVisual connectedDP;
     private Connection connection;
     private LineRenderer connectionRenderer;
 
@@ -120,9 +120,9 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
     // Update is called once per frame
     void Update()
     {
-        /* Continuously update the dialog parts answer 
+        /* Continuously update the dialogue parts answer 
          * to apply the stuff changed in the editor */
-        parentDialogPart.dialogPart.answers[index] = answer;
+        parentDialoguePart.dialoguePart.answers[index] = answer;
 
         idTextField.SetText(answer.id);
 
@@ -136,16 +136,16 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         }
 
         if (ConnectedDP != null)
-            answer.nextDialogPartID = ConnectedDP.dialogPart.id;
+            answer.nextDialoguePartID = ConnectedDP.dialoguePart.id;
 
         if (connection != null && ConnectedDP == null)
             Destroy(connection.gameObject);
 
         // Order important
-        if (string.IsNullOrWhiteSpace(answer.nextDialogPartID))
+        if (string.IsNullOrWhiteSpace(answer.nextDialoguePartID))
         {
             indicator.transform.localScale = new Vector3(0.075f, 0.075f, 1);
-            indicator.sprite = dialogEndIndicator;
+            indicator.sprite = dialogueEndIndicator;
         } else
         {
             indicator.transform.localScale = new Vector3(1, 1, 1);
@@ -160,12 +160,12 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
             // Move around in a circle based on mouse movement
 
             Vector2 circleToMouse = (Vector2)mainCam.ScreenToWorldPoint(Input.mousePosition)
-                                    - (Vector2)parentDialogPart.transform.position;
+                                    - (Vector2)parentDialoguePart.transform.position;
             circleToMouse.Normalize();
 
             Angle = Mathf.Atan2(circleToMouse.y, circleToMouse.x);
 
-            transform.position = (Vector2)parentDialogPart.transform.position
+            transform.position = (Vector2)parentDialoguePart.transform.position
                                  + new Vector2(Mathf.Cos(Angle) * 0.75f, Mathf.Sin(Angle) * 0.75f);
         }
     }
@@ -222,29 +222,29 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
             "Delete",
             () => 
             {
-                parentDialogPart.DeleteAnswer(this);
+                parentDialoguePart.DeleteAnswer(this);
                 Destroy(gameObject);
             } 
         );
     }
 
     /// <summary>
-    /// Connects the AnswerVisual to another DialogPartVisual and 
+    /// Connects the AnswerVisual to another DialoguePartVisual and 
     /// sets all necessary references accordingly. Also shows the 
     /// connection to the user using a line renderer.
     /// </summary>
-    public void SetConnection(DialogPartVisual dp)
+    public void SetConnection(DialoguePartVisual dp)
     {
-        if (dp == parentDialogPart)
+        if (dp == parentDialoguePart)
         {
             ErrorMessage.instance.ShowErrorMessage("It's currently not possible to " +
-                "connect an answer to its own Dialog Part");
+                "connect an answer to its own Dialogue Part");
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(dp.dialogPart.id))
+        if (string.IsNullOrWhiteSpace(dp.dialoguePart.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("The Dialog Part needs an ID in " +
+            ErrorMessage.instance.ShowErrorMessage("The Dialogue Part needs an ID in " +
                 "order to be connected");
             return;
         }

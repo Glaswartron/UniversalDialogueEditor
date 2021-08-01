@@ -6,16 +6,16 @@ using UnityEngine.UI;
 
 public class IDInputUI : MonoBehaviour, ISubUI
 {
-    public DialogComponent dialogComponent;
+    public DialogueComponent dialogueComponent;
 
-    public TMP_InputField dialogIDInputField;
+    public TMP_InputField dialogueIDInputField;
     public Button editNameButton;
 
-    public void Init(DialogComponent dialogComponent)
+    public void Init(DialogueComponent dialogueComponent)
     {
-        this.dialogComponent = dialogComponent;
+        this.dialogueComponent = dialogueComponent;
 
-        dialogIDInputField.SetTextWithoutNotify(dialogComponent.id);
+        dialogueIDInputField.SetTextWithoutNotify(dialogueComponent.id);
     }
 
     // Start is called before the first frame update
@@ -25,18 +25,18 @@ public class IDInputUI : MonoBehaviour, ISubUI
         editNameButton.onClick.AddListener(
             () =>
             {
-                dialogIDInputField.interactable = true;
-                EventSystem.current.SetSelectedGameObject(dialogIDInputField.gameObject);
+                dialogueIDInputField.interactable = true;
+                EventSystem.current.SetSelectedGameObject(dialogueIDInputField.gameObject);
 
-                dialogIDInputField.Select();
+                dialogueIDInputField.Select();
             }
         );
 
-        dialogIDInputField.onDeselect.AddListener(
+        dialogueIDInputField.onDeselect.AddListener(
             (input) => SubmitIDInput(input)
         );
 
-        dialogIDInputField.onSubmit.AddListener(
+        dialogueIDInputField.onSubmit.AddListener(
             (input) => SubmitIDInput(input)
         );
     }
@@ -46,23 +46,23 @@ public class IDInputUI : MonoBehaviour, ISubUI
         if (!string.IsNullOrWhiteSpace(input)
             && Array.TrueForAll(EditorManager.invalidCharacters, c => !input.Contains(c.ToString())))
         {
-            // Update startDialogPartID if needed
-            if (dialogComponent.GetType() == typeof(Dialog.DialogPart))
-                if (dialogComponent.id == EditorManager.instance.dialog.startDialogPartID)
-                    EditorManager.instance.dialog.startDialogPartID = input;
+            // Update startDialoguePartID if needed
+            if (dialogueComponent.GetType() == typeof(Dialogue.DialoguePart))
+                if (dialogueComponent.id == EditorManager.instance.dialogue.startDialoguePartID)
+                    EditorManager.instance.dialogue.startDialoguePartID = input;
 
-            dialogComponent.id = input;
+            dialogueComponent.id = input;
         }
         else // Invalid input
         { 
-            dialogIDInputField.SetTextWithoutNotify
-            (dialogComponent.id);
+            dialogueIDInputField.SetTextWithoutNotify
+            (dialogueComponent.id);
 
             ErrorMessage.instance.ShowErrorMessage
                 ("Invalid input. Either no text or contains invalid characters");
         }
 
         // Deactivates itself after input
-        dialogIDInputField.interactable = false;
+        dialogueIDInputField.interactable = false;
     }
 }

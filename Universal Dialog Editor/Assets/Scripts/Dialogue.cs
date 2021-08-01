@@ -22,26 +22,26 @@ public struct UDSProperty
 }
 
 [Serializable]
-public sealed class Dialog : DialogComponent, ICloneable
+public sealed class Dialogue : DialogueComponent, ICloneable
 {
-    [JsonProperty] public DialogPart[] dialogParts { get; set; }
-    [JsonProperty] public string startDialogPartID { get; set; }
+    [JsonProperty] public DialoguePart[] dialogueParts { get; set; }
+    [JsonProperty] public string startDialoguePartID { get; set; }
 
     [JsonConstructor]
-    public Dialog() { }
+    public Dialogue() { }
 
-    internal Dialog(string dialogID)
-        : base(dialogID)
+    internal Dialogue(string dialogueID)
+        : base(dialogueID)
     {
-        dialogParts = new DialogPart[0];
-        startDialogPartID = "";
+        dialogueParts = new DialoguePart[0];
+        startDialoguePartID = "";
 
-        SetProperty<bool>("Pause during Dialog", true, required: true);
+        SetProperty<bool>("Pause during Dialogue", true, required: true);
     }
 
     public object Clone()
     {
-        Dialog copy = new Dialog(this.id);
+        Dialogue copy = new Dialogue(this.id);
 
         foreach (string key in this.GetPropertyKeys())
         {
@@ -50,31 +50,31 @@ public sealed class Dialog : DialogComponent, ICloneable
             copy.SetProperty(key, val.value, val.type);
         }
 
-        List<DialogPart> diaParts = new List<DialogPart>();
-        foreach (DialogPart dp in this.dialogParts)
+        List<DialoguePart> diaParts = new List<DialoguePart>();
+        foreach (DialoguePart dp in this.dialogueParts)
             diaParts.Add(dp.Copy(copy));
-        copy.dialogParts = diaParts.ToArray();
+        copy.dialogueParts = diaParts.ToArray();
 
-        copy.startDialogPartID = this.startDialogPartID;
+        copy.startDialoguePartID = this.startDialoguePartID;
 
         return copy;
     }
 
     [Serializable]
-    public sealed class DialogPart : DialogComponent
+    public sealed class DialoguePart : DialogueComponent
     {
         [JsonProperty] public Answer[] answers { get; set; }
 
-        [JsonProperty] public string nextDialogPartID { get; set; }
+        [JsonProperty] public string nextDialoguePartID { get; set; }
 
         [JsonProperty] internal float visualX;
         [JsonProperty] internal float visualY;
 
         [JsonConstructor]
-        public DialogPart() { }
+        public DialoguePart() { }
 
-        internal DialogPart(string dialogPartID, Vector2 visualPos)
-            : base(dialogPartID)
+        internal DialoguePart(string dialoguePartID, Vector2 visualPos)
+            : base(dialoguePartID)
         {
             answers = new Answer[0];
             visualX = visualPos.x;
@@ -85,9 +85,9 @@ public sealed class Dialog : DialogComponent, ICloneable
             SetProperty("Text speed", 1.0f, required: true);
         }
 
-        internal DialogPart Copy(Dialog dialog)
+        internal DialoguePart Copy(Dialogue dialogue)
         {
-            DialogPart copy = new DialogPart
+            DialoguePart copy = new DialoguePart
                 (this.id, new Vector2(this.visualX, this.visualY));
 
             foreach (string key in this.GetPropertyKeys())
@@ -102,17 +102,17 @@ public sealed class Dialog : DialogComponent, ICloneable
                 ans.Add(a.Copy(this));
             copy.answers = ans.ToArray();
 
-            copy.nextDialogPartID = this.nextDialogPartID;
+            copy.nextDialoguePartID = this.nextDialoguePartID;
 
             return copy;
         }
 
         [Serializable]
-        public sealed class Answer : DialogComponent
+        public sealed class Answer : DialogueComponent
         {
             [JsonProperty] public int index { get; set; }
 
-            [JsonProperty] public string nextDialogPartID { get; set; }
+            [JsonProperty] public string nextDialoguePartID { get; set; }
 
             [JsonProperty] public bool conditional { get; set; }
             [JsonProperty] public UDSCondition? condition { get; set; }
@@ -136,7 +136,7 @@ public sealed class Dialog : DialogComponent, ICloneable
                 SetProperty("Text", "", required: true);
             }
 
-            internal Answer Copy(DialogPart dialogPart)
+            internal Answer Copy(DialoguePart dialoguePart)
             {
                 Answer copy = new Answer(this.id, this.index,
                     this.angle, this.conditional, this.condition);
@@ -148,7 +148,7 @@ public sealed class Dialog : DialogComponent, ICloneable
                     copy.SetProperty(key, val.value, val.type);
                 }
 
-                copy.nextDialogPartID = this.nextDialogPartID;
+                copy.nextDialoguePartID = this.nextDialoguePartID;
 
                 return copy;
             }
@@ -157,18 +157,18 @@ public sealed class Dialog : DialogComponent, ICloneable
 }
 
 [Serializable]
-public class DialogComponent
+public class DialogueComponent
 {
     [JsonProperty] public string id { get; set; }
 
     [JsonProperty] private readonly Dictionary<string, UDSProperty> properties;
 
     [JsonConstructor]
-    public DialogComponent() { }
+    public DialogueComponent() { }
 
-    internal DialogComponent(string dialogComponentID)
+    internal DialogueComponent(string dialogueComponentID)
     {
-        id = dialogComponentID;
+        id = dialogueComponentID;
         properties = new Dictionary<string, UDSProperty>();
     }
 

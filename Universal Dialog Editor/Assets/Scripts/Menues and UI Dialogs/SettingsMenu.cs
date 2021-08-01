@@ -37,7 +37,7 @@ public class SettingsMenu : MonoBehaviour
 
                 string gppath = globalPropertiesPathInputGroup.inputField.text;
                 if (!string.IsNullOrWhiteSpace(gppath) && Directory.Exists(gppath))
-                    PlayerPrefs.SetString("GlobalPropertyPath", gppath);
+                    PlayerPrefs.SetString("GlobalPropertiesPath", gppath);
                 else
                 {
                     ErrorMessage.instance.ShowErrorMessage

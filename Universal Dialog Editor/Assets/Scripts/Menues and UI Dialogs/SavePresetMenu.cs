@@ -42,7 +42,7 @@ public class SavePresetMenu : MonoBehaviour
         switch (type)
         {
             case PropertyPreset.PropertyPresetType.DIALOG_PART:
-                typeStr = "Dialog Part";
+                typeStr = "Dialogue Part";
                 break;
             case PropertyPreset.PropertyPresetType.ANSWER:
                 typeStr = "Answer";

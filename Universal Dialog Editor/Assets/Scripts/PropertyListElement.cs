@@ -24,15 +24,15 @@ public class PropertyListElement : MonoBehaviour, ISubUI
     [HideInInspector]
     public object value;
 
-    private DialogComponent dialogComponent;
+    private DialogueComponent dialogueComponent;
 
-    public virtual void Init(DialogComponent dialogComponent)
+    public virtual void Init(DialogueComponent dialogueComponent)
     {
-        this.dialogComponent = dialogComponent;
+        this.dialogueComponent = dialogueComponent;
 
         UDSProperty? property = null; // Nullable
-        if (dialogComponent.HasProperty(id))
-            property = dialogComponent.GetProperty(id);
+        if (dialogueComponent.HasProperty(id))
+            property = dialogueComponent.GetProperty(id);
 
         if (property.HasValue && property.Value.required)
             idInputField.interactable = false;
@@ -43,13 +43,13 @@ public class PropertyListElement : MonoBehaviour, ISubUI
             idInputField.onEndEdit.AddListener(
                 (input) =>
                 {
-                    if (dialogComponent.HasProperty(input))
+                    if (dialogueComponent.HasProperty(input))
                     {
                         if (input.Equals(id))
                             return; // ID hasn't been edited
 
                         ErrorMessage.instance.ShowErrorMessage
-                            ("The Dialog Component already contains a Property with that ID");
+                            ("The Dialogue Component already contains a Property with that ID");
 
                         // Go back to previous id
                         idInputField.SetTextWithoutNotify(id);
@@ -86,7 +86,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
                         return;
                     }
 
-                    DialogComponent localDC = dialogComponent;
+                    DialogueComponent localDC = dialogueComponent;
 
                     // Standard case: Property exists but ID is being changed
                     if (localDC.HasProperty(id))
@@ -125,7 +125,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
             stringIntFloatInputField.onValueChanged.AddListener(
                 (input) =>
                 {
-                    DialogComponent localDC = dialogComponent;
+                    DialogueComponent localDC = dialogueComponent;
                     string localKey = id;
                     UDSProperty? localProperty = property;
 
@@ -172,7 +172,7 @@ public class PropertyListElement : MonoBehaviour, ISubUI
             boolToggle.onValueChanged.AddListener(
                 (state) =>
                 {
-                    DialogComponent localDC = dialogComponent;
+                    DialogueComponent localDC = dialogueComponent;
                     string localKey = id;
                     UDSProperty? localProperty = property;
 

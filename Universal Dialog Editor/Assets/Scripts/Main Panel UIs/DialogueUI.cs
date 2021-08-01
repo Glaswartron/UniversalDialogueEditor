@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DialogUI : MonoBehaviour
+public class DialogueUI : MonoBehaviour
 {
     public struct Warning
     {
@@ -24,23 +24,23 @@ public class DialogUI : MonoBehaviour
     [Header("Prefabs")]
     public GameObject warningBox;
 
-    private Dialog dialog;
+    private Dialogue dialogue;
 
     private List<Warning> warnings;
     private List<GameObject> warningBoxes;
 
-    private string infoTemplate = "Dialog Parts: {0}\n" +
+    private string infoTemplate = "Dialogue Parts: {0}\n" +
                           "Answers: {1}\n"      +
                           "Connections: {2}\n" +
                           "Start Part ID: {3}\n";
 
     private void OnEnable()
     {
-        dialog = EditorManager.instance.dialog;
+        dialogue = EditorManager.instance.dialogue;
 
         // Super important stuff
-        idInputUI.Init(dialog);
-        propertiesUI.Init(dialog);
+        idInputUI.Init(dialogue);
+        propertiesUI.Init(dialogue);
 
         ShowWarnings();
     }
@@ -55,7 +55,7 @@ public class DialogUI : MonoBehaviour
     {
         saveButton.onClick.AddListener(
             () => AreYouSureDialog.instance.Open(
-                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog or any dialog with the same ID if there is one",
+                "Are you sure that you want to save the dialogue? This will override the previous version of the Dialogue or any dialogue with the same ID if there is one",
                 "Yes",
                 "No",
                 onYes: () => Save(),
@@ -65,7 +65,7 @@ public class DialogUI : MonoBehaviour
 
         saveAndExitButton.onClick.AddListener(
             () => AreYouSureDialog.instance.Open(
-                "Are you sure that you want to save the dialog? This will override the previous version of the Dialog or any dialog with the same ID if there is one",
+                "Are you sure that you want to save the dialogue? This will override the previous version of the Dialogue or any dialogue with the same ID if there is one",
                 "Yes",
                 "No",
                 onYes: () => {
@@ -79,7 +79,7 @@ public class DialogUI : MonoBehaviour
 
         discardAndExitButton.onClick.AddListener(
             () => AreYouSureDialog.instance.Open(
-                "Are you sure that you want to discard all unsaved changes and exit the dialog?",
+                "Are you sure that you want to discard all unsaved changes and exit the dialogue?",
                 "Yes",
                 "No",
                 onYes: () => EditorManager.instance.ClearEverything(),
@@ -92,10 +92,10 @@ public class DialogUI : MonoBehaviour
     void Update()
     {
         string newInfo = string.Format(infoTemplate,
-            EditorManager.instance.dialogPartVisuals.Count,
+            EditorManager.instance.dialoguePartVisuals.Count,
             EditorManager.instance.noOfAnswers,
             EditorManager.instance.noOfConnections,
-            dialog.startDialogPartID);
+            dialogue.startDialoguePartID);
 
         // Update if info differs
         if (!newInfo.Equals(infoText.text))
@@ -104,15 +104,15 @@ public class DialogUI : MonoBehaviour
 
     private bool Save()
     {
-        Dialog dialog = EditorManager.instance.ConstructDialog();
+        Dialogue dialogue = EditorManager.instance.ConstructDialogue();
 
-        bool success = dialog != null;
+        bool success = dialogue != null;
         if (success)
-            success &= FileHandler.SaveDialog(dialog, EditorManager.instance.pathToDialog);
+            success &= FileHandler.SaveDialogue(dialogue, EditorManager.instance.pathToDialogue);
 
         if (success)
             ErrorMessage.instance.ShowErrorMessage("Saved", true);
-        // Error message for else case handled by ConstructDialog and FileHandler.SaveDialog
+        // Error message for else case handled by ConstructDialogue and FileHandler.SaveDialogue
 
         return success;
     }

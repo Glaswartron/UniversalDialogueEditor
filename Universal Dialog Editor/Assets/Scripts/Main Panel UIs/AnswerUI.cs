@@ -10,7 +10,7 @@ public class AnswerUI : MonoBehaviour
     public IDInputUI idInputUI;
     public TMP_Text fromToText;
 
-    public Dialog.DialogPart.Answer answer;
+    [HideInInspector] public Dialogue.DialoguePart.Answer answer;
 
     private void OnEnable()
     {
@@ -19,9 +19,9 @@ public class AnswerUI : MonoBehaviour
         propertiesUI.Init(answer);
         idInputUI.Init(answer);
 
-        string nextPartID = answer.nextDialogPartID;
+        string nextPartID = answer.nextDialoguePartID;
         string fromTo 
-            = EditorManager.instance.SelectedAnswerVisual.parentDialogPart.dialogPart.id + 
+            = EditorManager.instance.SelectedAnswerVisual.parentDialoguePart.dialoguePart.id + 
             " --> " + 
             (nextPartID != null ? nextPartID : "End");
 

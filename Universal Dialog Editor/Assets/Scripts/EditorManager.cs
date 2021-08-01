@@ -14,24 +14,24 @@ public class EditorManager : MonoBehaviour
     public static readonly char[] invalidCharacters =
         {'/', '\\', '<', '>', '|', '?', ':', '"', '*', '@'};
 
-    // The Property Presets selected for new Dialogs in the StartAndSelectUI
-    public static string globalDialogPartPropertyPreset = null;
+    // The Property Presets selected for new Dialogues in the StartAndSelectUI
+    public static string globalDialoguePartPropertyPreset = null;
     public static string globalAnswerPropertyPreset = null;
 
     /// <summary>
-    /// The Dialog which is currently loaded and being edited.
-    /// HideInInspector extremely important because Dialog 
+    /// The Dialogue which is currently loaded and being edited.
+    /// HideInInspector extremely important because Dialogue 
     /// has recursive references which break the Editor
     /// </summary>
-    public Dialog dialog; // This dialog is actually being edited
-    public Dialog dialogBackup; // This dialog is loaded once and stays the same
+    public Dialogue dialogue; // This dialogue is actually being edited
+    public Dialogue dialogueBackup; // This dialogue is loaded once and stays the same
 
     [HideInInspector]
-    public string pathToDialog;
+    public string pathToDialogue;
 
-    // All Dialog Part visuals on Screen (each of them stores an actual Dialog.DialogPart)
+    // All Dialogue Part visuals on Screen (each of them stores an actual Dialogue.DialoguePart)
     [HideInInspector]
-    public List<DialogPartVisual> dialogPartVisuals;
+    public List<DialoguePartVisual> dialoguePartVisuals;
 
     public GameObject ActiveUI
     {
@@ -69,8 +69,8 @@ public class EditorManager : MonoBehaviour
     public Canvas mainCanvas;
     public RectTransform editorPanel;
     public GameObject startAndSelectUI;
-    public GameObject dialogUI;
-    public GameObject dialogPartUI;
+    public GameObject dialogueUI;
+    public GameObject dialoguePartUI;
     public GameObject answerUI;
 
     [Header("Menu UI")]
@@ -81,7 +81,7 @@ public class EditorManager : MonoBehaviour
     public SettingsMenu settingsMenu;
 
     [Header("Prefabs")]
-    public GameObject dialogPartVisual;
+    public GameObject dialoguePartVisual;
     public GameObject answerVisual;
     public GameObject arrow;
 
@@ -94,11 +94,8 @@ public class EditorManager : MonoBehaviour
     public ColorTheme[] colorThemes;
 
     [Space(7)]
-    public Vector2 menuOffsetFromMouse;
-
-    [Space(7)]
-    // true => Editing Dialog Part; false => Editing answer!
-    public bool editingDialogPart;
+    // true => Editing Dialogue Part; false => Editing answer!
+    public bool editingDialoguePart;
 
     public bool inConnectMode;
 
@@ -110,9 +107,9 @@ public class EditorManager : MonoBehaviour
     private ColorTheme activeColorTheme;
 
     /// <summary>
-    /// The currently selected Dialog Part (visual)
+    /// The currently selected Dialogue Part (visual)
     /// </summary>
-    public DialogPartVisual SelectedDialogPartVisual
+    public DialoguePartVisual SelectedDialoguePartVisual
     {
         set
         {
@@ -120,22 +117,22 @@ public class EditorManager : MonoBehaviour
             DeselectPreviouslySelectedVisual();
 
             // Set
-            selectedDialogPartVisual = value;
+            selectedDialoguePartVisual = value;
 
             if (value != null)
                 value.Selected = true;
 
-            editingDialogPart = true;
+            editingDialoguePart = true;
             
             if (value == null && ActiveUI != startAndSelectUI)
-                ActiveUI = dialogUI;
+                ActiveUI = dialogueUI;
             else if (value != null)
-                ActiveUI = dialogPartUI;
+                ActiveUI = dialoguePartUI;
         }
 
-        get { return selectedDialogPartVisual; }
+        get { return selectedDialoguePartVisual; }
     }
-    private DialogPartVisual selectedDialogPartVisual = null;
+    private DialoguePartVisual selectedDialoguePartVisual = null;
 
     /// <summary>
     /// The currently selected answer (visual)
@@ -152,10 +149,10 @@ public class EditorManager : MonoBehaviour
             if (value != null)
                 value.Selected = true;
 
-            editingDialogPart = false;
+            editingDialoguePart = false;
 
             if (value == null && ActiveUI != startAndSelectUI)
-                ActiveUI = dialogUI;
+                ActiveUI = dialogueUI;
             else if (value != null)
                 ActiveUI = answerUI;
         }
@@ -164,33 +161,33 @@ public class EditorManager : MonoBehaviour
     }
     private AnswerVisual selectedAnswerVisual = null;
 
-    public DialogPartVisual StartDialogPartVisual
+    public DialoguePartVisual StartDialoguePartVisual
     {
         set
         {
             if (value != null)
             {
                 // Previous one not start anymore
-                if (startDialogPartVisual != null)
-                    startDialogPartVisual.IsStart = false;
+                if (startDialoguePartVisual != null)
+                    startDialoguePartVisual.IsStart = false;
 
                 value.IsStart = true;
 
-                startDialogPartVisual = value;
+                startDialoguePartVisual = value;
 
-                dialog.startDialogPartID = value.dialogPart.id;
+                dialogue.startDialoguePartID = value.dialoguePart.id;
             } 
-            else // In case the startDialogPartVisual is destroyed
+            else // In case the startDialoguePartVisual is destroyed
             {
-                startDialogPartVisual = null;
+                startDialoguePartVisual = null;
 
-                dialog.startDialogPartID = null;
+                dialogue.startDialoguePartID = null;
             }
         }
 
-        get { return startDialogPartVisual; }
+        get { return startDialoguePartVisual; }
     }
-    private DialogPartVisual startDialogPartVisual;
+    private DialoguePartVisual startDialoguePartVisual;
 
     public GameObject selectedConnection;
 
@@ -211,7 +208,7 @@ public class EditorManager : MonoBehaviour
             Destroy(this.gameObject);
 
 #if UNITY_EDITOR
-        FileHandler.CreateTestDialog();
+        FileHandler.CreateTestDialogue();
 #endif
 
         // Init
@@ -224,7 +221,7 @@ public class EditorManager : MonoBehaviour
             globalProperties = new Dictionary<string, UDSProperty>(savedGlobalProperties);
 
         mainCam = Camera.main;
-        dialogPartVisuals = new List<DialogPartVisual>();
+        dialoguePartVisuals = new List<DialoguePartVisual>();
         ActiveUI = startAndSelectUI;
 
         if (PlayerPrefs.HasKey("ColorTheme"))
@@ -239,7 +236,7 @@ public class EditorManager : MonoBehaviour
             if (!EventSystem.current.IsPointerOverGameObject() &&
                 !Physics2D.GetRayIntersection(Camera.main.ScreenPointToRay(Input.mousePosition)))
             {
-                SelectedDialogPartVisual = null;
+                SelectedDialoguePartVisual = null;
                 SelectedAnswerVisual = null;
                 inConnectMode = false;
             }
@@ -252,22 +249,22 @@ public class EditorManager : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             inConnectMode = false;
-            SelectedDialogPartVisual = null;
+            SelectedDialoguePartVisual = null;
             SelectedAnswerVisual = null;
         }
 
-        // Delete key deletes currenty selected Dialog Part
+        // Delete key deletes currenty selected Dialogue Part
         if (Input.GetKeyDown(KeyCode.Delete))
         {
-            if (SelectedDialogPartVisual != null)
-                DestroyDialogPart();
+            if (SelectedDialoguePartVisual != null)
+                DestroyDialoguePart();
         }
 
-        // Ctrl + D duplicates currently selected Dialog Part
+        // Ctrl + D duplicates currently selected Dialogue Part
         if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl))
             && Input.GetKeyDown(KeyCode.D))
         {
-            CopySelectedDialogPart();
+            CopySelectedDialoguePart();
         }
 
         // Show to the user that he is inConnectMode and where he is pointing
@@ -281,9 +278,9 @@ public class EditorManager : MonoBehaviour
                 connectionHologram.transform.GetChild(0).gameObject.SetActive(false);
             }
 
-            if (SelectedDialogPartVisual != null)
+            if (SelectedDialoguePartVisual != null)
             {
-                connectionHologram.SetPosition(0, SelectedDialogPartVisual.transform.position);
+                connectionHologram.SetPosition(0, SelectedDialoguePartVisual.transform.position);
                 connectionHologram.SetPosition(1, mainCam.ScreenToWorldPoint(Input.mousePosition));
             } 
             else if (SelectedAnswerVisual != null)
@@ -319,64 +316,64 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the currently open Dialog (EditorManager.instance.dialog)
-    /// based on the Dialog Parts, Answers, ... created in the editor and
-    /// returns the Dialog object so it can be saved, etc.
+    /// Updates the currently open Dialogue (EditorManager.instance.dialogue)
+    /// based on the Dialogue Parts, Answers, ... created in the editor and
+    /// returns the Dialogue object so it can be saved, etc.
     /// Conducts internal validation and shows various Error Messages if
-    /// something is wrong with the dialog. (See EditorManager.ValidateDialog())
-    /// Note that EditorManager.instance.dialogBackup exists and is not
+    /// something is wrong with the dialogue. (See EditorManager.ValidateDialogue())
+    /// Note that EditorManager.instance.dialogueBackup exists and is not
     /// changed by this method
     /// </summary>
-    /// <returns>An updated version of the currently open dialog which 
-    /// includes for example all Dialog Parts and Answers visible on screen.
-    /// Null if something went wrong (= if the Dialog is not valid)</returns>
-    public Dialog ConstructDialog()
+    /// <returns>An updated version of the currently open dialogue which 
+    /// includes for example all Dialogue Parts and Answers visible on screen.
+    /// Null if something went wrong (= if the Dialogue is not valid)</returns>
+    public Dialogue ConstructDialogue()
     {
-        if (!ValidateDialog())
+        if (!ValidateDialogue())
             return null;
 
-        var dialogParts = dialogPartVisuals.ConvertAll(dpv => dpv.dialogPart).ToArray();
+        var dialogueParts = dialoguePartVisuals.ConvertAll(dpv => dpv.dialoguePart).ToArray();
 
-        dialog.dialogParts = dialogParts;
+        dialogue.dialogueParts = dialogueParts;
 
-        return dialog;
+        return dialogue;
     }
 
     /// <summary>
-    /// Checks, if the Dialog is valid and "finished" and if all criteria are met.
+    /// Checks, if the Dialogue is valid and "finished" and if all criteria are met.
     /// These are:
-    /// - At least one dialog part is there (1)
-    /// - The Dialog ID is not empty (2)
-    /// - There is a start Dialog Part (3)
-    /// - All Dialog Parts have an ID (4)
-    /// - All Dialog Part IDs are unique (5)
+    /// - At least one dialogue part is there (1)
+    /// - The Dialogue ID is not empty (2)
+    /// - There is a start Dialogue Part (3)
+    /// - All Dialogue Parts have an ID (4)
+    /// - All Dialogue Part IDs are unique (5)
     /// - All Answers have an ID (6)
     /// - All Answer IDs are unique (7)
-    /// - The Dialog has an end (8)
+    /// - The Dialogue has an end (8)
     /// Displays an error message if at least one criterion is not met!
     /// </summary>
-    /// <returns>Whether or not the dialog is valid</returns>
-    public bool ValidateDialog()
+    /// <returns>Whether or not the dialogue is valid</returns>
+    public bool ValidateDialogue()
     {
         // 1
-        if (dialogPartVisuals.Count == 0)
+        if (dialoguePartVisuals.Count == 0)
         {
             ErrorMessage.instance.ShowErrorMessage
-                ("Failed. A Dialog has to include at least one Dialog Part");
+                ("Failed. A Dialogue has to include at least one Dialogue Part");
             return false;
         }
 
         // 2
-        if (string.IsNullOrWhiteSpace(dialog.id))
+        if (string.IsNullOrWhiteSpace(dialogue.id))
         {
-            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialog does not have an ID");
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialogue does not have an ID");
             return false;
         }
 
         // 3
-        if (string.IsNullOrWhiteSpace(dialog.startDialogPartID))
+        if (string.IsNullOrWhiteSpace(dialogue.startDialoguePartID))
         {
-            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialog has to have a start Dialog Part");
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialogue has to have a start Dialogue Part");
             return false;
         }
 
@@ -384,29 +381,29 @@ public class EditorManager : MonoBehaviour
         bool hasEnd = false;
 
         HashSet<string> diapartIDs = new HashSet<string>();
-        foreach (var diapart in dialogPartVisuals)
+        foreach (var diapart in dialoguePartVisuals)
         {
             // 4
-            if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
+            if (string.IsNullOrWhiteSpace(diapart.dialoguePart.id))
             {
-                ErrorMessage.instance.ShowErrorMessage("Failed. There is a Dialog Part without an ID");
+                ErrorMessage.instance.ShowErrorMessage("Failed. There is a Dialogue Part without an ID");
                 return false;
             }
 
             // 5
-            if (diapartIDs.Contains(diapart.dialogPart.id))
+            if (diapartIDs.Contains(diapart.dialoguePart.id))
             {
                 ErrorMessage.instance.ShowErrorMessage(
                     string.Format(
-                        "Failed. All IDs have to be unique. Dialog Part ID {0} appears twice",
-                        diapart.dialogPart.id));
+                        "Failed. All IDs have to be unique. Dialogue Part ID {0} appears twice",
+                        diapart.dialoguePart.id));
 
                 return false;
             }
-            diapartIDs.Add(diapart.dialogPart.id);
+            diapartIDs.Add(diapart.dialoguePart.id);
 
             if (diapart.answers.Count == 0 && 
-                string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
+                string.IsNullOrWhiteSpace(diapart.dialoguePart.nextDialoguePartID))
                 hasEnd = true;
 
             HashSet<string> answerIDs = new HashSet<string>();
@@ -416,8 +413,8 @@ public class EditorManager : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(answer.answer.id))
                 {
                     ErrorMessage.instance.ShowErrorMessage(
-                        "Failed. There is an Answer without an ID in Dialog Part " 
-                        + diapart.dialogPart.id);
+                        "Failed. There is an Answer without an ID in Dialogue Part " 
+                        + diapart.dialoguePart.id);
 
                     return false;
                 }
@@ -427,26 +424,26 @@ public class EditorManager : MonoBehaviour
                 {
                     ErrorMessage.instance.ShowErrorMessage(
                         string.Format(
-                            "Failed. All IDs have to be unique. Answer ID {0} appears twice within Dialog Part " 
-                            + diapart.dialogPart.id,
+                            "Failed. All IDs have to be unique. Answer ID {0} appears twice within Dialogue Part " 
+                            + diapart.dialoguePart.id,
                             answer.answer.id));
 
                     return false;
                 }
 
-                if (string.IsNullOrWhiteSpace(answer.answer.nextDialogPartID))
+                if (string.IsNullOrWhiteSpace(answer.answer.nextDialoguePartID))
                     hasEnd = true;
 
                 answerIDs.Add(answer.answer.id);
 
-                diapartIDs.Add(diapart.dialogPart.id);
+                diapartIDs.Add(diapart.dialoguePart.id);
             }
         }
 
         // 8
         if (!hasEnd)
         {
-            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialogs doesn't have an end");
+            ErrorMessage.instance.ShowErrorMessage("Failed. The Dialogues doesn't have an end");
             return false;
         }
 
@@ -454,40 +451,40 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads the given dialog. 
-    /// Shows the dialog in the editor, assigns all necessary references
-    /// and allows the user to edit the dialog.
+    /// Loads the given dialogue. 
+    /// Shows the dialogue in the editor, assigns all necessary references
+    /// and allows the user to edit the dialogue.
     /// </summary>
-    /// <param name="dia">The dialog to load</param>
-    /// <param name="path">The path to the .udsdialog.json file where the dialog is stored</param>
-    public void LoadDialog(Dialog dialog, string path)
+    /// <param name="dia">The dialogue to load</param>
+    /// <param name="path">The path to the .udsdialogue.json file where the dialogue is stored</param>
+    public void LoadDialogue(Dialogue dialogue, string path)
     {
         ClearEverything();
 
-        this.dialog = dialog;
-        this.pathToDialog = path;
-        this.dialogBackup = (Dialog) dialog.Clone(); // Backup for potential fallback/discard
+        this.dialogue = dialogue;
+        this.pathToDialogue = path;
+        this.dialogueBackup = (Dialogue) dialogue.Clone(); // Backup for potential fallback/discard
 
         List<AnswerVisual> allAnswers = new List<AnswerVisual>();
 
-        // Go over all Dialog Parts in the dialog and...
-        foreach (Dialog.DialogPart diaPart in dialog.dialogParts)
+        // Go over all Dialogue Parts in the dialogue and...
+        foreach (Dialogue.DialoguePart diaPart in dialogue.dialogueParts)
         {
             // ... instantiate a corresponding visual in the editor
-            GameObject visualGO = Instantiate(dialogPartVisual,
+            GameObject visualGO = Instantiate(dialoguePartVisual,
                 new Vector2(diaPart.visualX, diaPart.visualY), Quaternion.identity);
 
-            DialogPartVisual visual = visualGO.GetComponent<DialogPartVisual>();
-            dialogPartVisuals.Add(visual);
+            DialoguePartVisual visual = visualGO.GetComponent<DialoguePartVisual>();
+            dialoguePartVisuals.Add(visual);
 
-            visual.dialogPart = diaPart;
+            visual.dialoguePart = diaPart;
 
-            if (diaPart.id.Equals(dialog.startDialogPartID))
-                StartDialogPartVisual = visual;
+            if (diaPart.id.Equals(dialogue.startDialoguePartID))
+                StartDialoguePartVisual = visual;
 
             List<AnswerVisual> answers = new List<AnswerVisual>();
 
-            // Add all the answers (for each Dialog Part)
+            // Add all the answers (for each Dialogue Part)
             for (int i = 0; i < diaPart.answers.Length; i++)
             {
                 // Position Mathzzz
@@ -504,7 +501,7 @@ public class EditorManager : MonoBehaviour
                 // Setup the Answer Visual
                 var answerVis = answerVisualGO.GetComponent<AnswerVisual>();
                 answerVisualGO.transform.parent = visualGO.transform;
-                answerVis.parentDialogPart = visual;
+                answerVis.parentDialoguePart = visual;
                 answerVis.answer = diaPart.answers[i];
 
                 answerVis.Conditional = diaPart.answers[i].conditional;
@@ -526,61 +523,61 @@ public class EditorManager : MonoBehaviour
         // Add connections to all answers (that have connections)
         foreach (AnswerVisual aVisual in allAnswers)
         {
-            if (!string.IsNullOrWhiteSpace(aVisual.answer.nextDialogPartID))
+            if (!string.IsNullOrWhiteSpace(aVisual.answer.nextDialoguePartID))
             {
                 aVisual.SetConnection(
-                    Array.Find(dialogPartVisuals.ToArray(),
-                    dpv => dpv.dialogPart.id.Equals(aVisual.answer.nextDialogPartID)));
+                    Array.Find(dialoguePartVisuals.ToArray(),
+                    dpv => dpv.dialoguePart.id.Equals(aVisual.answer.nextDialoguePartID)));
 
                 noOfConnections++; // Count how many connections there are in total
             }
         }
 
-        // Add connections to all Dialog Parts (that have connections)
-        foreach (DialogPartVisual dpVisual in dialogPartVisuals)
+        // Add connections to all Dialogue Parts (that have connections)
+        foreach (DialoguePartVisual dpVisual in dialoguePartVisuals)
         {
-            if (!string.IsNullOrWhiteSpace(dpVisual.dialogPart.nextDialogPartID))
+            if (!string.IsNullOrWhiteSpace(dpVisual.dialoguePart.nextDialoguePartID))
             {
                 dpVisual.SetConnection(
-                    Array.Find(dialogPartVisuals.ToArray(),
-                    dpv => dpv.dialogPart.id.Equals(dpVisual.dialogPart.nextDialogPartID)));
+                    Array.Find(dialoguePartVisuals.ToArray(),
+                    dpv => dpv.dialoguePart.id.Equals(dpVisual.dialoguePart.nextDialoguePartID)));
 
                 noOfConnections++; // Count how many connections there are in total
             }
         }
 
-        // Go from StartAndSelectUI to DialogUI
-        ActiveUI = dialogUI;
+        // Go from StartAndSelectUI to DialogueUI
+        ActiveUI = dialogueUI;
     }
 
     /// <summary>
-    /// Variant of ValidateDialog that generates DialogUI.Warnings for the DialogUI
+    /// Variant of ValidateDialogue that generates DialogueUI.Warnings for the DialogueUI
     /// Criteria:
-    /// - At least one dialog part is there (1) - red
-    /// - The Dialog ID is not empty (2) - red
-    /// - There is a start Dialog Part (3) - red
-    /// - All Dialog Parts have an ID (4) - red
-    /// - All Dialog Part IDs are unique (5) - red
+    /// - At least one dialogue part is there (1) - red
+    /// - The Dialogue ID is not empty (2) - red
+    /// - There is a start Dialogue Part (3) - red
+    /// - All Dialogue Parts have an ID (4) - red
+    /// - All Dialogue Part IDs are unique (5) - red
     /// - All Answers have an ID (6) - red
     /// - All Answer IDs are unique (7) - red
-    /// - The Dialog has an end (8) - red
+    /// - The Dialogue has an end (8) - red
     /// - There is no empty Text Property on an Answer (9) - yellow
-    /// - All Dialog Parts are reachable (10) - yellow
-    /// - There is no empty Text Property on a Dialog Part (11) - yellow
+    /// - All Dialogue Parts are reachable (10) - yellow
+    /// - There is no empty Text Property on a Dialogue Part (11) - yellow
     /// </summary>
-    /// <returns>A list with warnings for the warning field in the DialogUI</returns>
-    public List<DialogUI.Warning> GenerateWarnings()
+    /// <returns>A list with warnings for the warning field in the DialogueUI</returns>
+    public List<DialogueUI.Warning> GenerateWarnings()
     {
-        List<DialogUI.Warning> warnings = new List<DialogUI.Warning>();
+        List<DialogueUI.Warning> warnings = new List<DialogueUI.Warning>();
 
         bool[] warningFlags = new bool[11];
 
         // 1
-        if (dialogPartVisuals.Count == 0)
+        if (dialoguePartVisuals.Count == 0)
         {
-            warnings.Add(new DialogUI.Warning
+            warnings.Add(new DialogueUI.Warning
             {
-                text = "A Dialog has to contain at least one Dialog Part",
+                text = "A Dialogue has to contain at least one Dialogue Part",
                 color = Color.red
             });
 
@@ -588,11 +585,11 @@ public class EditorManager : MonoBehaviour
         }
 
         // 2
-        if (string.IsNullOrWhiteSpace(dialog.id))
+        if (string.IsNullOrWhiteSpace(dialogue.id))
         {
-            warnings.Add(new DialogUI.Warning
+            warnings.Add(new DialogueUI.Warning
             {
-                text = "The Dialog requires a name",
+                text = "The Dialogue requires a name",
                 color = Color.red
             });
 
@@ -600,11 +597,11 @@ public class EditorManager : MonoBehaviour
         }
 
         // 3
-        if (string.IsNullOrEmpty(dialog.startDialogPartID))
+        if (string.IsNullOrEmpty(dialogue.startDialoguePartID))
         {
-            warnings.Add(new DialogUI.Warning
+            warnings.Add(new DialogueUI.Warning
             {
-                text = "The Dialog requires a start Dialog Part",
+                text = "The Dialogue requires a start Dialogue Part",
                 color = Color.red
             });
 
@@ -615,16 +612,16 @@ public class EditorManager : MonoBehaviour
         bool hasEnd = false;
 
         HashSet<string> diapartIDs = new HashSet<string>();
-        foreach (var diapart in dialogPartVisuals)
+        foreach (var diapart in dialoguePartVisuals)
         {
             // 4
             if (!warningFlags[3])
             {
-                if (string.IsNullOrWhiteSpace(diapart.dialogPart.id))
+                if (string.IsNullOrWhiteSpace(diapart.dialoguePart.id))
                 {
-                    warnings.Add(new DialogUI.Warning
+                    warnings.Add(new DialogueUI.Warning
                     {
-                        text = "There is a DialogPart without an ID",
+                        text = "There is a DialoguePart without an ID",
                         color = Color.red
                     });
 
@@ -635,13 +632,13 @@ public class EditorManager : MonoBehaviour
             // 5
             if (!warningFlags[4])
             {
-                if (diapartIDs.Contains(diapart.dialogPart.id))
+                if (diapartIDs.Contains(diapart.dialoguePart.id))
                 {
-                    warnings.Add(new DialogUI.Warning
+                    warnings.Add(new DialogueUI.Warning
                     {
                         text = string.Format(
-                            "All IDs have to be unique. Dialog Part ID {0} appears twice",
-                            diapart.dialogPart.id),
+                            "All IDs have to be unique. Dialogue Part ID {0} appears twice",
+                            diapart.dialoguePart.id),
                         color = Color.red
                     });
 
@@ -650,10 +647,10 @@ public class EditorManager : MonoBehaviour
             }
 
             if (diapart.answers.Count == 0 && 
-                string.IsNullOrWhiteSpace(diapart.dialogPart.nextDialogPartID))
+                string.IsNullOrWhiteSpace(diapart.dialoguePart.nextDialoguePartID))
                 hasEnd = true;
 
-            diapartIDs.Add(diapart.dialogPart.id);
+            diapartIDs.Add(diapart.dialoguePart.id);
 
             HashSet<string> answerIDs = new HashSet<string>();
             foreach (AnswerVisual answer in diapart.answers)
@@ -663,10 +660,10 @@ public class EditorManager : MonoBehaviour
                     // 6
                     if (string.IsNullOrWhiteSpace(answer.answer.id))
                     {
-                        warnings.Add(new DialogUI.Warning
+                        warnings.Add(new DialogueUI.Warning
                         {
                             text = "There is an " +
-                            "answer without an ID in Dialog Part " + diapart.dialogPart.id,
+                            "answer without an ID in Dialogue Part " + diapart.dialoguePart.id,
                             color = Color.red
                         });
 
@@ -679,11 +676,11 @@ public class EditorManager : MonoBehaviour
                 {
                     if (answerIDs.Contains(answer.answer.id))
                     {
-                        warnings.Add(new DialogUI.Warning
+                        warnings.Add(new DialogueUI.Warning
                         {
                             text = string.Format(
                             "All IDs have to be unique. Answer ID {0} appears twice within " 
-                            + diapart.dialogPart.id,
+                            + diapart.dialoguePart.id,
                             answer.answer.id),
                             color = Color.red
                         });
@@ -697,7 +694,7 @@ public class EditorManager : MonoBehaviour
                 {
                     if (string.IsNullOrWhiteSpace(answer.answer.GetProperty<string>("Text")))
                     {
-                        warnings.Add(new DialogUI.Warning
+                        warnings.Add(new DialogueUI.Warning
                         {
                             text = string.Format(
                                     "The Text on Answer {0} is empty",
@@ -709,7 +706,7 @@ public class EditorManager : MonoBehaviour
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(answer.answer.nextDialogPartID))
+                if (string.IsNullOrWhiteSpace(answer.answer.nextDialoguePartID))
                     hasEnd = true;
 
                 answerIDs.Add(answer.answer.id);
@@ -721,7 +718,7 @@ public class EditorManager : MonoBehaviour
                 if (!diapart.IsStart)
                 {
                     bool connected = false;
-                    foreach (var otherDiapart in dialogPartVisuals)
+                    foreach (var otherDiapart in dialoguePartVisuals)
                     {
                         if (otherDiapart == diapart)
                             continue;
@@ -747,11 +744,11 @@ public class EditorManager : MonoBehaviour
 
                     if (!connected)
                     {
-                        warnings.Add(new DialogUI.Warning
+                        warnings.Add(new DialogueUI.Warning
                         {
                             text = string.Format(
-                                "Dialog Part {0} is unreachable",
-                                diapart.dialogPart.id),
+                                "Dialogue Part {0} is unreachable",
+                                diapart.dialoguePart.id),
                             color = Color.yellow
                         });
 
@@ -763,13 +760,13 @@ public class EditorManager : MonoBehaviour
             // 11
             if (!warningFlags[9])
             {
-                if (string.IsNullOrWhiteSpace(diapart.dialogPart.GetProperty<string>("Text")))
+                if (string.IsNullOrWhiteSpace(diapart.dialoguePart.GetProperty<string>("Text")))
                 {
-                    warnings.Add(new DialogUI.Warning
+                    warnings.Add(new DialogueUI.Warning
                     {
                         text = string.Format(
-                                "The Text on Dialog Part {0} is empty",
-                                diapart.dialogPart.id),
+                                "The Text on Dialogue Part {0} is empty",
+                                diapart.dialoguePart.id),
                         color = Color.yellow
                     });
 
@@ -782,9 +779,9 @@ public class EditorManager : MonoBehaviour
         {
             warningFlags[7] = true;
 
-            warnings.Add(new DialogUI.Warning
+            warnings.Add(new DialogueUI.Warning
             {
-                text = string.Format("The Dialog doesn't have an end"),
+                text = string.Format("The Dialogue doesn't have an end"),
                 color = Color.red
             });
         }
@@ -801,20 +798,20 @@ public class EditorManager : MonoBehaviour
     {
         ContextMenuManager.instance.DeactivateContextMenu();
 
-        foreach (DialogPartVisual dpv in dialogPartVisuals)
+        foreach (DialoguePartVisual dpv in dialoguePartVisuals)
             Destroy(dpv.gameObject);
 
-        dialogPartVisuals = new List<DialogPartVisual>();
+        dialoguePartVisuals = new List<DialoguePartVisual>();
 
         inConnectMode = false;
 
-        dialog = null;
-        pathToDialog = null;
+        dialogue = null;
+        pathToDialogue = null;
 
         // Important that this happens before set is called on the properties (below)
         ActiveUI = startAndSelectUI;
 
-        SelectedDialogPartVisual = null;
+        SelectedDialoguePartVisual = null;
         SelectedAnswerVisual = null;
         selectedConnection = null;
 
@@ -823,29 +820,29 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Creates a new Dialog Part visual at the mouse pos and 
-    /// adds it to the dialogPartVisuals list
+    /// Creates a new Dialogue Part visual at the mouse pos and 
+    /// adds it to the dialoguePartVisuals list
     /// </summary>
-    public void CreateDialogPart()
+    public void CreateDialoguePart()
     {
         Vector2 mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
-        GameObject dpGO = Instantiate(dialogPartVisual, mousePos, Quaternion.identity);
-        DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
+        GameObject dpGO = Instantiate(dialoguePartVisual, mousePos, Quaternion.identity);
+        DialoguePartVisual dpVisual = dpGO.GetComponent<DialoguePartVisual>();
 
-        dialogPartVisuals.Add(dpVisual);
+        dialoguePartVisuals.Add(dpVisual);
 
-        dpVisual.dialogPart = new Dialog.DialogPart("", dpVisual.transform.position);
+        dpVisual.dialoguePart = new Dialogue.DialoguePart("", dpVisual.transform.position);
 
-        // If it's the first part in the Dialog
-        if (dialogPartVisuals.Count == 1)
-            StartDialogPartVisual = dpVisual;
+        // If it's the first part in the Dialogue
+        if (dialoguePartVisuals.Count == 1)
+            StartDialoguePartVisual = dpVisual;
 
-        // If a Property Preset for new Dialog Parts is selected
-        if (globalDialogPartPropertyPreset != null)
+        // If a Property Preset for new Dialogue Parts is selected
+        if (globalDialoguePartPropertyPreset != null)
         {
             PropertyPreset? preset = 
                 FileHandler.LoadPropertyPreset
-                (globalDialogPartPropertyPreset, PropertyPreset.PropertyPresetType.DIALOG_PART);
+                (globalDialoguePartPropertyPreset, PropertyPreset.PropertyPresetType.DIALOG_PART);
 
             if (!preset.HasValue)
                 return; // Error message handled by FileHandler
@@ -855,32 +852,32 @@ public class EditorManager : MonoBehaviour
             // Add all properties from the preset
             foreach (string p in properties.Keys)
             {
-                dpVisual.dialogPart.SetProperty
+                dpVisual.dialoguePart.SetProperty
                     (p, properties[p].value, properties[p].type, properties[p].required);
             }
         }
     }
 
     /// <summary>
-    /// Copies the currently selected dialog part and creates a
+    /// Copies the currently selected dialogue part and creates a
     /// new visual below it.
     /// </summary>
-    public void CopySelectedDialogPart()
+    public void CopySelectedDialoguePart()
     {
         Vector3 posOffset = new Vector2(0, -0.5f);
-        Vector2 pos = SelectedDialogPartVisual.transform.position + posOffset;
+        Vector2 pos = SelectedDialoguePartVisual.transform.position + posOffset;
 
-        GameObject dpGO = Instantiate(dialogPartVisual, pos, Quaternion.identity);
+        GameObject dpGO = Instantiate(dialoguePartVisual, pos, Quaternion.identity);
 
-        DialogPartVisual dpVisual = dpGO.GetComponent<DialogPartVisual>();
+        DialoguePartVisual dpVisual = dpGO.GetComponent<DialoguePartVisual>();
 
-        dialogPartVisuals.Add(dpVisual);
+        dialoguePartVisuals.Add(dpVisual);
     }
 
     /// <summary>
-    /// Connects a dialog part (visual) to the currently selected answer
+    /// Connects a dialogue part (visual) to the currently selected answer
     /// </summary>
-    public void ConnectToSelectedAnswer(DialogPartVisual dp)
+    public void ConnectToSelectedAnswer(DialoguePartVisual dp)
     {
         SelectedAnswerVisual.SetConnection(dp);
 
@@ -890,21 +887,21 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Connects a Dialog Part (visual) directly to the currently selected Dialog Part (visual)
+    /// Connects a Dialogue Part (visual) directly to the currently selected Dialogue Part (visual)
     /// (if it has no no non-conditional Answers)
     /// </summary>
-    public void ConnectToSelectedDP(DialogPartVisual dp)
+    public void ConnectToSelectedDP(DialoguePartVisual dp)
     {
-        if (SelectedDialogPartVisual.dialogPart.answers.Length > 0 &&
-            !Array.TrueForAll(SelectedDialogPartVisual.dialogPart.answers, a => a.conditional))
+        if (SelectedDialoguePartVisual.dialoguePart.answers.Length > 0 &&
+            !Array.TrueForAll(SelectedDialoguePartVisual.dialoguePart.answers, a => a.conditional))
         {
-            ErrorMessage.instance.ShowErrorMessage("Only Dialog Parts without an (non-conditional) Answer + " +
-                "can be connected directly to other Dialog Parts");
+            ErrorMessage.instance.ShowErrorMessage("Only Dialogue Parts without an (non-conditional) Answer + " +
+                "can be connected directly to other Dialogue Parts");
             inConnectMode = false;
             return;
         }
 
-        SelectedDialogPartVisual.SetConnection(dp);
+        SelectedDialoguePartVisual.SetConnection(dp);
 
         noOfConnections++;
 
@@ -912,29 +909,29 @@ public class EditorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Destroys the currently selected dialog part. Use with caution!
+    /// Destroys the currently selected dialogue part. Use with caution!
     /// </summary>
-    public void DestroyDialogPart()
+    public void DestroyDialoguePart()
     {
-        if (SelectedDialogPartVisual == null)
+        if (SelectedDialoguePartVisual == null)
             return;
 
         // Important
-        if (SelectedDialogPartVisual.IsStart)
-            StartDialogPartVisual = null;
+        if (SelectedDialoguePartVisual.IsStart)
+            StartDialoguePartVisual = null;
 
-        dialogPartVisuals.Remove(SelectedDialogPartVisual);
+        dialoguePartVisuals.Remove(SelectedDialoguePartVisual);
 
-        Destroy(SelectedDialogPartVisual.gameObject);
-        SelectedDialogPartVisual = null;
+        Destroy(SelectedDialoguePartVisual.gameObject);
+        SelectedDialoguePartVisual = null;
     }
 
     private void DeselectPreviouslySelectedVisual()
     {
-        if (selectedDialogPartVisual != null)
+        if (selectedDialoguePartVisual != null)
         {
-            selectedDialogPartVisual.Selected = false;
-            selectedDialogPartVisual = null;
+            selectedDialoguePartVisual.Selected = false;
+            selectedDialoguePartVisual = null;
         }
 
         if (selectedAnswerVisual != null)

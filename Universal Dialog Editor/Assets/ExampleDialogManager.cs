@@ -1,21 +1,21 @@
 using UnityEngine;
 
-using UniversalDialogSystem;
+using UniversalDialogueSystem;
 
-public class ExampleDialogManager : UDSDialogManager
+public class ExampleDialogueManager : UDSDialogueManager
 {
-    protected override void OnDialogStart(Dialog dialog)
+    protected override void OnDialogueStart(Dialogue dialogue)
     {
-        Debug.Log("The dialog is starting!");
+        Debug.Log("The dialogue is starting!");
     }
 
-    protected override void ShowDialogPartText(in Dialog.DialogPart dialogPart, string text)
+    protected override void ShowDialoguePartText(in Dialogue.DialoguePart dialoguePart, string text)
     {
-        if (dialogPart.HasProperty<string>("Name"))
+        if (dialoguePart.HasProperty<string>("Name"))
         {
-            string dialogPartnerName = dialogPart.GetProperty<string>("Name");
+            string dialoguePartnerName = dialoguePart.GetProperty<string>("Name");
 
-            if (dialogPartnerName.Equals("Bill"))
+            if (dialoguePartnerName.Equals("Bill"))
                 text = "Hi, I'm Bill!";
         }
         else if (text.Length > 160)
@@ -23,10 +23,10 @@ public class ExampleDialogManager : UDSDialogManager
             text = "I don't usually say long things";
         }
 
-        ShowDialogPartText(text);
+        ShowDialoguePartText(text);
     }
 
-    protected override void ShowAnswer(in Dialog.DialogPart.Answer answer, string text, AnswerBox answerTextBox)
+    protected override void ShowAnswer(in Dialogue.DialoguePart.Answer answer, string text, AnswerBox answerTextBox)
     {
         if (text.Equals("Yes"))
             text = "<color=green>" + text + "</color>";

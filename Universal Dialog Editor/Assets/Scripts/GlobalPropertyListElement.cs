@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class GlobalPropertyListElement : PropertyListElement
 {
-    public override void Init(DialogComponent dialogComponent = null)
+    public override void Init(DialogueComponent dialogueComponent = null)
     {
-        if (dialogComponent != null)
-            Debug.LogWarning("GlobalPropertyListElement.Init is called with dialogComponent != null");
+        if (dialogueComponent != null)
+            Debug.LogWarning("GlobalPropertyListElement.Init is called with dialogueComponent != null");
 
         // Type text
         if (typeText != null) {

@@ -4,7 +4,7 @@ public class Background : MonoBehaviour
 {
     private void OnMouseDown()
     {
-        EditorManager.instance.SelectedDialogPartVisual = null;
+        EditorManager.instance.SelectedDialoguePartVisual = null;
         EditorManager.instance.SelectedAnswerVisual = null;
         ContextMenuManager.instance.DeactivateContextMenu();
     }

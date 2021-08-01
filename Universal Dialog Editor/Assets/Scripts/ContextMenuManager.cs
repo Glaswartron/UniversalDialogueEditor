@@ -17,9 +17,8 @@ public class ContextMenuManager : MonoBehaviour
     [Header("Prefabs")]
     public GameObject contextMenuButton;
 
-    [Header("Connection Context Menu")]
-    public GameObject connectionContextMenu;
-    public Button deleteConnectionButton;
+    [Header("Settings")]
+    public Vector2 menuOffsetFromMouse;
 
     private EditorManager editorManager;
 
@@ -82,8 +81,8 @@ public class ContextMenuManager : MonoBehaviour
     private void ShowEditorContextMenu()
     {
         AddButton(
-             "New Dialog Part",
-             EditorManager.instance.CreateDialogPart
+             "New Dialogue Part",
+             EditorManager.instance.CreateDialoguePart
          );
 
         OpenContextMenu(null);
@@ -94,8 +93,7 @@ public class ContextMenuManager : MonoBehaviour
         DeactivateContextMenu(); // Closes the previously open context menu
 
         // Moves the menu to the mousePosition + a little offset to the bottom right
-        contextMenu.transform.position = (Vector2)Input.mousePosition 
-                                         + editorManager.menuOffsetFromMouse;
+        contextMenu.transform.position = (Vector2)Input.mousePosition + menuOffsetFromMouse;
 
         target?.ShowContextMenu(this);
 

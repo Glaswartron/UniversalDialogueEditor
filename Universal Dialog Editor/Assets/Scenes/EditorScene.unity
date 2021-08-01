@@ -599,9 +599,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Universal Dialog System
+  m_text: 'Universal Dialogue System
 
-    Dialog Editor'
+    Dialogue Editor'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1632,20 +1632,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bde960fde4305d4882a7fbd21602cac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathToDialog: 
-  dialogPartVisuals: []
+  pathToDialogue: 
+  dialoguePartVisuals: []
   mainCanvas: {fileID: 1273796505}
   editorPanel: {fileID: 1706123831}
   startAndSelectUI: {fileID: 795845577}
-  dialogUI: {fileID: 1744776149}
-  dialogPartUI: {fileID: 287014766}
+  dialogueUI: {fileID: 1744776149}
+  dialoguePartUI: {fileID: 287014766}
   answerUI: {fileID: 1079745664}
   globalPropertiesMenu: {fileID: 1790433875}
   conditionMenu: {fileID: 1750897753}
   savePresetMenu: {fileID: 2086766909}
   loadPresetMenu: {fileID: 349322442}
   settingsMenu: {fileID: 1743756948}
-  dialogPartVisual: {fileID: 8252622723369243653, guid: e49f2f2291618ae4bb49073279fc5350,
+  dialoguePartVisual: {fileID: 8252622723369243653, guid: e49f2f2291618ae4bb49073279fc5350,
     type: 3}
   answerVisual: {fileID: 8049454694504549614, guid: 709dd5dfc1d85464c8d401a39878ad80,
     type: 3}
@@ -1657,8 +1657,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f8adb381024472744b3caf301432670d, type: 2}
   - {fileID: 11400000, guid: 844c2409d1a0aba45be4209e75457a51, type: 2}
   - {fileID: 11400000, guid: 762d8f9520e9de044ab6f0978186710f, type: 2}
-  menuOffsetFromMouse: {x: 30, y: -25}
-  editingDialogPart: 0
+  editingDialoguePart: 0
   inConnectMode: 0
   selectedConnection: {fileID: 0}
   noOfAnswers: 0
@@ -3376,7 +3375,7 @@ GameObject:
   - component: {fileID: 287014767}
   - component: {fileID: 287014768}
   m_Layer: 5
-  m_Name: DialogPartUI
+  m_Name: DialoguePartUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3490,7 +3489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9b5258eb3059be4b861e8d58059dc7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogIDInputField: {fileID: 1573026973}
+  dialogueIDInputField: {fileID: 1573026973}
   editNameButton: {fileID: 1665529067}
 --- !u!224 &292972495
 RectTransform:
@@ -5137,7 +5136,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Dialog Parts:
+  m_text: 'Dialogue Parts:
 
     Answers:
 
@@ -6407,7 +6406,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Dialog Part 1 --> Dialog Part 1
+  m_text: Dialogue Part 1 --> Dialogue Part 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8981,13 +8980,13 @@ RectTransform:
   - {fileID: 588249781}
   - {fileID: 317623207}
   - {fileID: 1172009223}
-  m_Father: {fileID: 1706123831}
-  m_RootOrder: 5
+  m_Father: {fileID: 1273796502}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 717.8342, y: 144.10004}
-  m_SizeDelta: {x: -213.57051, y: -627.5326}
+  m_AnchoredPosition: {x: 245.39362, y: 143.25539}
+  m_SizeDelta: {x: -1155.4932, y: -623.2534}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &640385154
 MonoBehaviour:
@@ -9744,7 +9743,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c18441bee10e63d40ab8ae767bb5c13e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  messageLength: 4.5
+  messageDuration: 0
 --- !u!1 &714642191
 GameObject:
   m_ObjectHideFlags: 0
@@ -9758,7 +9757,7 @@ GameObject:
   - component: {fileID: 714642194}
   - component: {fileID: 714642193}
   m_Layer: 5
-  m_Name: ExportDialogPartPresetButton
+  m_Name: ExportDialoguePartPresetButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11077,7 +11076,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.001373291, y: -0.053955078}
+  m_AnchoredPosition: {x: -0.0014038086, y: -0.053955078}
   m_SizeDelta: {x: 0.4500122, y: 0.30999756}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &795845579
@@ -11098,17 +11097,17 @@ MonoBehaviour:
   newButton: {fileID: 1204170676}
   loadButton: {fileID: 98752150}
   deleteButton: {fileID: 952829391}
-  dialogsScrollViewContent: {fileID: 216778595}
-  dialogsScrollRect: {fileID: 1390214710}
-  dialogsScrollViewToggleGroup: {fileID: 216778599}
-  dialogPartPresetDropdown: {fileID: 1695225580}
+  dialoguesScrollViewContent: {fileID: 216778595}
+  dialoguesScrollRect: {fileID: 1390214710}
+  dialoguesScrollViewToggleGroup: {fileID: 216778599}
+  dialoguePartPresetDropdown: {fileID: 1695225580}
   answerPresetDropdown: {fileID: 1586023104}
   importPresetButton: {fileID: 350425691}
-  exportDialogPartPresetButton: {fileID: 714642193}
+  exportDialoguePartPresetButton: {fileID: 714642193}
   exportAnswerPresetButton: {fileID: 1630105076}
   selectableText: {fileID: 1301137629057736842, guid: d9741ce04f1063b4890205541aff2f65,
     type: 3}
-  newDialogInputField: {fileID: 9157347491593755115, guid: 7899d354901118541afc94fc4223b2bd,
+  newDialogueInputField: {fileID: 9157347491593755115, guid: 7899d354901118541afc94fc4223b2bd,
     type: 3}
 --- !u!1 &802513149
 GameObject:
@@ -12391,7 +12390,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Dialog Parts
+  m_text: Dialogue Parts
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -12418,7 +12417,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20.1
+  m_fontSize: 16.7
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -17520,8 +17519,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -49.635, y: 236.1}
-  m_SizeDelta: {x: 245.934, y: 32.5864}
+  m_AnchoredPosition: {x: -31.6458, y: 236.1}
+  m_SizeDelta: {x: 281.9124, y: 32.5864}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1211812837
 MonoBehaviour:
@@ -17543,7 +17542,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Create and load dialogs
+  m_text: Create and load dialogues
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -17653,12 +17652,12 @@ RectTransform:
   - {fileID: 788185885}
   - {fileID: 488035209}
   - {fileID: 2030236319}
-  m_Father: {fileID: 1706123831}
-  m_RootOrder: 4
+  m_Father: {fileID: 1273796502}
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 475.1934, y: 0}
+  m_AnchoredPosition: {x: 2.7528381, y: -0.8446565}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1214318419
@@ -17677,8 +17676,7 @@ MonoBehaviour:
   contextMenu: {fileID: 576991800}
   contextMenuButton: {fileID: 1060031646819268634, guid: 75b1cda89d2d4e54c9dc2226510320c2,
     type: 3}
-  connectionContextMenu: {fileID: 2030236318}
-  deleteConnectionButton: {fileID: 1462353945}
+  menuOffsetFromMouse: {x: 60, y: -15}
 --- !u!1 &1215501806
 GameObject:
   m_ObjectHideFlags: 0
@@ -18587,6 +18585,8 @@ RectTransform:
   - {fileID: 349322439}
   - {fileID: 1743756944}
   - {fileID: 714302713}
+  - {fileID: 640385153}
+  - {fileID: 1214318418}
   - {fileID: 1375822206}
   m_Father: {fileID: 0}
   m_RootOrder: 3
@@ -20334,7 +20334,7 @@ RectTransform:
   m_Children:
   - {fileID: 1787907256}
   m_Father: {fileID: 1273796502}
-  m_RootOrder: 8
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -20619,7 +20619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9b5258eb3059be4b861e8d58059dc7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogIDInputField: {fileID: 1361798572}
+  dialogueIDInputField: {fileID: 1361798572}
   editNameButton: {fileID: 1839504534}
 --- !u!1 &1393661857
 GameObject:
@@ -21625,7 +21625,7 @@ RectTransform:
   - {fileID: 1960115195}
   - {fileID: 105852722}
   m_Father: {fileID: 1706123831}
-  m_RootOrder: 6
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0.06434014}
@@ -25200,7 +25200,7 @@ GameObject:
   - component: {fileID: 1695225581}
   - component: {fileID: 1695225580}
   m_Layer: 5
-  m_Name: DialogPartPresetDropdown
+  m_Name: DialoguePartPresetDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25730,15 +25730,13 @@ RectTransform:
   - {fileID: 1744776150}
   - {fileID: 287014767}
   - {fileID: 1079745665}
-  - {fileID: 1214318418}
-  - {fileID: 640385153}
   - {fileID: 1433394953}
   m_Father: {fileID: 1273796502}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0.2955071, y: 1}
-  m_AnchoredPosition: {x: -4.9317627, y: -0.8446655}
+  m_AnchoredPosition: {x: -4.9316406, y: -0.8446045}
   m_SizeDelta: {x: -6.9051, y: 4.2792}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1706123832
@@ -26627,7 +26625,7 @@ GameObject:
   - component: {fileID: 1744776150}
   - component: {fileID: 1744776151}
   m_Layer: 5
-  m_Name: DialogUI
+  m_Name: DialogueUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28945,7 +28943,7 @@ GameObject:
   - component: {fileID: 1850132831}
   - component: {fileID: 1850132832}
   m_Layer: 5
-  m_Name: Properties
+  m_Name: PropertiesUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29292,7 +29290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9b5258eb3059be4b861e8d58059dc7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogIDInputField: {fileID: 832761034}
+  dialogueIDInputField: {fileID: 832761034}
   editNameButton: {fileID: 1353818036}
 --- !u!1 &1871212787
 GameObject:

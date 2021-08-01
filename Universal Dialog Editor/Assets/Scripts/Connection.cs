@@ -4,10 +4,10 @@ using UnityEngine;
 public class Connection : MonoBehaviour, IContextMenu
 {
     [Header("Connection")]
-    public DialogPartVisual fromDP;
+    public DialoguePartVisual fromDP;
     public AnswerVisual fromA;
 
-    public DialogPartVisual toDP;
+    public DialoguePartVisual toDP;
 
     [Header("Visuals")]
     [Space(5)]

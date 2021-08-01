@@ -21,8 +21,8 @@ public struct PropertyPreset
 
 public class PropertiesUI : MonoBehaviour, ISubUI
 {
-    // If the dialogComponent is null => Global properties
-    private DialogComponent dialogComponent;
+    // If the dialogueComponent is null => Global properties
+    private DialogueComponent dialogueComponent;
 
     [Header("Main UI")]
     public Transform scrollViewContent;
@@ -51,8 +51,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             () =>
             {
                 addPropertyDropdown.transform.position 
-                    = (Vector2)Input.mousePosition 
-                        + EditorManager.instance.menuOffsetFromMouse;
+                    = (Vector2) Input.mousePosition + ContextMenuManager.instance.menuOffsetFromMouse;
 
                 addPropertyDropdown.gameObject.SetActive(true);
             }
@@ -114,25 +113,25 @@ public class PropertiesUI : MonoBehaviour, ISubUI
     /// <summary>
     /// Sets up the PropertiesUI and populates the
     /// connected ScrollView based on the properties 
-    /// of the given dialogComponent OR the Global
-    /// Properties (if dialogComponent is null). In
+    /// of the given dialogueComponent OR the Global
+    /// Properties (if dialogueComponent is null). In
     /// that case, use GlobalPropertiesUI
     /// </summary>
-    /// <param name="dialogComponent">The dialogComponent this PropertiesUI 
+    /// <param name="dialogueComponent">The dialogueComponent this PropertiesUI 
     /// is responsible for. Null if it is for Global Properties</param>
-    public virtual void Init(DialogComponent dialogComponent)
+    public virtual void Init(DialogueComponent dialogueComponent)
     {
         listElements = new List<PropertyListElement>();
 
-        this.dialogComponent = dialogComponent;
+        this.dialogueComponent = dialogueComponent;
 
         InitAddPropertyDropdown();
 
         /* Instantiate a fitting list/scroll view element for all properties
          * and add listeners to the various UI elements within it. */
-        foreach (string key in dialogComponent.GetPropertyKeys())
+        foreach (string key in dialogueComponent.GetPropertyKeys())
         {
-            UDSProperty property = dialogComponent.GetProperty(key);
+            UDSProperty property = dialogueComponent.GetProperty(key);
 
             CreateListElement(key, property);
         }
@@ -172,7 +171,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         listElement.type = property.type; // Important
 
         // Takes care of all UI elements except for the Delete Button
-        listElement.Init(dialogComponent);
+        listElement.Init(dialogueComponent);
 
         if (property.required)
             listElement.deleteButton.gameObject.SetActive(false);
@@ -187,7 +186,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                     string localKey = listElement.id;
                     PropertyListElement localListElement = listElement;
 
-                    dialogComponent.DeleteProperty(localKey); // !
+                    dialogueComponent.DeleteProperty(localKey); // !
 
                     listElements.Remove(localListElement);
 
@@ -255,7 +254,7 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         }
 
         // Clear properties (except for the required ones)
-        dialogComponent.DeleteAllProperties();
+        dialogueComponent.DeleteAllProperties();
 
         ClearScrollView();
 
@@ -264,22 +263,22 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         foreach (string propertyKey in preset.Value.orderedKeyList)
         {
             UDSProperty property = properties[propertyKey];
-            dialogComponent.SetProperty(propertyKey, property.value, property.type, property.required);
+            dialogueComponent.SetProperty(propertyKey, property.value, property.type, property.required);
         }
 
-        Init(dialogComponent); // Re-init
+        Init(dialogueComponent); // Re-init
     }
 
     private Dictionary<string, UDSProperty> GetPropertiesForPreset()
     { 
-        return dialogComponent.GetProperties();
+        return dialogueComponent.GetProperties();
     }
 
     private PropertyPreset.PropertyPresetType GetTypeForPreset()
     {
-        if (dialogComponent is Dialog.DialogPart)
+        if (dialogueComponent is Dialogue.DialoguePart)
             return PropertyPreset.PropertyPresetType.DIALOG_PART;
-        else if (dialogComponent is Dialog.DialogPart.Answer)
+        else if (dialogueComponent is Dialogue.DialoguePart.Answer)
             return PropertyPreset.PropertyPresetType.ANSWER;
 
         return default;
@@ -295,10 +294,10 @@ public class PropertiesUI : MonoBehaviour, ISubUI
             {
                 if (string.IsNullOrWhiteSpace(listElements[i].id))
                 {
-                    if (dialogComponent != null)
+                    if (dialogueComponent != null)
                     {
                         ErrorMessage.instance.ShowErrorMessage
-                            ("A Property without an ID was found and discarded on Dialog Component " + dialogComponent.id);
+                            ("A Property without an ID was found and discarded on Dialogue Component " + dialogueComponent.id);
                     }
                     else
                     {

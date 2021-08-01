@@ -10,10 +10,10 @@ public class GlobalPropertiesUI : PropertiesUI
         Init();
     }
 
-    public override void Init(DialogComponent dialogComponent = null)
+    public override void Init(DialogueComponent dialogueComponent = null)
     {
-        if (dialogComponent != null)
-            Debug.LogWarning("GlobalPropertiesUI.Init is called with dialogComponent != null");
+        if (dialogueComponent != null)
+            Debug.LogWarning("GlobalPropertiesUI.Init is called with dialogueComponent != null");
 
         listElements = new List<PropertyListElement>();
 
@@ -109,9 +109,9 @@ public class GlobalPropertiesUI : PropertiesUI
     {
         /* Go through all answers
          * (https://stackoverflow.com/questions/1191054/how-to-merge-a-list-of-lists-with-same-type-of-items-to-a-single-list-of-items) */
-        foreach (Dialog.DialogPart.Answer ans in 
-                 EditorManager.instance.dialogPartVisuals.ConvertAll
-                 (dpv => dpv.dialogPart.answers).SelectMany(x => x).ToList())
+        foreach (Dialogue.DialoguePart.Answer ans in 
+                 EditorManager.instance.dialoguePartVisuals.ConvertAll
+                 (dpv => dpv.dialoguePart.answers).SelectMany(x => x).ToList())
         {
             if (ans.conditional && ans.condition.Value.globalPropertyKey.Equals(id))
                 return true;

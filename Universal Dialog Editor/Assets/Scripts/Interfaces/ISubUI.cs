@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface ISubUI
 {
-    public abstract void Init(DialogComponent dialogComponent);
+    public abstract void Init(DialogueComponent dialogueComponent);
 }
