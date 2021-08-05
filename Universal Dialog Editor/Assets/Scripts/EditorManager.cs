@@ -225,7 +225,9 @@ public class EditorManager : MonoBehaviour
         ActiveUI = startAndSelectUI;
 
         if (PlayerPrefs.HasKey("ColorTheme"))
-            ChangeColorTheme(colorThemes.Where(ct => ct.themeName.Equals(PlayerPrefs.GetString("ColorTheme"))).First());
+            ChangeColorTheme(colorThemes.Where(ct => ct.themeName.Equals(PlayerPrefs.GetString("ColorTheme"))).FirstOrDefault());
+        else
+            ActiveColorTheme = colorThemes.Where(ct => ct.themeName.StartsWith("Standard")).FirstOrDefault();
     }
 
     private void Update()
@@ -511,14 +513,14 @@ public class EditorManager : MonoBehaviour
                 answerVis.index = i;
 
                 answers.Add(answerVis);
-
-                noOfAnswers++; // Count how many answers there are in total
             }
 
-            allAnswers.AddRange(answers);
-
             visual.answers = answers; // !
+
+            allAnswers.AddRange(answers);
         }
+
+        noOfAnswers = allAnswers.Count;
 
         // Add connections to all answers (that have connections)
         foreach (AnswerVisual aVisual in allAnswers)
@@ -870,6 +872,8 @@ public class EditorManager : MonoBehaviour
         GameObject dpGO = Instantiate(dialoguePartVisual, pos, Quaternion.identity);
 
         DialoguePartVisual dpVisual = dpGO.GetComponent<DialoguePartVisual>();
+
+        dpVisual.dialoguePart = SelectedDialoguePartVisual.dialoguePart.Copy(dialogue);
 
         dialoguePartVisuals.Add(dpVisual);
     }

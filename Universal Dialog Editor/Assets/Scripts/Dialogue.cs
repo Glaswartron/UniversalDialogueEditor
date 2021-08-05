@@ -94,7 +94,7 @@ public sealed class Dialogue : DialogueComponent, ICloneable
             {
                 UDSProperty val = this.GetProperty(key);
 
-                copy.SetProperty(key, val.value, val.type);
+                copy.SetProperty(key, val.value, val.type, val.required);
             }
 
             List<Answer> ans = new List<Answer>();

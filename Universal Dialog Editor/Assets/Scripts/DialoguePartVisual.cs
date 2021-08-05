@@ -252,8 +252,11 @@ public class DialoguePartVisual : MonoBehaviour, IContextMenu
                 (EditorManager.globalAnswerPropertyPreset, PropertyPreset.PropertyPresetType.ANSWER);
 
             if (preset == null)
+            {
                 // Error message handled by FileHandler - true because Answer was created
-                return true; 
+                EditorManager.instance.noOfAnswers++;
+                return true;
+            }
 
             Dictionary<string, UDSProperty> properties = preset.Value.properties;
 
@@ -263,8 +266,6 @@ public class DialoguePartVisual : MonoBehaviour, IContextMenu
                 answerVis.answer.SetProperty
                     (p, properties[p].value, properties[p].type, properties[p].required);
             }
-
-            EditorManager.instance.noOfAnswers++;
         }
 
         if (conditional)
@@ -275,6 +276,8 @@ public class DialoguePartVisual : MonoBehaviour, IContextMenu
 
             EditorManager.instance.conditionMenu.Init(answerVis);
         }
+
+        EditorManager.instance.noOfAnswers++;
 
         return true;
     }

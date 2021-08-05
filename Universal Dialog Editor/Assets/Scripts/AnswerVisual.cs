@@ -146,8 +146,10 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
         {
             indicator.transform.localScale = new Vector3(0.075f, 0.075f, 1);
             indicator.sprite = dialogueEndIndicator;
+            indicator.gameObject.SetActive(true);
         } else
         {
+            indicator.gameObject.SetActive(false);
             indicator.transform.localScale = new Vector3(1, 1, 1);
             indicator.sprite = null;
         }

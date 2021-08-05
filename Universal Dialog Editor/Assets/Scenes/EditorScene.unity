@@ -7791,11 +7791,11 @@ MonoBehaviour:
   savePresetButton: {fileID: 0}
   searchBar: {fileID: 1826569167}
   closeButton: {fileID: 834994010}
-  stringProperty: {fileID: 3711847119639212864, guid: b8166bff5c446944e82c893001883583,
+  stringProperty: {fileID: 5119410470206898394, guid: 1c8fd102ce3150640b20316d743cfd45,
     type: 3}
-  intProperty: {fileID: 8336055632830523348, guid: b6cf2552e0e61714c8bd19593db0ae47,
+  intProperty: {fileID: 5119410470206898394, guid: 1c8fd102ce3150640b20316d743cfd45,
     type: 3}
-  floatProperty: {fileID: 2374296604725130386, guid: b6cb3ce79f4bde94d96ddd87230fa567,
+  floatProperty: {fileID: 5119410470206898394, guid: 1c8fd102ce3150640b20316d743cfd45,
     type: 3}
   boolProperty: {fileID: 5119410470206898394, guid: 1c8fd102ce3150640b20316d743cfd45,
     type: 3}
@@ -11663,11 +11663,11 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.7921569, g: 0.2509804, b: 0.25622198, a: 1}
-    m_HighlightedColor: {r: 0.8862745, g: 0.29803923, b: 0.31495434, a: 1}
-    m_PressedColor: {r: 0.7529412, g: 0.15123595, b: 0.14509803, a: 1}
-    m_SelectedColor: {r: 0.79215693, g: 0.2509804, b: 0.25490198, a: 1}
-    m_DisabledColor: {r: 0.7921569, g: 0.2509804, b: 0.2562736, a: 0.37254903}
+    m_NormalColor: {r: 0.30011094, g: 0.7921569, b: 0.2509804, a: 1}
+    m_HighlightedColor: {r: 0.34805238, g: 0.8773585, b: 0.29300457, a: 1}
+    m_PressedColor: {r: 0.23804435, g: 0.6415094, b: 0.19608401, a: 1}
+    m_SelectedColor: {r: 0.34901962, g: 0.87843144, b: 0.29411766, a: 1}
+    m_DisabledColor: {r: 0.3019608, g: 0.79215693, b: 0.2509804, a: 0.37254903}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -17211,7 +17211,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0.0008403766}
-  m_SizeDelta: {x: 0, y: 7}
+  m_SizeDelta: {x: 0.027999878, y: 7}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1181488941
 MonoBehaviour:

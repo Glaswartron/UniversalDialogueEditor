@@ -18,6 +18,7 @@ public class Connection : MonoBehaviour, IContextMenu
 
     private LineRenderer lineRenderer;
     private PolygonCollider2D polygonCollider;
+    private SpriteRenderer arrowTipSpriteRenderer;
 
     private void Start()
     {
@@ -105,7 +106,12 @@ public class Connection : MonoBehaviour, IContextMenu
 
     public void UpdateColor()
     {
-        arrowTip.GetComponent<SpriteRenderer>().color = EditorManager.instance.ActiveColorTheme.arrowColor;
+        if (arrowTipSpriteRenderer == null)
+            (arrowTipSpriteRenderer = arrowTip.GetComponent<SpriteRenderer>()).color 
+                = EditorManager.instance.ActiveColorTheme.arrowColor;
+        else
+            arrowTipSpriteRenderer.color = EditorManager.instance.ActiveColorTheme.arrowColor;
+
         lineRenderer.startColor = EditorManager.instance.ActiveColorTheme.arrowColor;
         lineRenderer.endColor = EditorManager.instance.ActiveColorTheme.arrowColor;
     }
