@@ -9,6 +9,7 @@ using TMPro;
 using Newtonsoft.Json;
 using System.IO;
 using System.ComponentModel;
+using UnityEditor;
 
 namespace UniversalDialogueSystem
 {
@@ -60,8 +61,8 @@ namespace UniversalDialogueSystem
         [SerializeField] protected bool useTextMeshPro = false;
 
         [Header("UI")]
-        [SerializeField] protected GameObject dialogueUI;
-        [SerializeField] protected TextBox dialogueTextBox;
+        [SerializeField] protected GameObject DialogueUI;
+        [SerializeField] protected TextBox DialogueTextBox;
         [SerializeField] protected AnswerBox[] answerTextBoxes;
         [SerializeField] protected TextBox nameTextBox;
         [SerializeField] protected GameObject[] deactivateDuringDialogue;
@@ -82,8 +83,8 @@ namespace UniversalDialogueSystem
         [SerializeField] protected float minTimeBetweenTouches = 0.35f;
         [SerializeField] protected float standardTimeScale = 1f;
 
-        [HideInInspector] public bool dialogueRunning;
-        [HideInInspector] public bool dialoguePaused;
+        [HideInInspector] public bool DialogueRunning;
+        [HideInInspector] public bool DialoguePaused;
 
         private string GLOBAL_PROPERTIES_PATH; 
         #endregion
@@ -92,9 +93,9 @@ namespace UniversalDialogueSystem
         protected Dialogue currentDialogue = null;
 
         /// <summary>
-        /// Very important! Stores all the dialogues loaded from Resources
+        /// Very important! Stores all the Dialogues loaded from Resources
         /// </summary>
-        private Dialogue[] dialogues;
+        private Dialogue[] Dialogues;
 
         private Dictionary<string, UDSProperty> globalProperties; // !
 
@@ -110,8 +111,8 @@ namespace UniversalDialogueSystem
         /// </summary>
         protected bool textEffectRunning = false;
 
-        private bool dialogueStarting;
-        private bool dialogueEnding;
+        private bool DialogueStarting;
+        private bool DialogueEnding;
 
         private Dialogue.DialoguePart.Answer answerBeforePause;
 
@@ -133,7 +134,7 @@ namespace UniversalDialogueSystem
         /// The 'Text' Property of the currentDialoguePart or
         /// alternatively the text set by a method overriding
         /// or calling ShowDialoguePartText. Null if currentDialoguePart
-        /// is null (e.g. outside a dialogue)
+        /// is null (e.g. outside a Dialogue)
         /// </summary>
         protected string CurrentDialoguePartText
         {
@@ -150,7 +151,7 @@ namespace UniversalDialogueSystem
 
         /// <summary>
         /// The 'Name' Property of the currentDialoguePart or
-        /// Null if currentDialoguePart is null (e.g. outside a dialogue)
+        /// Null if currentDialoguePart is null (e.g. outside a Dialogue)
         /// </summary>
         protected string CurrentDialoguePartName
         {
@@ -178,7 +179,7 @@ namespace UniversalDialogueSystem
 
             // Load the Dialogues from the Resources folder
             if (loadMode == LoadMode.LOAD_ON_START)
-                dialogues = LoadDialogues();
+                Dialogues = LoadDialogues();
 
             // Load the globalProperties from their file
             if (saveGlobalProperties)
@@ -204,9 +205,9 @@ namespace UniversalDialogueSystem
 
         protected virtual void Update()
         {
-            if (dialogueRunning)
+            if (DialogueRunning)
             {
-                if (!justStarted && !dialogueStarting && !dialogueEnding)
+                if (!justStarted && !DialogueStarting && !DialogueEnding)
                 {
                     if (platform == Platform.DESKTOP)
                     {
@@ -243,8 +244,8 @@ namespace UniversalDialogueSystem
         /// (after the UI was enabled and the Time.timeScale was set)
         /// </summary>
         /// <seealso cref="OnDialogueEnd(Dialogue)"/>
-        /// <param name="dialogue">The Dialogue that just starts</param>
-        protected virtual void OnDialogueStart(Dialogue dialogue)
+        /// <param name="Dialogue">The Dialogue that just starts</param>
+        protected virtual void OnDialogueStart(Dialogue Dialogue)
         {
 
         }
@@ -253,36 +254,36 @@ namespace UniversalDialogueSystem
         /// Called when a Dialogue ends
         /// </summary>
         /// <seealso cref="OnDialogueStart(Dialogue)"/>
-        /// <param name="dialogue">The Dialogue that just ends</param>
-        protected virtual void OnDialogueEnd(Dialogue dialogue)
+        /// <param name="Dialogue">The Dialogue that just ends</param>
+        protected virtual void OnDialogueEnd(Dialogue Dialogue)
         {
             
         }
 
         /// <summary>
-        /// Enables the dialogueUI. By default functionally equivalent
-        /// to 'dialogueUI.SetActive(true)'
+        /// Enables the DialogueUI. By default functionally equivalent
+        /// to 'DialogueUI.SetActive(true)'
         /// </summary>
         /// <seealso cref="DisableDialogueUI(bool)"/>
         /// <seealso cref="PauseDialogue(bool, bool)"/>
-        /// <param name="continueAfterPause">Whether or not the dialogueUI is being 
+        /// <param name="continueAfterPause">Whether or not the DialogueUI is being 
         /// reenabled after a pause triggered by PauseDialogue(bool, bool)</param>
         protected virtual void EnableDialogueUI(bool continueAfterPause = false)
         {
-            dialogueUI.SetActive(true);
+            DialogueUI.SetActive(true);
         }
 
         /// <summary>
-        /// Disables the dialogueUI. By default functionally equivalent
-        /// to 'dialogueUI.SetActive(false)'
+        /// Disables the DialogueUI. By default functionally equivalent
+        /// to 'DialogueUI.SetActive(false)'
         /// </summary>
         /// <seealso cref="EnableDialogueUI(bool)"/>
         /// <seealso cref="PauseDialogue(bool, bool)"/>
-        /// <param name="pause">Whether or not the dialogueUI is being 
+        /// <param name="pause">Whether or not the DialogueUI is being 
         /// disabled because of a pause triggered by PauseDialogue(bool, bool)</param>
         protected virtual void DisableDialogueUI(bool pause = false)
         {
-            dialogueUI.SetActive(false);
+            DialogueUI.SetActive(false);
         }
 
         /// <summary>
@@ -290,8 +291,8 @@ namespace UniversalDialogueSystem
         /// </summary>
         /// <seealso cref="OnDialogueStart(Dialogue)"/>
         /// <seealso cref="ShowDialoguePartText(in Dialogue.DialoguePart, string)"/>
-        /// <param name="dialoguePart">The DialoguePart that just starts</param>
-        protected virtual void OnDialoguePartStart(in Dialogue.DialoguePart dialoguePart)
+        /// <param name="DialoguePart">The DialoguePart that just starts</param>
+        protected virtual void OnDialoguePartStart(in Dialogue.DialoguePart DialoguePart)
         {
 
         }
@@ -303,33 +304,33 @@ namespace UniversalDialogueSystem
         /// By default functionally equivalent to 'ShowDialoguePartText(null)'.
         /// You can override this method to make changes to the text, apply
         /// effects or for localization (selecting the right text from 
-        /// multiple ones stored in the dialoguePart's properties)
+        /// multiple ones stored in the DialoguePart's properties)
         /// </summary>
         /// <seealso cref="OnDialoguePartStart(in Dialogue.DialoguePart)"/> 
         /// <seealso cref="ShowAnswer(in Dialogue.DialoguePart.Answer, string, AnswerBox)"/>
-        /// <param name="dialoguePart">The dialoguePart that is being played</param>
-        /// <param name="text">The text to be shown, by default the value of the dialoguePart's
+        /// <param name="DialoguePart">The DialoguePart that is being played</param>
+        /// <param name="text">The text to be shown, by default the value of the DialoguePart's
         /// text Property</param>
-        protected virtual void ShowDialoguePartText(in Dialogue.DialoguePart dialoguePart, string text)
+        protected virtual void ShowDialoguePartText(in Dialogue.DialoguePart DialoguePart, string text)
         {
             ShowDialoguePartText();
         }
 
         /// <summary>
-        /// Shows the dialogue partner name of the current DialoguePart to the player.
+        /// Shows the Dialogue partner name of the current DialoguePart to the player.
         /// Called whenever a new DialoguePart is being started!
         /// By default functionally equivalent to checking if name is null, 
         /// activating the nameTextBox and then calling 'SetTextOnTextBox(...)'.
         /// You can override this method to make changes to the name, apply
         /// effects or for localization (selecting the right name from 
-        /// multiple ones stored in the dialoguePart's properties)
+        /// multiple ones stored in the DialoguePart's properties)
         /// </summary>
-        /// <param name="dialoguePart">The dialoguePart that is being played</param>
-        /// <param name="name">The name to be shown, by default the value of the dialoguePart's
+        /// <param name="DialoguePart">The DialoguePart that is being played</param>
+        /// <param name="name">The name to be shown, by default the value of the DialoguePart's
         /// name Property</param>
         /// <param name="nameTextBox">The TextBox that the answer will be shown in. Includes 
         /// the actual UI components that are involved</param>
-        protected virtual void ShowName(in Dialogue.DialoguePart dialoguePart, string name, TextBox nameTextBox)
+        protected virtual void ShowName(in Dialogue.DialoguePart DialoguePart, string name, TextBox nameTextBox)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -355,8 +356,8 @@ namespace UniversalDialogueSystem
         /// the actual UI components that are involved</param>
         protected virtual void ShowAnswer(in Dialogue.DialoguePart.Answer answer, string text, AnswerBox answerTextBox)
         {
-            answerTextBox.textBox.gameObject.SetActive(true);
             SetTextOnTextBox(answerTextBox.textBox, answer.GetProperty<string>("Text"));
+            answerTextBox.textBox.gameObject.SetActive(true);
         }
 
         /// <summary>
@@ -400,7 +401,7 @@ namespace UniversalDialogueSystem
                 // Another check to avoid registering a touch twice
                 if (Input.GetTouch(0).phase == TouchPhase.Began)
                     /* Only proceed if the touch is not above a button
-                     * (ideally dialogueTextBox shouldn't be a raycast target) */
+                     * (ideally DialogueTextBox shouldn't be a raycast target) */
                     if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
                     {
                         lastTouchTimestamp = Time.realtimeSinceStartup;
@@ -414,7 +415,7 @@ namespace UniversalDialogueSystem
             if (interactionKeys.Any(k => Input.GetKeyDown(k)))
             {
                 /* Only proceed if the pointer is not above a button
-                 * (ideally dialogueTextBox shouldn't be a raycast target) */
+                 * (ideally DialogueTextBox shouldn't be a raycast target) */
                 if (!EventSystem.current.IsPointerOverGameObject())
                 {
                     UpdateDialogue();
@@ -425,20 +426,20 @@ namespace UniversalDialogueSystem
 
         #region Dialogue Playback (The important part)
         /// <summary>
-        /// Starts a Dialogue. Enables the dialogueUI and sets Time.timeScale to 0 
+        /// Starts a Dialogue. Enables the DialogueUI and sets Time.timeScale to 0 
         /// (= pauses the game), if the "Pause during Dialogue" Property is 
         /// set to true on the Dialogue. Then starts playing the start DialoguePart
         /// </summary>
         /// <seealso cref="StartDialogue(Dialogue)"/>
-        public void StartDialogue(string dialogueID)
+        public void StartDialogue(string DialogueID)
         {
-            Dialogue dialogue = null;
+            Dialogue Dialogue = null;
             if (loadMode == LoadMode.LOAD_ON_START)
-                dialogue = dialogues.Where(d => d.id.Equals(dialogueID)).First();
+                Dialogue = Dialogues.Where(d => d.id.Equals(DialogueID)).FirstOrDefault();
             else
-                dialogue = LoadDialogue(dialogueID);
+                Dialogue = LoadDialogue(DialogueID);
 
-            if (dialogue != null)
+            if (Dialogue != null)
             {
                 justStarted = true;
 
@@ -454,28 +455,28 @@ namespace UniversalDialogueSystem
                     }
                 }
 
-                StartDialogue(dialogue);
+                StartDialogue(Dialogue);
             }
             else
-                Debug.LogWarning("Dialogue with ID " + dialogueID + " was started but " +
+                Debug.LogWarning("Dialogue with ID " + DialogueID + " was started but " +
                     "couldn't be found! Try checking the spelling on the ID and " +
-                    "whether you actually imported it into Resources/Dialogues");
+                    "whether you actually imported it into Resources\\Dialogues");
         }
 
         /// <summary>
-        /// Starts a Dialogue. Enables the dialogueUI and sets Time.timeScale to 0 
+        /// Starts a Dialogue. Enables the DialogueUI and sets Time.timeScale to 0 
         /// (= pauses the game), if the "Pause during Dialogue" Property is 
-        /// set to true on the Dialogue. Called by StartDialogue(dialogueID).
+        /// set to true on the Dialogue. Called by StartDialogue(DialogueID).
         /// </summary>
-        /// <param name="dialogue">The Dialogue to be started</param>
-        protected void StartDialogue(Dialogue dialogue)
+        /// <param name="Dialogue">The Dialogue to be started</param>
+        protected void StartDialogue(Dialogue Dialogue)
         {
-            currentDialogue = dialogue; // !
+            currentDialogue = Dialogue; // !
 
-            if (dialogue.GetProperty<bool>("Pause during Dialogue"))
+            if (Dialogue.GetProperty<bool>("Pause during Dialogue"))
                 Time.timeScale = 0f;
 
-            dialogueRunning = true;
+            DialogueRunning = true;
 
             EnableDialogueUI(); // !
 
@@ -484,7 +485,7 @@ namespace UniversalDialogueSystem
 
         private IEnumerator StartDialogueDelayed()
         {
-            dialogueStarting = true;
+            DialogueStarting = true;
 
             if (currentDialogue.GetProperty<bool>("Pause during Dialogue"))
                 yield return new WaitForSecondsRealtime(delayBtwUIEnableAndDialogueStart);
@@ -495,20 +496,20 @@ namespace UniversalDialogueSystem
 
             // The start DialoguePart is being played
             GoThroughDialoguePart(
-                currentDialogue.dialogueParts.Where(
+                currentDialogue.DialogueParts.Where(
                     dp => dp.id.Equals(currentDialogue.startDialoguePartID)).First());
 
-            dialogueStarting = false;
+            DialogueStarting = false;
         }
 
         /// <summary>
         /// Called as part of the Update loop whenever the player 
         /// touches the screen or presses the interactionKey during
-        /// a dialogue. Moves the dialogue into it's next state, which
+        /// a Dialogue. Moves the Dialogue into it's next state, which
         /// means either
         /// going to the next DialoguePart,
         /// showing the entirety of the text at once (stopping revealing),
-        /// or ending the dialogue.
+        /// or ending the Dialogue.
         /// </summary>
         private void UpdateDialogue()
         {
@@ -520,16 +521,16 @@ namespace UniversalDialogueSystem
                 textEffectRunning = false;
 
                 // Show text instantly
-                SetTextOnTextBox(dialogueTextBox, CurrentDialoguePartText);
+                SetTextOnTextBox(DialogueTextBox, CurrentDialoguePartText);
 
                 return;
             }
 
-            /* No answers -> Go to next dialogue part OR finish dialogue 
+            /* No answers -> Go to next Dialogue part OR finish Dialogue 
              * (otherwise done by clicking on answers) */
             if (noAnswers)
             {
-                var allDiaParts = currentDialogue.dialogueParts;
+                var allDiaParts = currentDialogue.DialogueParts;
 
                 // Check whether this is the last DialoguePart
                 if (string.IsNullOrWhiteSpace(currentDialoguePart.nextDialoguePartID))
@@ -540,7 +541,7 @@ namespace UniversalDialogueSystem
 
                 // Continue to the next DialoguePart
                 GoThroughDialoguePart(
-                    currentDialogue.dialogueParts.Where(
+                    currentDialogue.DialogueParts.Where(
                         dp => dp.id.Equals(currentDialoguePart.nextDialoguePartID)).First());
             }
         }
@@ -579,7 +580,9 @@ namespace UniversalDialogueSystem
 
             // Answers
             int answerCount = diaPart.answers.Length;
-            if (answerCount > 0) // Are there even answers
+            if (answerCount > 0 // Are there even answers
+                // Is there at least one Answer that is not conditional or whose condition is met
+                && Array.Exists(diaPart.answers, a => !a.conditional || a.condition.Value.IsMet())) 
             {
                 // If so, go through all of them
                 for (int i = 0; i < answerCount; i++)
@@ -645,7 +648,7 @@ namespace UniversalDialogueSystem
             if (currentDialoguePart.GetProperty<float>("Text speed") > 0) // with effect
                 revealTextGraduallyCo = StartCoroutine(RevealTextGradually(text));
             else // instantaneously
-                SetTextOnTextBox(dialogueTextBox, text);
+                SetTextOnTextBox(DialogueTextBox, text);
         }
 
         /// <summary>
@@ -670,7 +673,7 @@ namespace UniversalDialogueSystem
                     answerBeforePause = null;
             }
 
-            // Check whether the end of the dialogue was reached
+            // Check whether the end of the Dialogue was reached
             if (string.IsNullOrWhiteSpace(answer.nextDialoguePartID))
             {
                 FinishDialogue();
@@ -680,7 +683,7 @@ namespace UniversalDialogueSystem
 
             // Continue to next Dialogue Part
             GoThroughDialoguePart(
-                currentDialogue.dialogueParts.Where(
+                currentDialogue.DialogueParts.Where(
                     dp => dp.id.Equals(answer.nextDialoguePartID)).First());
         }
 
@@ -690,17 +693,17 @@ namespace UniversalDialogueSystem
         /// The Dialogue will continue when ContinueDialogue() is being called
         /// </summary>
         /// <seealso cref="ContinueDialogue"/>
-        /// <param name="disableDialogueUI">Whether or not the dialogueUI shall be 
+        /// <param name="disableDialogueUI">Whether or not the DialogueUI shall be 
         /// disabled during the pause</param>
         /// <param name="resetTimescale">Whether or not the Time.timeScale shall 
         /// be reset to standardTimeScale during the pause (only applies when 
         /// the Dialogue's 'Pause during Dialogue' is set to true)</param>
         public void PauseDialogue(bool disableDialogueUI, bool resetTimescale)
         {
-            if (!dialogueRunning || currentDialogue == null)
+            if (!DialogueRunning || currentDialogue == null)
                 return;
 
-            dialoguePaused = true; // !
+            DialoguePaused = true; // !
 
             StopDialoguePlaybackCoroutines();
 
@@ -727,10 +730,10 @@ namespace UniversalDialogueSystem
         /// chosen answer (and continuing with the next DialoguePart) or shows the current DialoguePart</param>
         public void ContinueDialogue(bool continueWithAnswer = true)
         {
-            if (!dialoguePaused || currentDialogue == null)
+            if (!DialoguePaused || currentDialogue == null)
                 return;
 
-            if (dialogueUI.activeSelf == false)
+            if (DialogueUI.activeSelf == false)
                 EnableDialogueUI(true);
 
             if (Time.timeScale != 0 && currentDialogue.GetProperty<bool>("Pause during Dialogue"))
@@ -752,7 +755,7 @@ namespace UniversalDialogueSystem
         /// </summary>
         protected void FinishDialogue()
         {
-            SetTextOnTextBox(dialogueTextBox, "");
+            SetTextOnTextBox(DialogueTextBox, "");
             SetTextOnTextBox(nameTextBox, "");
 
             foreach (AnswerBox answerBox in answerTextBoxes)
@@ -766,14 +769,14 @@ namespace UniversalDialogueSystem
 
             OnDialogueEnd(currentDialogue); // !
 
-            dialogueRunning = false;
+            DialogueRunning = false;
 
             StartCoroutine(FinishDialogueDelayed());
         }
 
         private IEnumerator FinishDialogueDelayed()
         {
-            dialogueEnding = true;
+            DialogueEnding = true;
 
             if (currentDialogue.GetProperty<bool>("Pause during Dialogue"))
                 yield return new WaitForSecondsRealtime(delayBtwDialogueEndAndUIDisable);
@@ -782,7 +785,7 @@ namespace UniversalDialogueSystem
 
             DisableDialogueUI();
 
-            dialogueEnding = false;
+            DialogueEnding = false;
 
             for (int i = 0; i < deactivateDuringDialogueObjectsToReactivate.Length; i++)
             {
@@ -945,7 +948,7 @@ namespace UniversalDialogueSystem
         {
             textEffectRunning = true; // !
 
-            SetTextOnTextBox(dialogueTextBox, "");
+            SetTextOnTextBox(DialogueTextBox, "");
             float textRevealSpeed = currentDialoguePart.GetProperty<float>("Text speed");
 
             // Global cursor that points to the index in the baseText where we're currently at
@@ -1022,10 +1025,10 @@ namespace UniversalDialogueSystem
                                             {
                                                 // Write the tags to the text box, the actual text will go in between
                                                 newText = useTextMeshPro
-                                                          ? dialogueTextBox.textTMP.text.Insert(cursor, startTag + endTag)
-                                                          : dialogueTextBox.text.text.Insert(cursor, startTag + endTag);
+                                                          ? DialogueTextBox.textTMP.text.Insert(cursor, startTag + endTag)
+                                                          : DialogueTextBox.text.text.Insert(cursor, startTag + endTag);
 
-                                                SetTextOnTextBox(dialogueTextBox, newText);
+                                                SetTextOnTextBox(DialogueTextBox, newText);
 
                                                 // Very important! Push current context back onto the stack for later
                                                 contexts.Push(currentContext);
@@ -1052,10 +1055,10 @@ namespace UniversalDialogueSystem
                     }
 
                     newText = useTextMeshPro
-                        ? dialogueTextBox.textTMP.text.Insert(cursor, baseText[cursor].ToString())
-                        : dialogueTextBox.text.text.Insert(cursor, baseText[cursor].ToString());
+                        ? DialogueTextBox.textTMP.text.Insert(cursor, baseText[cursor].ToString())
+                        : DialogueTextBox.text.text.Insert(cursor, baseText[cursor].ToString());
 
-                    SetTextOnTextBox(dialogueTextBox, newText);
+                    SetTextOnTextBox(DialogueTextBox, newText);
 
                     float actualTextSpeed 
                         = 1.53f - 0.5f * baseTextSpeed - textRevealSpeed;
@@ -1081,74 +1084,74 @@ namespace UniversalDialogueSystem
         #region Loading and Utility
         private Dialogue[] LoadDialogues()
         {
-            List<Dialogue> dialogues = new List<Dialogue>();
+            List<Dialogue> Dialogues = new List<Dialogue>();
 
-            TextAsset[] dialogueAssets = null;
+            TextAsset[] DialogueAssets = null;
             try
             {
-                dialogueAssets = Resources.LoadAll("Dialogues", typeof(TextAsset))
+                DialogueAssets = Resources.LoadAll("Dialogues", typeof(TextAsset))
                                         .Cast<TextAsset>().ToArray();
             }
             catch (Exception e)
             {
-                Debug.LogError("Error while loading dialogues. Please make sure that " +
+                Debug.LogError("Error while loading Dialogues. Please make sure that " +
                     "the Resources\\Dialogues folder exists\n\n" + e.Message);
             }
 
-            if (dialogueAssets == null)
-                return dialogues.ToArray();
+            if (DialogueAssets == null)
+                return Dialogues.ToArray();
 
-            foreach (TextAsset dialogueFile in dialogueAssets)
+            foreach (TextAsset DialogueFile in DialogueAssets)
             {
-                Dialogue dialogueInstance = JsonConvert.DeserializeObject<Dialogue>(dialogueFile.text);
-                dialogues.Add(dialogueInstance);
+                Dialogue DialogueInstance = JsonConvert.DeserializeObject<Dialogue>(DialogueFile.text);
+                Dialogues.Add(DialogueInstance);
             }
 
-            return dialogues.ToArray();
+            return Dialogues.ToArray();
         }
 
-        private Dialogue LoadDialogue(string dialogueID)
+        private Dialogue LoadDialogue(string DialogueID)
         {
-            TextAsset dialogueAsset = null;
+            TextAsset DialogueAsset = null;
             try
             {
-                dialogueAsset = Resources.Load<TextAsset>(Path.Combine("Dialogues", dialogueID) + ".udsdialogue");
+                DialogueAsset = Resources.Load<TextAsset>(Path.Combine("Dialogues", DialogueID) + ".udsDialogue");
             }
             catch (Exception e)
             {
-                Debug.LogError("Error while loading a dialogue. Please make sure that " +
-                    "the Resources\\Dialogues\\" + dialogueID + ".udsdialogue.json asset exists and is valid\n\n" + e.Message);
+                Debug.LogError("Error while loading a Dialogue. Please make sure that " +
+                    "the Resources\\Dialogues\\" + DialogueID + ".udsDialogue.json asset exists and is valid\n\n" + e.Message);
             }
 
-            if (dialogueAsset == null)
+            if (DialogueAsset == null)
                 return null;
 
-            Dialogue dialogueInstance = JsonConvert.DeserializeObject<Dialogue>(dialogueAsset.text);
+            Dialogue DialogueInstance = JsonConvert.DeserializeObject<Dialogue>(DialogueAsset.text);
 
-            return dialogueInstance;
+            return DialogueInstance;
         }
 
         /// <summary>
-        /// Determines whether a dialoguePart leads directly to the end
+        /// Determines whether a DialoguePart leads directly to the end
         /// of the Dialogue. That is, it has no answers, all parts that
         /// come after it have no answers and one of the following
         /// parts is a end of the Dialogue, which also means that there
-        /// are no cycles "beyond" that dialoguePart.
+        /// are no cycles "beyond" that DialoguePart.
         /// 
         /// (works iteratively to avoid StackOverflows and
         /// excessive memory usage)
         /// </summary>
         /// <seealso cref="IsEndBranch(Dialogue.DialoguePart.Answer)"/>
-        /// <param name="dialoguePart">The dialoguePart to be evaluated</param>
-        /// <returns>Whether or not this dialoguePart leads directly to the end of the dialogue</returns>
-        protected bool IsEndBranch(Dialogue.DialoguePart dialoguePart)
+        /// <param name="DialoguePart">The DialoguePart to be evaluated</param>
+        /// <returns>Whether or not this DialoguePart leads directly to the end of the Dialogue</returns>
+        protected bool IsEndBranch(Dialogue.DialoguePart DialoguePart)
         {
             // The start of the branch doesn't exist
-            if (dialoguePart == null)
+            if (DialoguePart == null)
                 return true;
 
             // The part that is currently being evaluated
-            Dialogue.DialoguePart currentPart = dialoguePart;
+            Dialogue.DialoguePart currentPart = DialoguePart;
 
             // HashSet for loop detection
             HashSet<Dialogue.DialoguePart> alreadyVisited = new HashSet<Dialogue.DialoguePart>();
@@ -1164,8 +1167,8 @@ namespace UniversalDialogueSystem
                     return true;
                 else // Find and check next part
                 {
-                    var followingPart = Array.Find(currentDialogue.dialogueParts,
-                                                   dp => dp.id.Equals(dialoguePart.nextDialoguePartID));
+                    var followingPart = Array.Find(currentDialogue.DialogueParts,
+                                                   dp => dp.id.Equals(DialoguePart.nextDialoguePartID));
 
                     currentPart = followingPart;
                 }
@@ -1185,8 +1188,8 @@ namespace UniversalDialogueSystem
         /// excessive memory usage)
         /// </summary>
         /// <seealso cref="IsEndBranch(Dialogue.DialoguePart)"/>
-        /// <param name="answer">The dialoguePart to be evaluated</param>
-        /// <returns>Whether or not this answer leads directly to the end of the dialogue</returns>
+        /// <param name="answer">The DialoguePart to be evaluated</param>
+        /// <returns>Whether or not this answer leads directly to the end of the Dialogue</returns>
         protected bool IsEndBranch(Dialogue.DialoguePart.Answer answer)
         {
             // The start of the branch doesn't exist
@@ -1195,7 +1198,7 @@ namespace UniversalDialogueSystem
 
             // Evaluate the branch from the DialoguePart following the answer
             var followingDP 
-                = Array.Find(currentDialogue.dialogueParts, dp => dp.id.Equals(answer.nextDialoguePartID));
+                = Array.Find(currentDialogue.DialogueParts, dp => dp.id.Equals(answer.nextDialoguePartID));
 
             // Do so using the already defined method IsEndBranch(DialoguePart)
             return IsEndBranch(followingDP);
@@ -1218,7 +1221,7 @@ namespace UniversalDialogueSystem
         /// <summary>
         /// Stops all coroutines that are possibly being started internally by
         /// the UDSDialogueManager. These are the coroutines for gradually revealing 
-        /// and formatting the text, the dialogue start coroutine and the dialogue 
+        /// and formatting the text, the Dialogue start coroutine and the Dialogue 
         /// end coroutine
         /// </summary>
         protected void StopDialoguePlaybackCoroutines()
