@@ -9,7 +9,6 @@ using TMPro;
 using Newtonsoft.Json;
 using System.IO;
 using System.ComponentModel;
-using UnityEditor;
 
 namespace UniversalDialogueSystem
 {
@@ -160,7 +159,7 @@ namespace UniversalDialogueSystem
                 if (currentDialoguePart == null)
                     return null;
 
-                if (currentDialoguePart.HasProperty("Name"))
+                if (currentDialoguePart.HasProperty<string>("Name"))
                     return currentDialoguePart.GetProperty<string>("Name");
                 else // Shouldn't happen
                     return null;
@@ -245,7 +244,7 @@ namespace UniversalDialogueSystem
         /// </summary>
         /// <seealso cref="OnDialogueEnd(Dialogue)"/>
         /// <param name="Dialogue">The Dialogue that just starts</param>
-        protected virtual void OnDialogueStart(Dialogue Dialogue)
+        protected virtual void OnDialogueStart(Dialogue dialogue)
         {
 
         }
@@ -255,7 +254,7 @@ namespace UniversalDialogueSystem
         /// </summary>
         /// <seealso cref="OnDialogueStart(Dialogue)"/>
         /// <param name="Dialogue">The Dialogue that just ends</param>
-        protected virtual void OnDialogueEnd(Dialogue Dialogue)
+        protected virtual void OnDialogueEnd(Dialogue dialogue)
         {
             
         }
@@ -290,9 +289,9 @@ namespace UniversalDialogueSystem
         /// Called when playback of a DialoguePart starts
         /// </summary>
         /// <seealso cref="OnDialogueStart(Dialogue)"/>
-        /// <seealso cref="ShowDialoguePartText(in Dialogue.DialoguePart, string)"/>
+        /// <seealso cref="ShowDialoguePartText(Dialogue.DialoguePart, string)"/>
         /// <param name="DialoguePart">The DialoguePart that just starts</param>
-        protected virtual void OnDialoguePartStart(in Dialogue.DialoguePart DialoguePart)
+        protected virtual void OnDialoguePartStart(Dialogue.DialoguePart dialoguePart)
         {
 
         }
@@ -306,12 +305,12 @@ namespace UniversalDialogueSystem
         /// effects or for localization (selecting the right text from 
         /// multiple ones stored in the DialoguePart's properties)
         /// </summary>
-        /// <seealso cref="OnDialoguePartStart(in Dialogue.DialoguePart)"/> 
-        /// <seealso cref="ShowAnswer(in Dialogue.DialoguePart.Answer, string, AnswerBox)"/>
+        /// <seealso cref="OnDialoguePartStart(Dialogue.DialoguePart)"/> 
+        /// <seealso cref="ShowAnswer(Dialogue.DialoguePart.Answer, string, AnswerBox)"/>
         /// <param name="DialoguePart">The DialoguePart that is being played</param>
         /// <param name="text">The text to be shown, by default the value of the DialoguePart's
         /// text Property</param>
-        protected virtual void ShowDialoguePartText(in Dialogue.DialoguePart DialoguePart, string text)
+        protected virtual void ShowDialoguePartText(Dialogue.DialoguePart dialoguePart, string text)
         {
             ShowDialoguePartText();
         }
@@ -330,7 +329,7 @@ namespace UniversalDialogueSystem
         /// name Property</param>
         /// <param name="nameTextBox">The TextBox that the answer will be shown in. Includes 
         /// the actual UI components that are involved</param>
-        protected virtual void ShowName(in Dialogue.DialoguePart DialoguePart, string name, TextBox nameTextBox)
+        protected virtual void ShowName(Dialogue.DialoguePart dialoguePart, string name, TextBox nameTextBox)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -349,12 +348,12 @@ namespace UniversalDialogueSystem
         /// effects or for localization (selecting the right text from 
         /// multiple ones stored in the answer's properties)
         /// </summary>
-        /// <seealso cref="OnAnswer(in Dialogue.DialoguePart.Answer, AnswerBox)"/>
+        /// <seealso cref="OnAnswer(Dialogue.DialoguePart.Answer, AnswerBox)"/>
         /// <param name="answer">The answer to be shown</param>
         /// <param name="text">The text to be shown, by default the answer's text (Property)</param>
         /// <param name="answerTextBox">The AnswerBox that the answer will be shown in. Includes 
         /// the actual UI components that are involved</param>
-        protected virtual void ShowAnswer(in Dialogue.DialoguePart.Answer answer, string text, AnswerBox answerTextBox)
+        protected virtual void ShowAnswer(Dialogue.DialoguePart.Answer answer, string text, AnswerBox answerTextBox)
         {
             SetTextOnTextBox(answerTextBox.textBox, answer.GetProperty<string>("Text"));
             answerTextBox.textBox.gameObject.SetActive(true);
@@ -363,12 +362,12 @@ namespace UniversalDialogueSystem
         /// <summary>
         /// Called whenever the player selects an answer
         /// </summary>
-        /// <seealso cref="ShowAnswer(in Dialogue.DialoguePart.Answer, string, AnswerBox)"/>
+        /// <seealso cref="ShowAnswer(Dialogue.DialoguePart.Answer, string, AnswerBox)"/>
         /// <param name="answer">The answer, which the player selected</param>
         /// <param name="answerTextBox">The AnswerBox that the answer is shown in. Includes 
         /// the actual UI components that are involved</param>
         /// <returns>Whether or not Dialogue playback is being paused by this answer (using PauseDialogue())</returns>
-        protected virtual bool OnAnswer(in Dialogue.DialoguePart.Answer answer, AnswerBox answerTextBox)
+        protected virtual bool OnAnswer(Dialogue.DialoguePart.Answer answer, AnswerBox answerTextBox)
         {
             return false;
         }
@@ -496,7 +495,7 @@ namespace UniversalDialogueSystem
 
             // The start DialoguePart is being played
             GoThroughDialoguePart(
-                currentDialogue.DialogueParts.Where(
+                currentDialogue.dialogueParts.Where(
                     dp => dp.id.Equals(currentDialogue.startDialoguePartID)).First());
 
             DialogueStarting = false;
@@ -530,7 +529,7 @@ namespace UniversalDialogueSystem
              * (otherwise done by clicking on answers) */
             if (noAnswers)
             {
-                var allDiaParts = currentDialogue.DialogueParts;
+                var allDiaParts = currentDialogue.dialogueParts;
 
                 // Check whether this is the last DialoguePart
                 if (string.IsNullOrWhiteSpace(currentDialoguePart.nextDialoguePartID))
@@ -541,7 +540,7 @@ namespace UniversalDialogueSystem
 
                 // Continue to the next DialoguePart
                 GoThroughDialoguePart(
-                    currentDialogue.DialogueParts.Where(
+                    currentDialogue.dialogueParts.Where(
                         dp => dp.id.Equals(currentDialoguePart.nextDialoguePartID)).First());
             }
         }
@@ -683,7 +682,7 @@ namespace UniversalDialogueSystem
 
             // Continue to next Dialogue Part
             GoThroughDialoguePart(
-                currentDialogue.DialogueParts.Where(
+                currentDialogue.dialogueParts.Where(
                     dp => dp.id.Equals(answer.nextDialoguePartID)).First());
         }
 
@@ -722,7 +721,7 @@ namespace UniversalDialogueSystem
         /// either 1) instantly taking the answer which was clicked right before
         /// the pause, 2) playing the current DialoguePart (again) or
         /// 3) (re)starting the current Dialogue. One of these is being chosen 
-        /// based on when PauseDialogue was called.
+        /// based on when PauseDialogue was called (and the value of continueWithAnswer).
         /// </summary>
         /// <seealso cref="PauseDialogue(bool, bool)"/>
         /// <param name="continueWithAnswer">Important when the pause was triggered by 
@@ -803,6 +802,14 @@ namespace UniversalDialogueSystem
         #endregion
 
         #region Global Properties
+        /// <summary>
+        /// Sets the Global Property of type T with key key to value value 
+        /// (creates the Global Property if it doesn't exist)
+        /// </summary>
+        /// <typeparam name="T">The type of the Global Property to set, one of (string, int, bool, float)</typeparam>
+        /// <param name="key">The key of the Global Property to set</param>
+        /// <param name="value">The value to set the Global Property to</param>
+        /// <returns>Whether or not the Global Property existed before (thus false if it was newly created)</returns>
         public bool SetGlobalProperty<T>(string key, T value)
         {
             bool alreadyThere = globalProperties.ContainsKey(key);
@@ -812,6 +819,15 @@ namespace UniversalDialogueSystem
             return alreadyThere;
         }
 
+        /// <summary>
+        /// Gets the value of the Global Property of type T with key key.
+        /// Throws an UDSException if there is no such Global Property, so 
+        /// HasGlobalProperty should be checked before GetGlobalProperty.
+        /// </summary>
+        /// <seealso cref="HasGlobalProperty{T}(string)"/>
+        /// <typeparam name="T">The type of the Global Property, one of (string, int, bool, float)</typeparam>
+        /// <param name="key">The key of the Global Property</param>
+        /// <returns>The value of the Global Property with key key</returns>
         public T GetGlobalProperty<T>(string key)
         {
             UDSProperty valueRaw = default;
@@ -831,6 +847,19 @@ namespace UniversalDialogueSystem
                     (string.Format(UDSException.msg4, key, typeof(T).ToString()));
         }
 
+        /// <summary>
+        /// Gets the Property struct with key key. Since the struct 
+        /// contains the Global Property value as an object seperated from its 
+        /// type, this version of GetGlobalProperty should not be used unless 
+        /// with good reason. Consider instead using GetGlobalProperty with
+        /// a type parameter.
+        /// Throws an UDSException if there is no such Global Property, so 
+        /// HasGlobalProperty should be checked before GetGlobalProperty.
+        /// </summary>
+        /// <seealso cref="GetProperty{T}(string)"/>
+        /// <seealso cref="HasProperty(string)"/>
+        /// <param name="key">The key of the Global Property</param>
+        /// <returns>The UDSProperty struct with key key</returns>
         public UDSProperty GetGlobalProperty(string key)
         {
             UDSProperty value;
@@ -847,23 +876,60 @@ namespace UniversalDialogueSystem
             return globalProperties.Keys.ToArray();
         }
 
+        /// <summary>
+        /// Deletes the Global Property with key key and 
+        /// returns whether it existed
+        /// </summary>
+        /// <param name="key">The key of the Global Property to delete</param>
+        /// <returns>Whether or not the Global Property existed</returns>
         public bool DeleteGlobalProperty(string key)
         {
             return globalProperties.Remove(key);
         }
 
+        /// <summary>
+        /// Deletes all Global Properties - use with caution, 
+        /// especially when Global Properties are being saved
+        /// </summary>
         public void DeleteAllGlobalProperties()
         {
             foreach (string property in GetGlobalPropertyKeys())
                 DeleteGlobalProperty(property);
         }
 
-        public bool HasGlobalProperty(string key)
-            => globalProperties.ContainsKey(key);
-
+        /// <summary>
+        /// Checks whether there is a Global Property of type T with key key
+        /// </summary>
+        /// <seealso cref="HasGlobalProperty{T}(string)"/>
+        /// <seealso cref="HasGlobalProperty(string)"/>
+        /// <typeparam name="T">The type of Global Property to be looked for</typeparam>
+        /// <param name="key">The Global Property key to be looked for</param>
+        /// <returns>Whether or not the DialogueComponent has a Global Property 
+        /// of type T with key key</returns>
         public bool HasGlobalProperty<T>(string key)
             => globalProperties.ContainsKey(key) && globalProperties[key].type == typeof(T);
 
+        /// <summary>
+        /// Checks whether there is a Global Property of type T with key key
+        /// </summary>
+        /// <seealso cref="HasGlobalProperty{T}(string)"/>
+        /// <seealso cref="HasGlobalProperty(string)"/>
+        /// <typeparam name="T">The type of Global Property to be looked for</typeparam>
+        /// <param name="key">The Global Property key to be looked for</param>
+        /// <returns>Whether or not the DialogueComponent has a Global Property 
+        /// of type T with key key</returns>
+        public bool HasGlobalProperty(string key)
+            => globalProperties.ContainsKey(key);
+
+        /// <summary>
+        /// Checks whether there is a Global Property of type type with key key
+        /// </summary>
+        /// <seealso cref="HasGlobalProperty{T}(string)"/>
+        /// <seealso cref="HasGlobalProperty(string)"/>
+        /// <param name="type">The type of Global Property to be looked for</typeparam>
+        /// <param name="key">The Global Property key to be looked for</param>
+        /// <returns>Whether or not the DialogueComponent has a Global Property 
+        /// of type type with key key</returns>
         public bool HasGlobalProperty(string key, Type type)
             => globalProperties.ContainsKey(key) && globalProperties[key].type == type;
 
@@ -1084,12 +1150,12 @@ namespace UniversalDialogueSystem
         #region Loading and Utility
         private Dialogue[] LoadDialogues()
         {
-            List<Dialogue> Dialogues = new List<Dialogue>();
+            List<Dialogue> dialogues = new List<Dialogue>();
 
-            TextAsset[] DialogueAssets = null;
+            TextAsset[] dialogueAssets = null;
             try
             {
-                DialogueAssets = Resources.LoadAll("Dialogues", typeof(TextAsset))
+                dialogueAssets = Resources.LoadAll("Dialogues", typeof(TextAsset))
                                         .Cast<TextAsset>().ToArray();
             }
             catch (Exception e)
@@ -1098,24 +1164,24 @@ namespace UniversalDialogueSystem
                     "the Resources\\Dialogues folder exists\n\n" + e.Message);
             }
 
-            if (DialogueAssets == null)
-                return Dialogues.ToArray();
+            if (dialogueAssets == null)
+                return dialogues.ToArray();
 
-            foreach (TextAsset DialogueFile in DialogueAssets)
+            foreach (TextAsset dialogueFile in dialogueAssets)
             {
-                Dialogue DialogueInstance = JsonConvert.DeserializeObject<Dialogue>(DialogueFile.text);
-                Dialogues.Add(DialogueInstance);
+                Dialogue dialogueInstance = JsonConvert.DeserializeObject<Dialogue>(dialogueFile.text);
+                dialogues.Add(dialogueInstance);
             }
 
-            return Dialogues.ToArray();
+            return dialogues.ToArray();
         }
 
         private Dialogue LoadDialogue(string DialogueID)
         {
-            TextAsset DialogueAsset = null;
+            TextAsset dialogueAsset = null;
             try
             {
-                DialogueAsset = Resources.Load<TextAsset>(Path.Combine("Dialogues", DialogueID) + ".udsDialogue");
+                dialogueAsset = Resources.Load<TextAsset>(Path.Combine("Dialogues", DialogueID) + ".udsDialogue");
             }
             catch (Exception e)
             {
@@ -1123,12 +1189,12 @@ namespace UniversalDialogueSystem
                     "the Resources\\Dialogues\\" + DialogueID + ".udsDialogue.json asset exists and is valid\n\n" + e.Message);
             }
 
-            if (DialogueAsset == null)
+            if (dialogueAsset == null)
                 return null;
 
-            Dialogue DialogueInstance = JsonConvert.DeserializeObject<Dialogue>(DialogueAsset.text);
+            Dialogue dialogueInstance = JsonConvert.DeserializeObject<Dialogue>(dialogueAsset.text);
 
-            return DialogueInstance;
+            return dialogueInstance;
         }
 
         /// <summary>
@@ -1142,16 +1208,16 @@ namespace UniversalDialogueSystem
         /// excessive memory usage)
         /// </summary>
         /// <seealso cref="IsEndBranch(Dialogue.DialoguePart.Answer)"/>
-        /// <param name="DialoguePart">The DialoguePart to be evaluated</param>
+        /// <param name="dialoguePart">The DialoguePart to be evaluated</param>
         /// <returns>Whether or not this DialoguePart leads directly to the end of the Dialogue</returns>
-        protected bool IsEndBranch(Dialogue.DialoguePart DialoguePart)
+        protected bool IsEndBranch(Dialogue.DialoguePart dialoguePart)
         {
             // The start of the branch doesn't exist
-            if (DialoguePart == null)
+            if (dialoguePart == null)
                 return true;
 
             // The part that is currently being evaluated
-            Dialogue.DialoguePart currentPart = DialoguePart;
+            Dialogue.DialoguePart currentPart = dialoguePart;
 
             // HashSet for loop detection
             HashSet<Dialogue.DialoguePart> alreadyVisited = new HashSet<Dialogue.DialoguePart>();
@@ -1167,8 +1233,8 @@ namespace UniversalDialogueSystem
                     return true;
                 else // Find and check next part
                 {
-                    var followingPart = Array.Find(currentDialogue.DialogueParts,
-                                                   dp => dp.id.Equals(DialoguePart.nextDialoguePartID));
+                    var followingPart = Array.Find(currentDialogue.dialogueParts,
+                                                   dp => dp.id.Equals(dialoguePart.nextDialoguePartID));
 
                     currentPart = followingPart;
                 }
@@ -1198,10 +1264,32 @@ namespace UniversalDialogueSystem
 
             // Evaluate the branch from the DialoguePart following the answer
             var followingDP 
-                = Array.Find(currentDialogue.DialogueParts, dp => dp.id.Equals(answer.nextDialoguePartID));
+                = Array.Find(currentDialogue.dialogueParts, dp => dp.id.Equals(answer.nextDialoguePartID));
 
             // Do so using the already defined method IsEndBranch(DialoguePart)
             return IsEndBranch(followingDP);
+        }
+
+        /// <summary>
+        /// Determines the index of an Answer (that is, which Answer Box
+        /// belongs to it) considering Conditional Answers whose condition
+        /// is not met. Always use this instead of answer.index!
+        /// </summary>
+        /// <param name="answer">The Answer whose index shall be determined</param>
+        /// <returns>The index of the Answer considering Conditional Answers whose conditions is not met</returns>
+        protected int GetAnswerIndex(Dialogue.DialoguePart.Answer answer)
+        {
+            int i, j;
+            for (i = 0, j = 0; i < answer.index; i++, j++)
+            {
+                if (currentDialoguePart.answers[i].conditional
+                    && !currentDialoguePart.answers[i].condition.Value.IsMet())
+                {
+                    j--;
+                }
+            }
+
+            return j;
         }
 
         /// <summary>
