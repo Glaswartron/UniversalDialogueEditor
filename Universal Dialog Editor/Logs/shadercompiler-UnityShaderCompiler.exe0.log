@@ -1,5 +1,4 @@
 Base path: 'F:/Tools/ProgrammingDevelopmentDataScience/Unity/2020.2.7f1/Editor/Data', plugins path 'F:/Tools/ProgrammingDevelopmentDataScience/Unity/2020.2.7f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 
-Cmd: initializeCompiler
-
+Cmd: shutdown

@@ -186,7 +186,8 @@ public class PropertiesUI : MonoBehaviour, ISubUI
                     string localKey = listElement.id;
                     PropertyListElement localListElement = listElement;
 
-                    dialogueComponent.DeleteProperty(localKey); // !
+                    if (!string.IsNullOrWhiteSpace(localKey))
+                        dialogueComponent.DeleteProperty(localKey); // !
 
                     listElements.Remove(localListElement);
 
@@ -317,6 +318,8 @@ public class PropertiesUI : MonoBehaviour, ISubUI
 
     protected void OnDisable()
     {
+        addPropertyDropdown.gameObject.SetActive(false);
+
         ClearScrollView();
     }
 

@@ -15,6 +15,7 @@ public class SavePresetMenu : MonoBehaviour
         closeButton.onClick.AddListener(
             () =>
             {
+                idInputField.text = "";
                 EditorManager.instance.ActiveMenu = null;
             }
         );
@@ -28,13 +29,7 @@ public class SavePresetMenu : MonoBehaviour
         saveButton.onClick.AddListener(
             () =>
             {
-                bool successful = CreateAndSavePreset(properties, keys, type);
-
-                if (successful)
-                {
-                    ErrorMessage.instance.ShowErrorMessage("Preset saved", true);
-                    EditorManager.instance.ActiveMenu = null;
-                }
+                CreateAndSavePreset(properties, keys, type);
             }
         );
 
@@ -52,19 +47,22 @@ public class SavePresetMenu : MonoBehaviour
         saveButton.GetComponentInChildren<TMP_Text>().SetText("Save " + typeStr + " Preset");
     }
 
-    private bool CreateAndSavePreset
+    private void CreateAndSavePreset
         (Dictionary<string, UDSProperty> _properties, List<string> keys, PropertyPreset.PropertyPresetType type)
     {
         if (string.IsNullOrWhiteSpace(idInputField.text))
         {
             ErrorMessage.instance.ShowErrorMessage("You have to enter a name/id for the Property Preset");
-            return false;
+            return;
         }
 
         foreach (char c in EditorManager.invalidCharacters)
         {
             if (idInputField.text.Contains(c.ToString()))
+            {
                 ErrorMessage.instance.ShowErrorMessage("Name contains the invalid character " + c);
+                return;
+            }
         }
 
         PropertyPreset preset = new PropertyPreset()
@@ -77,25 +75,27 @@ public class SavePresetMenu : MonoBehaviour
 
         if (FileHandler.ExistsPropertyPreset(preset))
         {
-            bool done = false;
             AreYouSureDialog.instance.Open(
                 "A Property Preset with this ID already exists. Do you want to override it?",
                 "Yes",
                 "No",
-                onYes: () => { done = Save(preset); },
-                onNo: () => { done = false; }
+                onYes: () => { SaveAndLeave(preset); },
+                onNo: () => { }
             );
-
-            return done;
         } 
         else
         {
-            return Save(preset);
+            SaveAndLeave(preset);
         }
     }
 
-    private bool Save(PropertyPreset preset)
+    private void SaveAndLeave(PropertyPreset preset)
     {
-        return FileHandler.SavePropertyPreset(preset);
+        if (FileHandler.SavePropertyPreset(preset))
+        {
+            ErrorMessage.instance.ShowErrorMessage("Preset saved", true);
+            idInputField.text = "";
+            EditorManager.instance.ActiveMenu = null;
+        }
     }
 }

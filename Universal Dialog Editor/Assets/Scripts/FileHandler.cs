@@ -420,6 +420,9 @@ public class FileHandler
         FileStream stream = null;
         StreamWriter writer = null;
 
+        if (File.Exists(path))
+            File.Delete(path);
+
         try
         {
             stream = new FileStream(path, FileMode.Create);

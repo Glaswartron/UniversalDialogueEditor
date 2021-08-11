@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using System.Linq;
 
 public class ContextMenuManager : MonoBehaviour
 {
@@ -59,14 +60,20 @@ public class ContextMenuManager : MonoBehaviour
             DeactivateContextMenu();
 
             // No menu when mouse is over UI/editor panel
-            if (editorManager.editorPanel.rect.Contains(Input.mousePosition))
+            if (Utility.IsMouseOverUI(editorManager.editorPanel))
                 return;
 
             // Raycast to see what the user clicked
-            RaycastHit2D hit;
-            if (hit = Physics2D.GetRayIntersection
-                (editorManager.mainCam.ScreenPointToRay(Input.mousePosition)))
+            RaycastHit2D[] hits;
+            hits = Physics2D.GetRayIntersectionAll
+                (editorManager.mainCam.ScreenPointToRay(Input.mousePosition));
+            if (hits.Length > 0)
             {
+                // Find the one with the highest sorting order
+                RaycastHit2D hit 
+                    = hits.OrderByDescending(
+                        h => h.collider.GetComponent<Renderer>().sortingOrder).First();
+
                 IContextMenu target = hit.transform.GetComponent<IContextMenu>();
                 if (target != null)
                 {
@@ -92,8 +99,11 @@ public class ContextMenuManager : MonoBehaviour
     {
         DeactivateContextMenu(); // Closes the previously open context menu
 
-        // Moves the menu to the mousePosition + a little offset to the bottom right
-        contextMenu.transform.position = (Vector2)Input.mousePosition + menuOffsetFromMouse;
+        /* Moves the menu to the mousePosition + a little offset to the bottom right
+         * Important: Done in Viewport space to work in multiple resolutions */
+        contextMenu.transform.position = editorManager.mainCam.ViewportToScreenPoint(
+            (Vector2)editorManager.mainCam.ScreenToViewportPoint((Vector2)Input.mousePosition)
+            + menuOffsetFromMouse);
 
         target?.ShowContextMenu(this);
 
