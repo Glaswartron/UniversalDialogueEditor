@@ -61,7 +61,7 @@ namespace UniversalDialogueSystem
 
         [Header("UI")]
         [SerializeField] protected GameObject DialogueUI;
-        [SerializeField] protected TextBox DialogueTextBox;
+        [SerializeField] protected TextBox dialogueTextBox;
         [SerializeField] protected AnswerBox[] answerTextBoxes;
         [SerializeField] protected TextBox nameTextBox;
         [SerializeField] protected GameObject[] deactivateDuringDialogue;
@@ -85,7 +85,7 @@ namespace UniversalDialogueSystem
         [HideInInspector] public bool DialogueRunning;
         [HideInInspector] public bool DialoguePaused;
 
-        private string GLOBAL_PROPERTIES_PATH; 
+        private string GLOBAL_PROPERTIES_PATH;
         #endregion
 
         #region Variables
@@ -184,7 +184,7 @@ namespace UniversalDialogueSystem
             if (saveGlobalProperties)
             {
                 // Can be changed if needed
-                GLOBAL_PROPERTIES_PATH 
+                GLOBAL_PROPERTIES_PATH
                     = Path.Combine(Application.persistentDataPath, "UDSGlobalProperties.json");
 
                 globalProperties = LoadGlobalProperties();
@@ -256,7 +256,7 @@ namespace UniversalDialogueSystem
         /// <param name="Dialogue">The Dialogue that just ends</param>
         protected virtual void OnDialogueEnd(Dialogue dialogue)
         {
-            
+
         }
 
         /// <summary>
@@ -520,7 +520,7 @@ namespace UniversalDialogueSystem
                 textEffectRunning = false;
 
                 // Show text instantly
-                SetTextOnTextBox(DialogueTextBox, CurrentDialoguePartText);
+                SetTextOnTextBox(dialogueTextBox, CurrentDialoguePartText);
 
                 return;
             }
@@ -580,9 +580,18 @@ namespace UniversalDialogueSystem
             // Answers
             int answerCount = diaPart.answers.Length;
             if (answerCount > 0 // Are there even answers
-                // Is there at least one Answer that is not conditional or whose condition is met
-                && Array.Exists(diaPart.answers, a => !a.conditional || a.condition.Value.IsMet())) 
+                                // Is there at least one Answer that is not conditional or whose condition is met
+                && Array.Exists(diaPart.answers, a => !a.conditional || a.condition.Value.IsMet()))
             {
+                // Error in case more Answers have to be shown than there are Answer text boxes
+                if (diaPart.answers.Where(a => !a.conditional || a.condition.Value.IsMet())
+                    .ToArray().Length > answerTextBoxes.Length)
+                {
+                    Debug.LogError("Encountered a Dialogue Part with more Answers than there " +
+                        "are Answer text boxes: " + diaPart.id);
+                    return;
+                }
+
                 // If so, go through all of them
                 for (int i = 0; i < answerCount; i++)
                 {
@@ -647,7 +656,7 @@ namespace UniversalDialogueSystem
             if (currentDialoguePart.GetProperty<float>("Text speed") > 0) // with effect
                 revealTextGraduallyCo = StartCoroutine(RevealTextGradually(text));
             else // instantaneously
-                SetTextOnTextBox(DialogueTextBox, text);
+                SetTextOnTextBox(dialogueTextBox, text);
         }
 
         /// <summary>
@@ -754,7 +763,7 @@ namespace UniversalDialogueSystem
         /// </summary>
         protected void FinishDialogue()
         {
-            SetTextOnTextBox(DialogueTextBox, "");
+            SetTextOnTextBox(dialogueTextBox, "");
             SetTextOnTextBox(nameTextBox, "");
 
             foreach (AnswerBox answerBox in answerTextBoxes)
@@ -1014,7 +1023,7 @@ namespace UniversalDialogueSystem
         {
             textEffectRunning = true; // !
 
-            SetTextOnTextBox(DialogueTextBox, "");
+            SetTextOnTextBox(dialogueTextBox, "");
             float textRevealSpeed = currentDialoguePart.GetProperty<float>("Text speed");
 
             // Global cursor that points to the index in the baseText where we're currently at
@@ -1031,7 +1040,7 @@ namespace UniversalDialogueSystem
             contexts.Push(baseContext);
 
             RichTextContext currentContext;
-            while (contexts.Count > 0)
+            contextLoop: while (contexts.Count > 0)
             {
                 currentContext = contexts.Pop();
 
@@ -1045,7 +1054,8 @@ namespace UniversalDialogueSystem
                 string _text = baseText.Substring(_textStartIndex, currentContext.endIndex - cursor + 1);
 
                 // Letter by letter, increment cursor!
-                for (int i = 0; i < _text.Length; i++, cursor++)
+                int i = 0;
+                letterLoop: for (; i < _text.Length; i++, cursor++)
                 {
                     char letter = _text[i];
 
@@ -1061,72 +1071,85 @@ namespace UniversalDialogueSystem
                             // startTag = From current letter (= '<') to next '>'
                             startTag = _text.Substring(i, _text.IndexOf(">") - i + 1);
 
-                            if (!startTag.Contains(" "))
+                            // Only what's in between the "< >" and "</ >"
+                            string startTagContent = startTag.Replace("<", null).Replace(">", null);
+
+                            // Special case: Sprite tag
+                            if (startTagContent.StartsWith("sprite"))
                             {
-                                // _text with everything before and including the startTag cut off
-                                string _textFromEndOfStartTag = _text.Substring(_text.IndexOf(">") + 1);
+                                // Write the tag to the text box
+                                newText = useTextMeshPro
+                                          ? dialogueTextBox.textTMP.text.Insert(cursor, startTag)
+                                          : dialogueTextBox.text.text.Insert(cursor, startTag);
 
-                                // Is there a closing tag (</...>) ahead?
-                                if (_textFromEndOfStartTag.Contains("</" + startTag[1])
-                                    && _textFromEndOfStartTag.Contains('>'))
+                                SetTextOnTextBox(dialogueTextBox, newText);
+
+                                // Jump behind the sprite tag
+                                i += startTag.Length;
+                                cursor += startTag.Length; 
+
+                                goto letterLoop; // Continue in the same context after the sprite tag
+                            }
+
+                            // _text with everything before and including the startTag cut off
+                            string _textFromEndOfStartTag = _text.Substring(_text.IndexOf(">") + 1);
+
+                            // Is there a closing tag (</...>) ahead?
+                            if (_textFromEndOfStartTag.Contains("</" + startTag[1])
+                                && _textFromEndOfStartTag.Contains('>'))
+                            {
+                                // Sneaky workaround with +startTag[1] to get the right tag
+                                int endTagIndex = _textFromEndOfStartTag.IndexOf("</" + startTag[1]);
+                                string _textFromStartOfEndTag = _textFromEndOfStartTag.Substring(endTagIndex);
+
+                                if (_textFromStartOfEndTag.Contains('>'))
                                 {
-                                    // Sneaky workaround with +startTag[1] to get the right tag
-                                    int endTagIndex = _textFromEndOfStartTag.IndexOf("</" + startTag[1]);
-                                    string _textFromStartOfEndTag = _textFromEndOfStartTag.Substring(endTagIndex);
+                                    // Cut out the closing tag
+                                    endTag = _textFromStartOfEndTag.Substring
+                                        (0, _textFromStartOfEndTag.IndexOf(">") + 1);
 
-                                    if (_textFromStartOfEndTag.Contains('>'))
+                                    // Only what's in between the "< >" and "</ >"
+                                    string endTagContent = endTag.Replace("</", null).Replace(">", null);
+
+                                    // Just another check: If it's well-formed, startTagContent starts with endTagContent
+                                    if (startTagContent.StartsWith(endTagContent))
                                     {
-                                        // Cut out the closing tag
-                                        endTag = _textFromStartOfEndTag.Substring
-                                            (0, _textFromStartOfEndTag.IndexOf(">") + 1);
+                                        // Write the tags to the text box, the actual text will go in between
+                                        newText = useTextMeshPro
+                                                  ? dialogueTextBox.textTMP.text.Insert(cursor, startTag + endTag)
+                                                  : dialogueTextBox.text.text.Insert(cursor, startTag + endTag);
 
-                                        if (!endTag.Contains(" "))
+                                        SetTextOnTextBox(dialogueTextBox, newText);
+
+                                        // Very important! Push current context back onto the stack for later
+                                        contexts.Push(currentContext);
+
+                                        /* For the new RichTextContext, start after the startTag 
+                                         * (in the original text) and write till before the end tag, 
+                                         * then resume after the end tag when you leave the context */
+                                        RichTextContext newContext = new RichTextContext
                                         {
-                                            // Only what's in between the "< >" and "</ >"
-                                            string startTagContent = startTag.Replace("<", null).Replace(">", null);
-                                            string endTagContent = endTag.Replace("</", null).Replace(">", null);
+                                            startIndex = cursor + startTag.Length,
+                                            endIndex = _textStartIndex + _text.IndexOf(endTag) - 1,
+                                            resumeOffset = endTag.Length + 1
+                                        };
 
-                                            // Just another check: If it's well-formed, startTagContent starts with endTagContent
-                                            if (startTagContent.StartsWith(endTagContent))
-                                            {
-                                                // Write the tags to the text box, the actual text will go in between
-                                                newText = useTextMeshPro
-                                                          ? DialogueTextBox.textTMP.text.Insert(cursor, startTag + endTag)
-                                                          : DialogueTextBox.text.text.Insert(cursor, startTag + endTag);
+                                        contexts.Push(newContext);
 
-                                                SetTextOnTextBox(DialogueTextBox, newText);
-
-                                                // Very important! Push current context back onto the stack for later
-                                                contexts.Push(currentContext);
-
-                                                /* For the new RichTextContext, start after the startTag 
-                                                 * (in the original text) and write till before the end tag, 
-                                                 * then resume after the end tag when you leave the context */
-                                                RichTextContext newContext = new RichTextContext
-                                                {
-                                                    startIndex = cursor + startTag.Length,
-                                                    endIndex = _textStartIndex + _text.IndexOf(endTag) - 1,
-                                                    resumeOffset = endTag.Length + 1
-                                                };
-
-                                                contexts.Push(newContext);
-
-                                                break; // Very important! We're heading to a new loop now
-                                            }
-                                        }
+                                        goto contextLoop; // Very important! We're heading to a new loop now
                                     }
                                 }
-                            }
+                            } 
                         }
                     }
 
                     newText = useTextMeshPro
-                        ? DialogueTextBox.textTMP.text.Insert(cursor, baseText[cursor].ToString())
-                        : DialogueTextBox.text.text.Insert(cursor, baseText[cursor].ToString());
+                        ? dialogueTextBox.textTMP.text.Insert(cursor, baseText[cursor].ToString())
+                        : dialogueTextBox.text.text.Insert(cursor, baseText[cursor].ToString());
 
-                    SetTextOnTextBox(DialogueTextBox, newText);
+                    SetTextOnTextBox(dialogueTextBox, newText);
 
-                    float actualTextSpeed 
+                    float actualTextSpeed
                         = 1.53f - 0.5f * baseTextSpeed - textRevealSpeed;
 
                     if (currentDialogue.GetProperty<bool>("Pause during Dialogue"))
@@ -1263,7 +1286,7 @@ namespace UniversalDialogueSystem
                 return true;
 
             // Evaluate the branch from the DialoguePart following the answer
-            var followingDP 
+            var followingDP
                 = Array.Find(currentDialogue.dialogueParts, dp => dp.id.Equals(answer.nextDialoguePartID));
 
             // Do so using the already defined method IsEndBranch(DialoguePart)
