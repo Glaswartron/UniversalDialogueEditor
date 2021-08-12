@@ -89,7 +89,7 @@ public class ContextMenuManager : MonoBehaviour
     {
         AddButton(
              "New Dialogue Part",
-             EditorManager.instance.CreateDialoguePart
+             () => { EditorManager.instance.CreateDialoguePart(false); }
          );
 
         OpenContextMenu(null);

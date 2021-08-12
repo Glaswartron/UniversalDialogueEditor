@@ -10,6 +10,8 @@ public class SettingsMenu : MonoBehaviour
     public SettingsPathInputGroup propertyPresetPathInputGroup;
     public SettingsPathInputGroup globalPropertiesPathInputGroup;
     public TMP_Dropdown colorThemeDropdown;
+    public Toggle autogenerateFirstDialoguePartToggle;
+    public Toggle showControlsToggle;
     public Button submitButton;
 
     // Start is called before the first frame update
@@ -19,7 +21,7 @@ public class SettingsMenu : MonoBehaviour
             = new List<TMP_Dropdown.OptionData>(
                 Array.ConvertAll
                 (EditorManager.instance.colorThemes, ct => new TMP_Dropdown.OptionData(ct.themeName)));
-            
+
         submitButton.onClick.AddListener(
             () =>
             {
@@ -47,7 +49,7 @@ public class SettingsMenu : MonoBehaviour
                     return;
                 }
 
-                ColorTheme newColorTheme 
+                ColorTheme newColorTheme
                     = Array.Find(EditorManager.instance.colorThemes,
                                  ct => ct.themeName.Equals
                                 (colorThemeDropdown.options[colorThemeDropdown.value].text));
@@ -65,6 +67,20 @@ public class SettingsMenu : MonoBehaviour
             .IndexOf(EditorManager.instance.ActiveColorTheme.themeName);
 
         colorThemeDropdown.RefreshShownValue();
+
+        autogenerateFirstDialoguePartToggle.onValueChanged.AddListener(
+            (value) =>
+            {
+                PlayerPrefs.SetInt("AutogenerateFirstDialoguePart", value == true ? 1 : 0);
+            }
+        );
+
+        showControlsToggle.onValueChanged.AddListener(
+            (value) =>
+            {
+                PlayerPrefs.SetInt("ShowControls", value == true ? 1 : 0);
+            }
+        );
     }
 
     private void OnEnable()

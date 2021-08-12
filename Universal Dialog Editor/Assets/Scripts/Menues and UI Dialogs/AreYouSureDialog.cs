@@ -34,6 +34,8 @@ public class AreYouSureDialog : MonoBehaviour
     public void Open(string text, string yesText, string noText,
                      UnityAction onYes, UnityAction onNo)
     {
+        EditorManager.instance.ActiveMenu = null;
+
         dialog.SetActive(true);
 
         textUI.SetText(text);
