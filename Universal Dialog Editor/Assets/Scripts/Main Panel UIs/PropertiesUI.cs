@@ -50,8 +50,10 @@ public class PropertiesUI : MonoBehaviour, ISubUI
         addPropertyButton.onClick.AddListener(
             () =>
             {
-                addPropertyDropdown.transform.position 
-                    = (Vector2) Input.mousePosition + ContextMenuManager.instance.menuOffsetFromMouse;
+                addPropertyDropdown.transform.position
+                    = EditorManager.instance.mainCam.ViewportToScreenPoint(
+                        (Vector2)EditorManager.instance.mainCam.ScreenToViewportPoint((Vector2)Input.mousePosition)
+                         + ContextMenuManager.instance.menuOffsetFromMouse);
 
                 addPropertyDropdown.gameObject.SetActive(true);
             }

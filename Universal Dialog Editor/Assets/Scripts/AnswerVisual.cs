@@ -225,7 +225,6 @@ public class AnswerVisual : MonoBehaviour, IContextMenu, IConditional
             () => 
             {
                 parentDialoguePart.DeleteAnswer(this);
-                Destroy(gameObject);
             } 
         );
     }

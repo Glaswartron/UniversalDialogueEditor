@@ -289,6 +289,8 @@ public class DialoguePartVisual : MonoBehaviour, IContextMenu
         // Update the answer array on the Dialogue Part
         dialoguePart.answers = answers.ConvertAll(av => av.answer).ToArray();
 
+        Destroy(answer.gameObject);
+
         EditorManager.instance.noOfAnswers--;
         EditorManager.instance.ActiveUI = EditorManager.instance.dialogueUI;
     }

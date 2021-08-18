@@ -271,15 +271,17 @@ public class EditorManager : MonoBehaviour
             SelectedAnswerVisual = null;
         }
 
-        // Delete key deletes currenty selected Dialogue Part
+        // Delete key deletes currenty selected Dialogue Part or Answer
         if (Input.GetKeyDown(KeyCode.Delete))
         {
             if (SelectedDialoguePartVisual != null)
                 DestroyDialoguePart();
+            else if (SelectedAnswerVisual != null)
+                SelectedAnswerVisual.parentDialoguePart.DeleteAnswer(SelectedAnswerVisual);
         }
 
         // Ctrl + D duplicates currently selected Dialogue Part
-        if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl))
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
             && Input.GetKeyDown(KeyCode.D))
         {
             CopySelectedDialoguePart();
