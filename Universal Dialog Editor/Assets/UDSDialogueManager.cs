@@ -742,7 +742,15 @@ namespace UniversalDialogueSystem
                 return;
 
             if (DialogueUI.activeSelf == false)
-                EnableDialogueUI(true);
+            {
+                /* If the Dialogue ends with the answer that is about to be taken,
+                 * do not reenable the UI. Otherwise, do so */
+                if (!continueWithAnswer || answerBeforePause == null
+                    || !string.IsNullOrWhiteSpace(answerBeforePause.nextDialoguePartID))
+                {
+                    EnableDialogueUI(true);
+                }
+            }
 
             if (Time.timeScale != 0 && currentDialogue.GetProperty<bool>("Pause during Dialogue"))
                 Time.timeScale = 0;
