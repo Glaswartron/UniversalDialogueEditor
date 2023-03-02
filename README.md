@@ -1,2 +1,4 @@
 # UniversalDialogEditor
-The standalone editor for the Unity Universal Dialog System (UDS) by Benedikt Wille
+The standalone editor for the Unity Universal Dialogue System (UDS) by Benedikt Wille.
+
+Not up-to-date with the current version of the UDS that is currently under development. 
